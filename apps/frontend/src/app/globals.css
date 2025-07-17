@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap'); /* Eurostile-like */
+
+body {
+  @apply font-sans m-0 p-0;
+  background: linear-gradient(270deg, #facc15, #000000);
+  background-size: 200% 200%;
+  animation: gradient-x 8s ease infinite;
+  font-family: 'Orbitron', sans-serif;
+  color: white;
+  height: 100vh;
+}
+@keyframes gradient-x {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}

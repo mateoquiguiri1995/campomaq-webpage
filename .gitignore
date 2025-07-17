@@ -1,0 +1,27 @@
+# Root-level ignores
+.DS_Store
+.env
+*.pyc
+__pycache__/
+
+# Node/React (client)
+client/node_modules/
+client/build/
+client/.env
+
+# Python/Flask (server)
+server/venv/
+server/.env
+server/__pycache__/
+server/*.pyc
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# OS/system files
+Thumbs.db
+
+.gitattributes
