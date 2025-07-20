@@ -56,6 +56,9 @@ jobs:
       - name: Clear old build folder
         run: rm -rf apps/frontend/out/*
 
+      - name: Create target directory
+        run: mkdir -p apps/frontend
+
       - name: Unzip artifact
         run: unzip release.zip -d apps/frontend
       
