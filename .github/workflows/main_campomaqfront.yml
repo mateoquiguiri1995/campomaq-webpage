@@ -76,4 +76,5 @@ jobs:
           app-name: 'campomaqfront'
           slot-name: 'Production'
           package: ./apps/frontend/out
+          startup-command: 'npx serve out -l $PORT'
           
