@@ -32,7 +32,7 @@ jobs:
 
       - name: Zip artifact for deployment
         working-directory: apps/frontend/out
-        run: zip release.zip ./* -r
+        run: zip -r ../../release.zip .
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -58,7 +58,7 @@ jobs:
         run: rm -rf apps/frontend/out/*
 
       - name: Unzip artifact
-        run: unzip release.zip -d apps/frontend/out
+        run: unzip release.zip -d apps/frontend
       
       - name: Login to Azure
         uses: azure/login@v2
