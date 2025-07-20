@@ -60,7 +60,7 @@ jobs:
         run: mkdir -p apps/frontend
 
       - name: Unzip artifact
-        run: unzip release.zip -d apps/frontend
+        run: unzip release.zip
       
       - name: Login to Azure
         uses: azure/login@v2
