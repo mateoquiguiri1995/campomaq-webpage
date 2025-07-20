@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "npx serve out -l $PORT",
+    "start": "npx serve out -l 8080",
     "lint": "next lint"
   },
   "dependencies": {
