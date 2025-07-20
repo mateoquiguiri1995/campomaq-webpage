@@ -5,13 +5,14 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "serve out",
+    "start": "npx serve out -l $PORT",
     "lint": "next lint"
   },
   "dependencies": {
     "next": "15.4.1",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "serve": "^14.0.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
