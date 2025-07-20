@@ -32,13 +32,13 @@ jobs:
 
       - name: Zip artifact for deployment
         working-directory: apps/frontend/out
-        run: zip release.zip ./* -r
+        run: zip -r ../../release.zip .
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: apps/frontend/out
+          path: release.zip
 
   deploy:
     runs-on: ubuntu-latest
@@ -54,8 +54,11 @@ jobs:
         with:
           name: node-app
 
-      - name: Unzip artifact for deployment
-        run: unzip release.zip
+      - name: Clear old build folder
+        run: rm -rf apps/frontend/out/*
+
+      - name: Unzip artifact
+        run: unzip release.zip -d apps/frontend/out
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -70,5 +73,5 @@ jobs:
         with:
           app-name: 'campomaqfront'
           slot-name: 'Production'
-          package: ./out
+          package: ./apps/frontend/out
           
