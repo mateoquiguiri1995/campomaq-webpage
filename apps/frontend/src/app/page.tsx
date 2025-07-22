@@ -1,5 +1,5 @@
 // src/app/page.tsx
-
+import Chatbot from './components/Chatbot';
 export default function Home() {
   return (
     
@@ -12,12 +12,15 @@ export default function Home() {
 
 
       {/* Foreground Content */}
-      <div className="z-10 text-center px-4">
-        <h1 className="text-5xl md:text-7xl font-extrabold drop-shadow-lg">
+      <div className="h-screen w-full flex flex-col items-center justify-center text-center text-yellow-400 animate-fondoGradual transition-colors duration-1000">
+        <h1 className="text-5xl md:text-7xl font-extrabold drop-shadow-lg" style={{ textShadow: '2px 2px 4px #000000'}}>
           Campomaq Webpage
         </h1>
         <p className="mt-6 text-xl text-white/80">Coming Soon</p>
       </div>
+
+      {/* Aquí se inyecta el chatbot */}
+      <Chatbot />
     </main>
   );
 }

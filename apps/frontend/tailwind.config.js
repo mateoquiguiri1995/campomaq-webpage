@@ -7,21 +7,15 @@ const config = {
   ],
   theme: {
     extend: {
-      animation: {
-        'gradient-x': 'gradientX 8s ease infinite',
-      },
       keyframes: {
-        gradientX: {
-          '0%, 100%': {
-            'background-position': '0% 50%',
-          },
-          '50%': {
-            'background-position': '100% 50%',
-          },
+        fondoGradual: {
+          '0%': { backgroundColor: '#000000' },     // negro
+          '50%': { backgroundColor: '#facc15' },     // amarillo tailwind (yellow-400)
+          '100%': { backgroundColor: '#000000' },
         },
       },
-      backgroundSize: {
-        '200': '200% 200%',
+      animation: {
+        fondoGradual: 'fondoGradual 8s ease-in-out infinite',
       },
       fontFamily: {
         eurostile: ['"Eurostile Unicase", sans-serif'],
