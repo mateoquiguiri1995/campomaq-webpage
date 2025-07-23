@@ -9,10 +9,14 @@ export default function Chatbot() {
   const [input, setInput] = useState('');
 
   // 🟡 Posición inicial en esquina inferior derecha
-  const initialX = typeof window !== 'undefined' ? window.innerWidth - 80 : 20;
-  const initialY = typeof window !== 'undefined' ? window.innerHeight - 80 : 20;
+  const [position, setPosition] = useState({ x: 20, y: 20 }); // Static initial state to prevent mismatch
 
-  const [position, setPosition] = useState({ x: initialX, y: initialY });
+  useEffect(() => {
+    const newX = window.innerWidth - 80;
+    const newY = window.innerHeight - 80;
+    setPosition({ x: newX, y: newY });
+  }, []);
+
   const previousPosition = useRef(position);
 
   const dragRef = useRef<HTMLDivElement>(null);
@@ -26,7 +30,7 @@ export default function Chatbot() {
     setMessages((prev) => [...prev, userMsg]);
 
     try {
-      const response = await fetch('/api/chat', {
+      const response = await fetch('http://127.0.0.1:5000/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: input.trim() }),
