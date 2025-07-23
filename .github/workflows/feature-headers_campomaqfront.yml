@@ -33,7 +33,7 @@ jobs:
       - name: Zip artifact for deployment
         run: |
           cd apps/frontend
-          zip -r ../../release.zip .next public package.json next.config.js node_modules
+          zip -r ../../release.zip public package.json next.config.js
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
