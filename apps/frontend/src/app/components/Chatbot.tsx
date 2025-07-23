@@ -30,7 +30,7 @@ export default function Chatbot() {
     setMessages((prev) => [...prev, userMsg]);
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/chat', {
+      const response = await fetch('https://campomaq.azurewebsites.net/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: input.trim() }),
