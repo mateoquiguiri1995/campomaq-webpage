@@ -70,5 +70,5 @@ jobs:
         with:
           app-name: 'campomaqfront'
           slot-name: 'Production'
-          package: .
+          package: ./apps/frontend
           
