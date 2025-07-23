@@ -21,16 +21,19 @@ jobs:
       - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
-          node-version: '22.x'
+          node-version: '22.17.0'
 
       - name: npm install, build, and test
         run: |
+          cd apps/frontend
           npm install
           npm run build --if-present
           npm run test --if-present
 
       - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
+        run: |
+          cd apps/frontend
+          zip -r ../../release.zip .next public package.json next.config.js node_modules
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
