@@ -33,7 +33,7 @@ jobs:
       - name: Zip artifact for deployment
         run: |
           cd apps/frontend
-          zip -r ../../release.zip public package.json next.config.js
+          zip -r ../../release.zip public package.json next.config.js tsconfig.json tailwind.config.js src
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -55,7 +55,7 @@ jobs:
           name: node-app
 
       - name: Unzip artifact for deployment
-        run: unzip release.zip
+        run: unzip release.zip ./apps/frontend
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -70,5 +70,5 @@ jobs:
         with:
           app-name: 'campomaqfront'
           slot-name: 'Production'
-          package: ./apps/frontend
+          package: .
           
