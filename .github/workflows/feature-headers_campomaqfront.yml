@@ -33,7 +33,7 @@ jobs:
       - name: Zip artifact for deployment
         run: |
           cd apps/frontend
-          zip -r ../../release.zip public package.json next.config.ts tsconfig.json tailwind.config.js src
+          zip -r ../../release.zip .next public package.json next.config.ts tsconfig.json tailwind.config.js
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
