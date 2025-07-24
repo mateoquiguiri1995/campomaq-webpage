@@ -21,25 +21,19 @@ jobs:
       - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
-          node-version: '22.17.0'
+          node-version: '22.x'
 
       - name: npm install, build, and test
         run: |
-          cd apps/frontend
           npm install
           npm run build --if-present
           npm run test --if-present
-
-      - name: Zip artifact for deployment
-        run: |
-          cd apps/frontend
-          zip -r ../../release.zip public package.json next.config.ts tsconfig.json tailwind.config.js src
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: release.zip
+          path: .
 
   deploy:
     runs-on: ubuntu-latest
@@ -53,16 +47,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
-
-      - name: Unzip artifact for deployment
-        run: unzip release.zip
       
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_41A4CEE2E36045AC801B1523345FBD14 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_7C6EAD27187447E8BFCC08A3A7AAC560 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_44233286B6544BFB9A77F3D44773096E }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_60C903FC343548BC8055CCFFDB3CD067 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_A35AA8786DBF4D1CB01440018395D4FE }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_50CD6E8591184C72B1CFF4F814834CF0 }}
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
