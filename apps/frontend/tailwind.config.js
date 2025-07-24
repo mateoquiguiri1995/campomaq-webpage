@@ -19,6 +19,7 @@ const config = {
       },
       fontFamily: {
         eurostile: ['"Eurostile Unicase", sans-serif'],
+        orbitron: ['"Orbitron", sans-serif'],
       },
     },
   },

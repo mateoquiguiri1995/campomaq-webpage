@@ -9,7 +9,7 @@ body {
   background: linear-gradient(270deg, #facc15, #000000);
   background-size: 200% 200%;
   animation: gradient-x 8s ease infinite;
-  font-family: 'Courier New', Courier, monospace;
+  /* font-family: 'Courier New', Courier, monospace; */
   color: white;
   height: 100vh;
 }
