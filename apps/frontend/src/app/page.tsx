@@ -1,4 +1,5 @@
 // src/app/page.tsx
+'use client';
 import Chatbot from './components/Chatbot';
 export default function Home() {
   return (
