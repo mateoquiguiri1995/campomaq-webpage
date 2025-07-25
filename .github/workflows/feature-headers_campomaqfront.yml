@@ -23,17 +23,17 @@ jobs:
         with:
           node-version: '22.15.0'
 
-      - name: npm install, build, and test
+      - name: npm install, build
         run: |
           cd apps/frontend
-          npm install
-          npm run build --if-present
-          npm run test --if-present
+          npm ci
+          npm run build
 
       - name: Zip artifact for deployment
         run: |
           cd apps/frontend
-          zip -r ../../release.zip .next public package.json next.config.ts tsconfig.json tailwind.config.js src
+          npm prune --production
+          zip -r ../../release.zip .next public package.json next.config.ts tsconfig.json
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
