@@ -33,7 +33,7 @@ jobs:
         run: |
           cd apps/frontend
           npm prune --production
-          zip -r ../../release.zip .next public package.json next.config.ts tsconfig.json
+          zip -r ../../release.zip .next public node_modules package.json next.config.ts tsconfig.json
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
