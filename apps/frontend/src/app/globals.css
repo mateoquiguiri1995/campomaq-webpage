@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap'); /* Eurostile-like */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -9,10 +9,11 @@ body {
   background: linear-gradient(270deg, #facc15, #000000);
   background-size: 200% 200%;
   animation: gradient-x 8s ease infinite;
-  /* font-family: 'Courier New', Courier, monospace; */
+  font-family: 'Orbitron', sans-serif;
   color: white;
   height: 100vh;
 }
+
 @keyframes gradient-x {
   0% {
     background-position: 0% 50%;

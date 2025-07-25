@@ -1,7 +1,7 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { SendHorizonal } from 'lucide-react';
-import { Londrina_Solid } from 'next/font/google';
+//import { Londrina_Solid } from 'next/font/google';
 
 export default function Chatbot() {
   const [open, setOpen] = useState(false);
@@ -66,7 +66,7 @@ export default function Chatbot() {
     if (adjustedX !== position.x || adjustedY !== position.y) {
       setPosition({ x: adjustedX, y: adjustedY });
     }
-  }, [open]);
+  }, [open, position]);
 
   // Al cerrar el chat, restauramos posición original del botón
   useEffect(() => {
