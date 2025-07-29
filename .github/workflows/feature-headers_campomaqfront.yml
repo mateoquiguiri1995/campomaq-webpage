@@ -1,0 +1,74 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy Node.js app to Azure Web App - campomaqfront
+
+on:
+  push:
+    branches:
+      - feature/headers
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read #This is required for actions/checkout
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js version
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.15.0'
+
+      - name: npm install, build
+        run: |
+          cd apps/frontend
+          npm ci
+          npm run build
+
+      - name: Zip artifact for deployment
+        run: |
+          cd apps/frontend
+          npm prune --production
+          zip -r ../../release.zip src public package.json next.config.ts tsconfig.json postcss.config.mjs
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-app
+          path: release.zip
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      id-token: write #This is required for requesting the JWT
+      contents: read #This is required for actions/checkout
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: node-app
+
+      - name: Unzip artifact for deployment
+        run: unzip release.zip
+      
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_60C903FC343548BC8055CCFFDB3CD067 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_A35AA8786DBF4D1CB01440018395D4FE }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_50CD6E8591184C72B1CFF4F814834CF0 }}
+
+      - name: 'Deploy to Azure Web App'
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'campomaqfront'
+          slot-name: 'Production'
+          package: .
+          
