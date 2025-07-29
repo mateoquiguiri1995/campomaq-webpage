@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Campomaq",
-  description: "Official Campomaq website. Coming soon.",
+  title: "Campo Maq",
+  description: "Official Campo Maq website. Muy pronto.",
 };
 
 export default function RootLayout({
