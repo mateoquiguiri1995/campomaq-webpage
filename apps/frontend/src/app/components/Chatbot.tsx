@@ -146,7 +146,6 @@ export default function Chatbot() {
   const quickOptions = [
     '¿Qué productos tienen en oferta?',
     'Necesito ayuda con mi pedido',
-    '¿Cómo realizo una devolución?',
     'Quiero consultar métodos de pago',
     '¿Cuál es el tiempo de entrega?'
   ];
@@ -178,7 +177,7 @@ export default function Chatbot() {
                   <Bot className="w-5 h-5 text-yellow-400" />
                 </div>
                 <div>
-                  <span className="font-bold text-lg">CAMPI</span>
+                  <span className="font-bold text-lg">MAQUI</span>
                   <div className="text-xs text-gray-800">Asistente de Campomaq</div>
                 </div>
               </div>
@@ -197,7 +196,7 @@ export default function Chatbot() {
                 {messages.length === 0 && !loading && (
                   <div className="flex flex-col items-center justify-center h-[400px] text-center">
                     <Bot size={80} className="text-yellow-400 mb-4" />
-                    <h3 className="text-xl font-bold text-gray-800">¡Hola! Soy Campi, tu asistente Virtual</h3>
+                    <h3 className="text-xl font-bold text-gray-800">¡Hola! Soy Maqui, tu asistente Virtual</h3>
                     <p className="text-gray-600 mt-2 max-w-[280px]">
                       Estoy aquí para ayudarte con cualquier pregunta sobre nuestros productos, envíos o pagos.
                     </p>
@@ -277,11 +276,11 @@ export default function Chatbot() {
             onClick={toggleOpen}
             onMouseDown={startDrag}
             onTouchStart={startDrag}
-            className="w-20 h-20 bg-gradient-to-br from-yellow-400 to-yellow-500 text-black rounded-full shadow-2xl
+            className="w-15 h-15 bg-gradient-to-br from-yellow-400 to-yellow-500 text-black rounded-full shadow-2xl
                      flex items-center justify-center cursor-grab active:cursor-grabbing"
             aria-label="Abrir chat de asistente"
           >
-            <MessageCircle size={32} />
+            <MessageCircle size={42} />
           </motion.button>
         )}
       </AnimatePresence>
