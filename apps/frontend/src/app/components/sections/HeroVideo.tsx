@@ -21,10 +21,10 @@ export default function HeroVideo() {
       <div className="absolute inset-0 bg-black bg-opacity-50" />
 
       <div className="relative z-10 pt-24 pl-8 pr-8 md:pl-40 md:pt-60 max-w-4xl text-white">
-        <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight drop-shadow-xl">
+        <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight drop-shadow-xl underline decoration-white decoration-10">
           CAMPOMAQ
         </h1>
-        <p className="text-base md:text-xl mb-6 drop-shadow-md">
+        <p className="text-base md:text-4xl mb-6 drop-shadow-md">
           Distribuidores líderes de maquinaria agrícola y de jardinería
         </p>
         <div className="flex flex-col sm:flex-row gap-4">

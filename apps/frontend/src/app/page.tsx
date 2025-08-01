@@ -13,8 +13,8 @@ export default function Home() {
     <div className="bg-yellow text-black">
       <Navbar />
       <HeroVideo />
-      <Temporadas />
       <Marcas />
+      <Temporadas />
       <Ubicacion />
       <Footer />
       <Chatbot />

@@ -14,8 +14,6 @@ const quickLinks = [
   { name: 'Servicios', url: '/servicios' },
   { name: 'Nosotros', url: '/nosotros' },
   { name: 'Contacto', url: '/contacto' },
-  { name: 'Términos y condiciones', url: '/terminos' },
-  { name: 'Política de privacidad', url: '/privacidad' }
 ]
 
 export default function Footer() {
@@ -26,7 +24,7 @@ export default function Footer() {
         <div>
           <div className="relative w-48 h-10 mb-6">
             <Image 
-              src="/campomaq.svg" 
+              src="/campomaq.png" 
               alt="Campomaq Logo" 
               fill
               style={{ objectFit: 'contain' }}
@@ -69,33 +67,18 @@ export default function Footer() {
         <div>
           <h3 className="text-lg font-semibold text-white mb-6">Contacto</h3>
           <address className="not-italic space-y-3">
-            <p>Av. Principal 1234, Ciudad</p>
-            <p>Provincia, País</p>
-            <p>Tel: +54 11 1234-5678</p>
-            <p>Email: info@campomaq.com</p>
+            <p>Calle Venezuela OE4-64 y Sergio Mejía</p>
+            <p>Cayambe, Quito, Ecuador</p>
+            <p>Tel: (02) 1185008</p>
+            <p>Email: ventasAle@campomaq.com</p>
           </address>
         </div>
 
         {/* Horario y newsletter */}
         <div>
           <h3 className="text-lg font-semibold text-white mb-6">Horario de atención</h3>
-          <p className="mb-3">Lunes a Viernes: 8:00 - 18:00</p>
-          <p className="mb-6">Sábados: 9:00 - 13:00</p>
-          
-          <h3 className="text-lg font-semibold text-white mb-4">Newsletter</h3>
-          <form className="space-y-3">
-            <input 
-              type="email" 
-              placeholder="Tu email" 
-              className="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-            />
-            <button 
-              type="submit"
-              className="w-full bg-yellow-600 text-white px-4 py-2 rounded-md hover:bg-yellow-700 transition-colors"
-            >
-              Suscribirse
-            </button>
-          </form>
+          <p className="mb-3">Lunes a Viernes: 7:30 AM - 17:30 PM</p>
+          <p className="mb-6">Sábados: 7:30 AM - 13:00 PM</p>
         </div>
       </div>
 
