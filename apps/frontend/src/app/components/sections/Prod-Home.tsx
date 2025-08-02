@@ -69,7 +69,7 @@ export default function Productos() {
                 ">
                   <h3 className="text-lg font-semibold text-black mb-2">{product.name}</h3>
                   <p className="text-sm text-black mb-4">{product.description}</p>
-                  <button className="bg-black text-yellow-400 px-4 py-2  font-semibold hover:bg-white cursor-pointer transition-colors">
+                  <button className="bg-black text-campomaq px-4 py-2  font-semibold hover:bg-white hover:text-black cursor-pointer transition-colors">
                     Ver más
                   </button>
                 </div>

@@ -8,8 +8,8 @@ export default function Ubicacion() {
         <div className="space-y-8">
           <div className="bg-yellow-50 p-8 rounded-lg border border-yellow-100">
             <div className="flex items-center mb-4">
-              <div className="bg-yellow-600 p-2 rounded-full mr-4">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-campomaq p-2 rounded-full mr-4">
+                <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
