@@ -38,7 +38,7 @@ export default function CategorySidebar() {
         {categories.map((cat) => (
           <li key={cat.name} className="border-b border-gray-100 last:border-b-0">
             <div
-              className="flex justify-between items-center py-2 px-2 cursor-pointer hover:bg-yellow-500 rounded-md transition-colors"
+              className="flex justify-between items-center py-2 px-2 cursor-pointer hover:bg-campomaq rounded-md transition-colors"
               onClick={() => toggleCategory(cat.name)}
             >
               <div className="flex items-center gap-2 text-black font-medium">
@@ -64,7 +64,7 @@ export default function CategorySidebar() {
                     <li key={sub}>
                       <Link
                         href={`/productos?categoria=${sub.toLowerCase()}`}
-                        className="block py-1.5 px-2 text-sm text-black hover:text-black hover:bg-yellow-200 rounded transition-colors hover:pl-5"
+                        className="block py-1.5 px-2 text-sm text-black hover:text-black hover:bg-campomaq rounded transition-colors hover:pl-5"
                       >
                         {sub}
                       </Link>

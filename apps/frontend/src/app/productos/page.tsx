@@ -26,7 +26,7 @@ export default function ProductosPage() {
           </div>
 
           {/* Barra de búsqueda en desktop */}
-          <div className="hidden md:block mb-4">
+          <div className="hidden md:block mb-4 mt-0">
             <SearchBar />
           </div>
 

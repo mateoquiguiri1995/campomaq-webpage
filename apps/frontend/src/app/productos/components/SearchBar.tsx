@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function SearchBar() {
-  const [cartCount] = useState<number>(2); // Simulación
+  const [cartCount] = useState<number>(1); // Simulación
   const [tags, setTags] = useState<string[]>([]);
   const [showQuickOptions, setShowQuickOptions] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -49,7 +49,7 @@ export default function SearchBar() {
         {tags.map((tag) => (
           <span
             key={tag}
-            className="flex items-center gap-1 bg-yellow-100 text-black px-2 py-0.5 rounded-full text-xs font-medium hover:bg-yellow-200 transition-colors duration-200 cursor-pointer"
+            className="flex items-center gap-1 bg-campomaq text-black px-2 py-0.5 rounded-full text-xs font-medium hover:bg-yellow-200 transition-colors duration-200 cursor-pointer"
           >
             {tag}
             <button

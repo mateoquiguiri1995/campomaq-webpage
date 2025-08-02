@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, MessageCircle, X, Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
+import { TbBackground } from 'react-icons/tb';
 
 const CHAT_W = 420;
 const CHAT_H = 600;
@@ -151,7 +152,7 @@ export default function Chatbot() {
           >
             {/* Header */}
             <div
-              className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black p-4 flex justify-between items-center cursor-move"
+              className="bg-campomaq text-black p-4 flex justify-between items-center cursor-move"
               onMouseDown={startDrag}
               onTouchStart={startDrag}
             >
@@ -174,7 +175,7 @@ export default function Chatbot() {
               <div className="p-4 space-y-3">
                 {messages.length === 0 && !loading && (
                   <div className="flex flex-col items-center justify-center h-[400px] text-center">
-                    <Bot size={80} className="text-yellow-400 mb-4" />
+                    <Bot size={80} className="text-campomaq mb-4" />
                     <h3 className="text-xl font-bold text-gray-800">¡Hola! Soy Maqui</h3>
                     <p className="text-gray-600 mt-2 max-w-[280px]">
                       Estoy aquí para ayudarte a solventar tus dudas.
@@ -232,7 +233,7 @@ export default function Chatbot() {
                 <button
                   onClick={() => sendMessage()}
                   disabled={loading || !input.trim()}
-                  className="p-2 bg-yellow-400 text-black rounded-full hover:bg-yellow-500 disabled:bg-gray-300 transition-all hover:scale-105 active:scale-95"
+                  className="p-2 bg-yellow-#fef011 text-black rounded-full hover:bg-yellow-#fef011 disabled:bg-gray-300 transition-all hover:scale-105 active:scale-95"
                 >
                   <Send size={20} />
                 </button>
@@ -251,7 +252,7 @@ export default function Chatbot() {
             onClick={toggleOpen}
             onMouseDown={startDrag}
             onTouchStart={startDrag}
-            className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-500 text-black rounded-full shadow-2xl flex items-center justify-center cursor-grab active:cursor-grabbing"
+            className="w-16 h-16 bg-campomaq text-black rounded-full shadow-2xl flex items-center justify-center cursor-grab active:cursor-grabbing"
           >
             <MessageCircle size={42} />
           </motion.button>

@@ -65,7 +65,7 @@ export default function WeeklyOffer() {
               onClick={() => setSelected(idx)}
               className={`px-4 py-2 rounded-lg font-semibold transition ${
                 selected === idx
-                  ? "bg-yellow-500 text-white"
+                  ? "bg-campomaq text-black"
                   : "bg-gray-200 hover:bg-gray-300 text-gray-800"
               }`}
             >
@@ -153,7 +153,7 @@ function ProductCard({ product }: { product: Product }) {
           <p className="text-sm text-gray-600">{product.brand}</p>
         </div>
 
-        <h3 className="text-lg font-semibold">{product.name}</h3>
+        <h3 className="text-lg text-black font-semibold">{product.name}</h3>
 
         <span className="w-32 text-sm text-white font-semibold bg-red-500 px-2 py-1 rounded mt-1">
           Stock limitado
@@ -176,7 +176,7 @@ function ProductCard({ product }: { product: Product }) {
           <span className="font-semibold">{timeLeft}</span>
         </p>
 
-        <button className="mt-4 bg-yellow-500 hover:bg-black text-white hover:text-yellow-500 font-semibold py-2 px-4 rounded-lg transition">
+        <button className="mt-4 bg-campomaq text-black hover:bg-black hover:text-campomaq font-semibold py-2 px-4 rounded-lg transition hover:cursor-pointer">
           Comprar
         </button>
       </div>

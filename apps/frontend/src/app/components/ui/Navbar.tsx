@@ -23,7 +23,7 @@ export default function Navbar() {
         </div>
 
         {/* Resto del código permanece igual */}
-        <ul className="hidden md:flex gap-10 text-xxl font-semibold text-yellow-500">
+        <ul className="hidden md:flex gap-10 text-xxl font-semibold text-yellow-#fef011">
           <li><Link href="/">Inicio</Link></li>
           <li><Link href="/productos">Productos</Link></li>
           <li><Link href="/servicios">Servicios</Link></li>
