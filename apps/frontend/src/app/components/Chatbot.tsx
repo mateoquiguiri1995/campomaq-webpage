@@ -1,10 +1,9 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { Send, Tractor, MessageCircle, X, Bot } from 'lucide-react';
+import { Send, MessageCircle, X, Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 
-/* ---------- constants ---------- */
 const CHAT_W = 420;
 const CHAT_H = 600;
 const BTN_SIZE = 80;
@@ -15,17 +14,21 @@ export default function Chatbot() {
   const [messages, setMessages] = useState<{ sender: 'user' | 'bot'; text: string }[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [firstOpen, setFirstOpen] = useState(true);
 
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const buttonPosRef = useRef({ x: 0, y: 0 });
-
   const containerRef = useRef<HTMLDivElement>(null);
   const offset = useRef({ x: 0, y: 0 });
   const isDragging = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Inicializar posición en esquina inferior derecha
+  // Asegura que el chat esté dentro de la pantalla
+  const keepInside = (x: number, y: number, w: number, h: number) => ({
+    x: Math.max(0, Math.min(x, window.innerWidth - w)),
+    y: Math.max(0, Math.min(y, window.innerHeight - h)),
+  });
+
+  // Posicionar inicialmente en esquina inferior derecha
   useEffect(() => {
     const x = window.innerWidth - BTN_SIZE - 24;
     const y = window.innerHeight - BTN_SIZE - 24;
@@ -33,59 +36,57 @@ export default function Chatbot() {
     buttonPosRef.current = { x, y };
   }, []);
 
-  // Auto-scroll al final de los mensajes
+  // Ajustar posición si se cambia el tamaño de pantalla
+  useEffect(() => {
+    const handleResize = () => {
+      const size = open ? { w: CHAT_W, h: CHAT_H } : { w: BTN_SIZE, h: BTN_SIZE };
+      setPosition((prev) => keepInside(prev.x, prev.y, size.w, size.h));
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [open]);
+
+  // Auto scroll al final de los mensajes
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Mantener el chat dentro de los límites de la pantalla
-  const keepInside = (x: number, y: number, w: number, h: number) => ({
-    x: Math.max(0, Math.min(x, window.innerWidth - w)),
-    y: Math.max(0, Math.min(y, window.innerHeight - h)),
-  });
-
-  // Manejar el movimiento del chat
+  // Movimiento del chat
   useEffect(() => {
     const handleMove = (clientX: number, clientY: number) => {
-      const w = open ? CHAT_W : BTN_SIZE;
-      const h = open ? CHAT_H : BTN_SIZE;
-      const next = keepInside(clientX - offset.current.x, clientY - offset.current.y, w, h);
-      setPosition(next);
+      const size = open ? { w: CHAT_W, h: CHAT_H } : { w: BTN_SIZE, h: BTN_SIZE };
+      setPosition(keepInside(clientX - offset.current.x, clientY - offset.current.y, size.w, size.h));
     };
 
-    const onMouse = (e: MouseEvent) => isDragging.current && handleMove(e.clientX, e.clientY);
-    const onTouch = (e: TouchEvent) =>
-      isDragging.current && e.touches[0] && handleMove(e.touches[0].clientX, e.touches[0].clientY);
-    const stop = () => (isDragging.current = false);
+    const onMouseMove = (e: MouseEvent) => isDragging.current && handleMove(e.clientX, e.clientY);
+    const onTouchMove = (e: TouchEvent) =>
+      isDragging.current && handleMove(e.touches[0].clientX, e.touches[0].clientY);
+    const stopDrag = () => (isDragging.current = false);
 
-    document.addEventListener('mousemove', onMouse);
-    document.addEventListener('mouseup', stop);
-    document.addEventListener('touchmove', onTouch);
-    document.addEventListener('touchend', stop);
-
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', stopDrag);
+    document.addEventListener('touchmove', onTouchMove);
+    document.addEventListener('touchend', stopDrag);
     return () => {
-      document.removeEventListener('mousemove', onMouse);
-      document.removeEventListener('mouseup', stop);
-      document.removeEventListener('touchmove', onTouch);
-      document.removeEventListener('touchend', stop);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', stopDrag);
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchend', stopDrag);
     };
   }, [open]);
 
-  // Iniciar el arrastre
+  // Inicia arrastre
   const startDrag = (e: React.MouseEvent | React.TouchEvent) => {
     isDragging.current = true;
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     const rect = containerRef.current?.getBoundingClientRect();
-    if (rect) {
-      offset.current = { x: clientX - rect.left, y: clientY - rect.top };
-    }
+    if (rect) offset.current = { x: clientX - rect.left, y: clientY - rect.top };
   };
 
-  // Alternar apertura/cierre del chat
+  // Abrir / cerrar chat
   const toggleOpen = () => {
     if (!open) {
-      // Abrir el chat
       buttonPosRef.current = { ...position };
       const { x, y } = keepInside(
         position.x + BTN_SIZE / 2 - CHAT_W / 2,
@@ -93,56 +94,42 @@ export default function Chatbot() {
         CHAT_W,
         CHAT_H
       );
-      const finalY = y < 0 ? position.y + BTN_SIZE + 16 : y;
-      setPosition({ x, y: finalY });
+      setPosition({ x, y: y < 0 ? position.y + BTN_SIZE + 16 : y });
       setVisible(true);
       setOpen(true);
-      
-      if (firstOpen) {
-        setFirstOpen(false);
-      }
     } else {
-      // Cerrar el chat - Animación más suave
       setOpen(false);
       setTimeout(() => {
         setVisible(false);
         setPosition(buttonPosRef.current);
-      }, 200); // Ajustado para coincidir con la duración de la animación
+      }, 200);
     }
   };
 
-  // Enviar mensaje a la API
+  // Enviar mensaje
   const sendMessage = async (text?: string) => {
     const content = text ?? input.trim();
     if (!content || loading) return;
 
-    const userMsg = { sender: 'user' as const, text: content };
-    setMessages((prev) => [...prev, userMsg]);
+    setMessages((prev) => [...prev, { sender: 'user', text: content }]);
     setInput('');
     setLoading(true);
 
     try {
-      const response = await fetch('https://campomaq.azurewebsites.net/chat', {
+      const res = await fetch('https://campomaq.azurewebsites.net/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: content }),
       });
-
-      const data = await response.json();
-      const botMsg = { sender: 'bot' as const, text: data.reply };
-      setMessages((prev) => [...prev, botMsg]);
-    } catch (error) {
-      const errorMsg = { 
-        sender: 'bot' as const, 
-        text: '❌ Hubo un error al contactar al asistente. Por favor intenta nuevamente.' 
-      };
-      setMessages((prev) => [...prev, errorMsg]);
+      const data = await res.json();
+      setMessages((prev) => [...prev, { sender: 'bot', text: data.reply }]);
+    } catch {
+      setMessages((prev) => [...prev, { sender: 'bot', text: '❌ Error al contactar al asistente.' }]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Opciones rápidas
   const quickOptions = [
     '¿Qué productos tienen en oferta?',
     'Necesito ayuda con mi pedido',
@@ -151,11 +138,7 @@ export default function Chatbot() {
   ];
 
   return (
-    <div
-      ref={containerRef}
-      className="fixed z-50"
-      style={{ left: position.x, top: position.y }}
-    >
+    <div ref={containerRef} className="fixed z-50" style={{ left: position.x, top: position.y }}>
       <AnimatePresence mode="wait">
         {visible && (
           <motion.div
@@ -164,7 +147,7 @@ export default function Chatbot() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 20 }}
             transition={{ duration: 0.2 }}
-            className="w-[420px] h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden touch-none border border-gray-200"
+            className="w-[420px] h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-200"
           >
             {/* Header */}
             <div
@@ -181,11 +164,7 @@ export default function Chatbot() {
                   <div className="text-xs text-gray-800">Asistente de Campomaq</div>
                 </div>
               </div>
-              <button
-                onClick={toggleOpen}
-                className="text-black hover:bg-black/10 rounded-full p-1 transition"
-                aria-label="Cerrar chat"
-              >
+              <button onClick={toggleOpen} className="hover:bg-black/10 rounded-full p-1">
                 <X size={24} />
               </button>
             </div>
@@ -196,16 +175,16 @@ export default function Chatbot() {
                 {messages.length === 0 && !loading && (
                   <div className="flex flex-col items-center justify-center h-[400px] text-center">
                     <Bot size={80} className="text-yellow-400 mb-4" />
-                    <h3 className="text-xl font-bold text-gray-800">¡Hola! Soy Maqui, tu asistente Virtual</h3>
+                    <h3 className="text-xl font-bold text-gray-800">¡Hola! Soy Maqui</h3>
                     <p className="text-gray-600 mt-2 max-w-[280px]">
-                      Estoy aquí para ayudarte con cualquier pregunta sobre nuestros productos, envíos o pagos.
+                      Estoy aquí para ayudarte a solventar tus dudas.
                     </p>
                     <div className="mt-6 flex flex-wrap gap-2 justify-center">
                       {quickOptions.map((option) => (
                         <button
                           key={option}
                           onClick={() => sendMessage(option)}
-                          className="px-3 py-1.5 text-sm bg-yellow-100 text-black rounded-full hover:bg-yellow-200 transition border border-yellow-300"
+                          className="px-3 py-1.5 text-sm text-black bg-yellow-100 border border-yellow-300 rounded-full hover:bg-yellow-200"
                         >
                           {option}
                         </button>
@@ -213,7 +192,6 @@ export default function Chatbot() {
                     </div>
                   </div>
                 )}
-
                 {messages.map((msg, i) => (
                   <motion.div
                     key={i}
@@ -229,7 +207,6 @@ export default function Chatbot() {
                     {msg.text}
                   </motion.div>
                 ))}
-
                 {loading && (
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <div className="w-5 h-5 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
@@ -246,8 +223,7 @@ export default function Chatbot() {
                 <input
                   type="text"
                   disabled={loading}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-full text-sm
-                           focus:outline-none focus:ring-2 focus:ring-yellow-400 disabled:bg-gray-100 text-black"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 disabled:bg-gray-100 text-black"
                   placeholder="Escribe tu pregunta..."
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
@@ -256,8 +232,7 @@ export default function Chatbot() {
                 <button
                   onClick={() => sendMessage()}
                   disabled={loading || !input.trim()}
-                  className="p-2 bg-yellow-400 text-black rounded-full hover:bg-yellow-500
-                           disabled:bg-gray-300 transition-all hover:scale-105 active:scale-95"
+                  className="p-2 bg-yellow-400 text-black rounded-full hover:bg-yellow-500 disabled:bg-gray-300 transition-all hover:scale-105 active:scale-95"
                 >
                   <Send size={20} />
                 </button>
@@ -276,9 +251,7 @@ export default function Chatbot() {
             onClick={toggleOpen}
             onMouseDown={startDrag}
             onTouchStart={startDrag}
-            className="w-15 h-15 bg-gradient-to-br from-yellow-400 to-yellow-500 text-black rounded-full shadow-2xl
-                     flex items-center justify-center cursor-grab active:cursor-grabbing"
-            aria-label="Abrir chat de asistente"
+            className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-500 text-black rounded-full shadow-2xl flex items-center justify-center cursor-grab active:cursor-grabbing"
           >
             <MessageCircle size={42} />
           </motion.button>

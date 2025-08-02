@@ -15,7 +15,7 @@ const brands = [
 
 const features = [
   {
-    title: <>¿Por qué comprar en <strong className="text-yellow-500 bg-black">campo</strong><strong className='bg-yellow-500'>maq</strong>?</>,
+    title: <>¿Por qué comprar en <strong className="text-yellow-500">campo</strong>maq?</>,
     content: "Más de 20 años de experiencia nos respaldan en la distribución de equipos de calidad para el campo y jardinería.",
     image: "/images/features/agricola.jpg"
   },

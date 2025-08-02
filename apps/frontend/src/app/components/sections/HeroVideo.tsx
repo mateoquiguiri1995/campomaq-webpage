@@ -1,5 +1,4 @@
-'use client'
-import { useEffect } from 'react';
+'use client';
 import { Button } from '../ui/Button';
 
 export default function HeroVideo() {
