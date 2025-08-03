@@ -1,21 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
 @import "tailwindcss";
 
-/* 1. Define theme variables for fonts / colors / animations */
+/* 1. Define theme variables */
 @theme {
   --font-orbitron: "Orbitron", sans-serif;
-  --animate-fondoGradual: fondoGradual 8s ease-in-out infinite;
   --animate-wave1: wave1 12s ease-in-out infinite;
   --animate-wave2: wave2 12s ease-in-out infinite;
   --animate-wave3: wave3 12s ease-in-out infinite;
+  --color-campomaq: #fef011;
 }
 
-/* 2. Define keyframes (outside @theme so always included) */
-@keyframes fondoGradual {
-  0% { background-color: #000 }
-  50% { background-color: #facc15 }
-  100% { background-color: #000 }
-}
+/* 2. Keyframes */
 @keyframes wave1 {
   0%,100% { transform: translateY(0) }
   50% { transform: translateY(-20px) }
@@ -29,20 +24,12 @@
   50% { transform: scale(1.1) }
 }
 
-/* 3. Base styles */
+/* 3. Base styles (sin fondo fijo) */
 body {
   margin: 0;
   padding: 0;
   font-family: var(--font-orbitron);
-  background: linear-gradient(270deg, #facc15, #000000);
-  background-size: 200% 200%;
-  animation: gradient-x 8s ease infinite;
-  color: white;
-  height: 100vh;
+  color: rgb(238, 234, 10);
+  height: 100%;
 }
 
-@keyframes gradient-x {
-  0% { background-position: 0% 50% }
-  50% { background-position: 100% 50% }
-  100% { background-position: 0% 50% }
-}

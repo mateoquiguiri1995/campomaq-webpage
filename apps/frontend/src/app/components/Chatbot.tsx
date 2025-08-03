@@ -1,200 +1,263 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { SendHorizonal } from 'lucide-react';
-//import { Londrina_Solid } from 'next/font/google';
+import { Send, MessageCircle, X, Bot } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import clsx from 'clsx';
+import { TbBackground } from 'react-icons/tb';
+
+const CHAT_W = 420;
+const CHAT_H = 600;
+const BTN_SIZE = 80;
 
 export default function Chatbot() {
   const [open, setOpen] = useState(false);
+  const [visible, setVisible] = useState(false);
   const [messages, setMessages] = useState<{ sender: 'user' | 'bot'; text: string }[]>([]);
   const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // 🟡 Posición inicial en esquina inferior derecha
-  const [position, setPosition] = useState({ x: 20, y: 20 }); // Static initial state to prevent mismatch
-
-  useEffect(() => {
-    const newX = window.innerWidth - 80;
-    const newY = window.innerHeight - 80;
-    setPosition({ x: newX, y: newY });
-  }, []);
-
-  const previousPosition = useRef(position);
-
-  const dragRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const buttonPosRef = useRef({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
   const offset = useRef({ x: 0, y: 0 });
   const isDragging = useRef(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
+  // Asegura que el chat esté dentro de la pantalla
+  const keepInside = (x: number, y: number, w: number, h: number) => ({
+    x: Math.max(0, Math.min(x, window.innerWidth - w)),
+    y: Math.max(0, Math.min(y, window.innerHeight - h)),
+  });
 
-    const userMsg = { sender: 'user', text: input.trim() } as const;
-    setMessages((prev) => [...prev, userMsg]);
-
-    try {
-      const response = await fetch('https://campomaq.azurewebsites.net/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: input.trim() }),
-      });
-
-      const data = await response.json();
-      const botMsg = { sender: 'bot', text: data.reply } as const;
-      setMessages((prev) => [...prev, botMsg]);
-    } catch {
-      const errorMsg = { sender: 'bot', text: '❌ Hubo un error al contactar al asistente.' } as const;
-      setMessages((prev) => [...prev, errorMsg]);
-    }
-
-    setInput('');
-  };
-
-  // Reubicar el chat si se sale al abrirlo
+  // Posicionar inicialmente en esquina inferior derecha
   useEffect(() => {
-    if (!open || !dragRef.current) return;
+    const x = window.innerWidth - BTN_SIZE - 24;
+    const y = window.innerHeight - BTN_SIZE - 24;
+    setPosition({ x, y });
+    buttonPosRef.current = { x, y };
+  }, []);
 
-    const chatbox = dragRef.current;
-    const { offsetWidth: width, offsetHeight: height } = chatbox;
-
-    const maxX = window.innerWidth - width;
-    const maxY = window.innerHeight - height;
-
-    const adjustedX = Math.max(0, Math.min(position.x, maxX));
-    const adjustedY = Math.max(0, Math.min(position.y, maxY));
-
-    // Guardamos posición previa del ícono antes de abrir
-    previousPosition.current = position;
-
-    if (adjustedX !== position.x || adjustedY !== position.y) {
-      setPosition({ x: adjustedX, y: adjustedY });
-    }
-  }, [open, position]);
-
-  // Al cerrar el chat, restauramos posición original del botón
+  // Ajustar posición si se cambia el tamaño de pantalla
   useEffect(() => {
-    if (!open) {
-      setPosition(previousPosition.current);
-    }
+    const handleResize = () => {
+      const size = open ? { w: CHAT_W, h: CHAT_H } : { w: BTN_SIZE, h: BTN_SIZE };
+      setPosition((prev) => keepInside(prev.x, prev.y, size.w, size.h));
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, [open]);
 
-  // 🖱️ Eventos de arrastre
+  // Auto scroll al final de los mensajes
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Movimiento del chat
   useEffect(() => {
     const handleMove = (clientX: number, clientY: number) => {
-      const chatbot = dragRef.current;
-      if (!chatbot) return;
-
-      const width = open ? chatbot.offsetWidth : 64;
-      const height = open ? chatbot.offsetHeight : 64;
-
-      const newX = Math.min(Math.max(0, clientX - offset.current.x), window.innerWidth - width);
-      const newY = Math.min(Math.max(0, clientY - offset.current.y), window.innerHeight - height);
-
-      setPosition({ x: newX, y: newY });
+      const size = open ? { w: CHAT_W, h: CHAT_H } : { w: BTN_SIZE, h: BTN_SIZE };
+      setPosition(keepInside(clientX - offset.current.x, clientY - offset.current.y, size.w, size.h));
     };
 
-    const handleMouseMove = (e: MouseEvent) => {
-      if (isDragging.current) handleMove(e.clientX, e.clientY);
-    };
+    const onMouseMove = (e: MouseEvent) => isDragging.current && handleMove(e.clientX, e.clientY);
+    const onTouchMove = (e: TouchEvent) =>
+      isDragging.current && handleMove(e.touches[0].clientX, e.touches[0].clientY);
+    const stopDrag = () => (isDragging.current = false);
 
-    const handleTouchMove = (e: TouchEvent) => {
-      if (isDragging.current && e.touches.length > 0) {
-        const touch = e.touches[0];
-        handleMove(touch.clientX, touch.clientY);
-      }
-    };
-
-    const stopDrag = () => {
-      isDragging.current = false;
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', stopDrag);
-    document.addEventListener('touchmove', handleTouchMove);
+    document.addEventListener('touchmove', onTouchMove);
     document.addEventListener('touchend', stopDrag);
-
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', stopDrag);
-      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchmove', onTouchMove);
       document.removeEventListener('touchend', stopDrag);
     };
   }, [open]);
 
+  // Inicia arrastre
   const startDrag = (e: React.MouseEvent | React.TouchEvent) => {
     isDragging.current = true;
-
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (rect) offset.current = { x: clientX - rect.left, y: clientY - rect.top };
+  };
 
-    const rect = dragRef.current?.getBoundingClientRect();
-    if (rect) {
-      offset.current = {
-        x: clientX - rect.left,
-        y: clientY - rect.top,
-      };
+  // Abrir / cerrar chat
+  const toggleOpen = () => {
+    if (!open) {
+      buttonPosRef.current = { ...position };
+      const { x, y } = keepInside(
+        position.x + BTN_SIZE / 2 - CHAT_W / 2,
+        position.y - CHAT_H - 16,
+        CHAT_W,
+        CHAT_H
+      );
+      setPosition({ x, y: y < 0 ? position.y + BTN_SIZE + 16 : y });
+      setVisible(true);
+      setOpen(true);
+    } else {
+      setOpen(false);
+      setTimeout(() => {
+        setVisible(false);
+        setPosition(buttonPosRef.current);
+      }, 200);
     }
   };
 
+  // Enviar mensaje
+  const sendMessage = async (text?: string) => {
+    const content = text ?? input.trim();
+    if (!content || loading) return;
+
+    setMessages((prev) => [...prev, { sender: 'user', text: content }]);
+    setInput('');
+    setLoading(true);
+
+    try {
+      const res = await fetch('https://campomaq.azurewebsites.net/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: content }),
+      });
+      const data = await res.json();
+      setMessages((prev) => [...prev, { sender: 'bot', text: data.reply }]);
+    } catch {
+      setMessages((prev) => [...prev, { sender: 'bot', text: '❌ Error al contactar al asistente.' }]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const quickOptions = [
+    '¿Qué productos tienen en oferta?',
+    'Necesito ayuda con mi pedido',
+    'Quiero consultar métodos de pago',
+    '¿Cuál es el tiempo de entrega?'
+  ];
+
   return (
-    <div
-      ref={dragRef}
-      className="fixed z-50"
-      style={{ left: `${position.x}px`, top: `${position.y}px` }}
-    >
-      {open ? (
-        <div className="w-80 h-96 bg-white border rounded-xl shadow-lg flex flex-col touch-none">
-          {/* Cabecera arrastrable */}
-          <div
-            className="bg-yellow-400 text-black p-3 rounded-t-xl font-bold flex justify-between items-center cursor-move"
+    <div ref={containerRef} className="fixed z-50" style={{ left: position.x, top: position.y }}>
+      <AnimatePresence mode="wait">
+        {visible && (
+          <motion.div
+            key="chat"
+            initial={{ opacity: 0, scale: 0.96, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 20 }}
+            transition={{ duration: 0.2 }}
+            className="w-[420px] h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-200"
+          >
+            {/* Header */}
+            <div
+              className="bg-campomaq text-black p-4 flex justify-between items-center cursor-move"
+              onMouseDown={startDrag}
+              onTouchStart={startDrag}
+            >
+              <div className="flex items-center gap-3">
+                <div className="bg-black rounded-full p-2">
+                  <Bot className="w-5 h-5 text-yellow-400" />
+                </div>
+                <div>
+                  <span className="font-bold text-lg">MAQUI</span>
+                  <div className="text-xs text-gray-800">Asistente de Campomaq</div>
+                </div>
+              </div>
+              <button onClick={toggleOpen} className="hover:bg-black/10 rounded-full p-1">
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto bg-gradient-to-b from-gray-50 to-white">
+              <div className="p-4 space-y-3">
+                {messages.length === 0 && !loading && (
+                  <div className="flex flex-col items-center justify-center h-[400px] text-center">
+                    <Bot size={80} className="text-campomaq mb-4" />
+                    <h3 className="text-xl font-bold text-gray-800">¡Hola! Soy Maqui</h3>
+                    <p className="text-gray-600 mt-2 max-w-[280px]">
+                      Estoy aquí para ayudarte a solventar tus dudas.
+                    </p>
+                    <div className="mt-6 flex flex-wrap gap-2 justify-center">
+                      {quickOptions.map((option) => (
+                        <button
+                          key={option}
+                          onClick={() => sendMessage(option)}
+                          className="px-3 py-1.5 text-sm text-black bg-yellow-100 border border-yellow-300 rounded-full hover:bg-yellow-200"
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {messages.map((msg, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={clsx(
+                      'max-w-[75%] px-4 py-2 rounded-xl text-sm shadow-sm',
+                      msg.sender === 'user'
+                        ? 'ml-auto bg-yellow-400 text-black rounded-br-none'
+                        : 'bg-white text-gray-800 rounded-bl-none border border-gray-200'
+                    )}
+                  >
+                    {msg.text}
+                  </motion.div>
+                ))}
+                {loading && (
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <div className="w-5 h-5 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
+                    <span>Buscando información...</span>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            </div>
+
+            {/* Input */}
+            <div className="p-3 border-t bg-white">
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  disabled={loading}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 disabled:bg-gray-100 text-black"
+                  placeholder="Escribe tu pregunta..."
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                />
+                <button
+                  onClick={() => sendMessage()}
+                  disabled={loading || !input.trim()}
+                  className="p-2 bg-yellow-#fef011 text-black rounded-full hover:bg-yellow-#fef011 disabled:bg-gray-300 transition-all hover:scale-105 active:scale-95"
+                >
+                  <Send size={20} />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {!visible && (
+          <motion.button
+            key="button"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleOpen}
             onMouseDown={startDrag}
             onTouchStart={startDrag}
+            className="w-16 h-16 bg-campomaq text-black rounded-full shadow-2xl flex items-center justify-center cursor-grab active:cursor-grabbing"
           >
-            <span>Asistente Virtual</span>
-            <button onClick={() => setOpen(false)} className="text-black text-lg">✖</button>
-          </div>
-
-          {/* Mensajes */}
-          <div className="flex-1 p-3 overflow-y-auto space-y-2 bg-white">
-            {messages.map((msg, i) => (
-              <div
-                key={i}
-                className={`text-sm p-2 rounded-lg max-w-[70%] ${
-                  msg.sender === 'user'
-                    ? 'ml-auto bg-blue-200 text-black'
-                    : 'bg-yellow-300 text-black'
-                }`}
-              >
-                {msg.text}
-              </div>
-            ))}
-          </div>
-
-          {/* Input */}
-          <div className="flex p-2 border-t bg-white">
-            <input
-              type="text"
-              className="flex-1 text-sm border rounded px-2 py-1 text-black bg-white focus:outline-none"
-              placeholder="Escribe tu mensaje..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-            />
-            <button
-              onClick={sendMessage}
-              className="ml-2 bg-blue-500 p-2 rounded text-white hover:bg-blue-600"
-            >
-              <SendHorizonal size={16} />
-            </button>
-          </div>
-        </div>
-      ) : (
-        <button
-          onClick={() => setOpen(true)}
-          onMouseDown={startDrag}
-          onTouchStart={startDrag}
-          className="w-16 h-16 bg-yellow-400 text-black rounded-full shadow-lg hover:scale-105 transition-transform text-2xl flex items-center justify-center cursor-move"
-        >
-          💬
-        </button>
-      )}
+            <MessageCircle size={42} />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
