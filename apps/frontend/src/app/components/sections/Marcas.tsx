@@ -10,7 +10,7 @@ type Brand = {
 }
 
 const brands: Brand[] = [
-  { name: 'Husqvarna', logo: '/images/brands/husqvarna.jpg'},
+  { name: 'Husqvarna', logo: '/images/brands/Husqvarna.jpg'},
   { name: 'Maruyama', logo: '/images/brands/Maruyama.png', width: 100 },
   { name: 'Subaru', logo: '/images/brands/subaru.jpeg' },
   { name: 'Kawasaki', logo: '/images/brands/kawasaki.png' },
@@ -23,7 +23,7 @@ const brands: Brand[] = [
 
 const features = [
   {
-    title: <>¿Por qué comprar en campomaq?</>,
+    title: <>¿Por qué comprar en campo maq?</>,
     content: "Más de 20 años de experiencia nos respaldan en la distribución de equipos de calidad para el campo y jardinería.",
     image: "/images/features/agricola.jpg"
   },

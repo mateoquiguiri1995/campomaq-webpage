@@ -177,7 +177,6 @@ export default function Navbar() {
               transition={{ duration: 0.15 }}
               className="bg-black text-campomaq py-4 rounded shadow-lg flex justify-center gap-6 items-center"
             >
-              <Link href="/">Inicio</Link>
               <Link href="/nosotros">Nosotros</Link>
               <Link href="/productos">Productos</Link>
               <Link href="/servicios">Servicios</Link>
@@ -233,7 +232,6 @@ export default function Navbar() {
               transition={{ duration: 0.15 }}
               className="bg-black text-campomaq py-4 rounded shadow-lg flex flex-col items-center gap-4"
             >
-              <li><Link href="/">Inicio</Link></li>
               <li><Link href="/nosotros">Nosotros</Link></li>
               <li><Link href="/productos">Productos</Link></li>
               <li><Link href="/servicios">Servicios</Link></li>

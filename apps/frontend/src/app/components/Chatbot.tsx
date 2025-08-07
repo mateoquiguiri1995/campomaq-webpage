@@ -113,7 +113,7 @@ export default function Chatbot() {
                     className={clsx(
                       'max-w-[75%] px-3 py-2 rounded-xl text-sm shadow-sm',
                       msg.sender === 'user'
-                        ? 'ml-auto bg-yellow-400 text-black rounded-br-none'
+                        ? 'ml-auto bg-campomaq text-black rounded-br-none'
                         : 'bg-white text-gray-800 rounded-bl-none border border-gray-200'
                     )}
                   >

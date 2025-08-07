@@ -18,12 +18,12 @@ export default function HeroVideo() {
       {/* Oscurecer video para mejor contraste */}
       <div className="absolute inset-0 bg-black bg-opacity-50" />
 
-      <div className="relative z-10 pt-24 pl-8 pr-9 md:pl-40 md:pt-60 max-w-4xl">
+      <div className="relative z-10 pt-20 pl-8 pr-9 md:pl-40 md:pt-60 max-w-4xl">
         {/* h1 fluido */}
         <h1
           className="
-            font-bold mb-6 leading-tight drop-shadow-xl text-black
-            text-[clamp(3rem,9vw,4.5rem)] pl-[clamp(0.5rem,3vw,1rem)] pr-[clamp(0.5rem,3vw,1rem)] pt-[clamp(4rem,3vw,1rem)] 
+            font-bold mb-6 leading-tight drop-shadow-xl text-white
+            text-[clamp(3rem,9vw,5rem)] pl-[clamp(0.5rem,3vw,1rem)] pr-[clamp(0.5rem,3vw,1rem)] pt-[clamp(0.2rem,15vw,2rem)] 
           "
         >
           CAMPOMAQ    {/* [text-shadow:_0_0_5px_#FFD700,_0_0_10px_#FFD700,_0_0_15px_#FFD700] */}
