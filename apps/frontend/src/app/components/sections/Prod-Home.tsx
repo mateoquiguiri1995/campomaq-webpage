@@ -78,7 +78,7 @@ export default function Productos() {
               {/* Vista móvil */}
               <div className="flex md:hidden items-center justify-between p-3 bg-black border-t border-yellow-500">
                 <span className="font-semibold text-white">{product.name}</span>
-                <button className="p-2 rounded-full bg-yellow-500 text-white hover:bg-white transition-colors cursor-pointer">
+                <button className="p-2 rounded-full bg-campomaq text-black hover:bg-black hover:text-campomaq hover:border-campomaq hover:border-2 transition-colors cursor-pointer">
                   <Eye size={18} />
                 </button>
               </div>

@@ -16,7 +16,7 @@ const quickLinks = [
 
 export default function Footer() {
   return (
-    <footer className="relative text-gray-300 pt-20 pb-12 px-6 overflow-hidden">
+    <footer className="relative text-gray-300 pt-70 pb-12 px-6 overflow-hidden">
       {/* Imagen de fondo */}
       <div className="absolute inset-0 -z-10">
         <Image
@@ -61,7 +61,7 @@ export default function Footer() {
 
         {/* Enlaces rápidos */}
         <div>
-          <h3 className="text-lg font-semibold text-white mb-6 border-b border-gray-700 pb-2 drop-shadow-[0_1px_2px_rgba(0,0,0,1)]">
+          <h3 className="text-lg font-semibold text-white mb-6 border-b border-white pb-2 drop-shadow-[0_1px_2px_rgba(0,0,0,1)]">
             Enlaces rápidos
           </h3>
           <ul className="space-y-3">
@@ -80,7 +80,7 @@ export default function Footer() {
 
         {/* Contacto */}
         <div>
-          <h3 className="text-lg font-semibold text-white mb-6 border-b border-gray-700 pb-2 drop-shadow-[0_1px_2px_rgba(0,0,0,1)]">
+          <h3 className="text-lg font-semibold text-white mb-6 border-b white pb-2 drop-shadow-[0_1px_2px_rgba(0,0,0,1)]">
             Contacto
           </h3>
           <address className="not-italic space-y-3 leading-relaxed drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
@@ -93,7 +93,7 @@ export default function Footer() {
 
         {/* Horarios */}
         <div>
-          <h3 className="text-lg font-semibold text-white mb-6 border-b border-gray-700 pb-2 drop-shadow-[0_1px_2px_rgba(0,0,0,1)]">
+          <h3 className="text-lg font-semibold text-white mb-6 border-b white pb-2 drop-shadow-[0_1px_2px_rgba(0,0,0,1)]">
             Horario de atención
           </h3>
           <p className="mb-3 drop-shadow-[0_2px_3px_rgba(0,0,0,0.8)]">
