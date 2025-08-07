@@ -24,6 +24,16 @@
   50% { transform: scale(1.1) }
 }
 
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 25s linear infinite;
+}
+
+
 /* 3. Base styles (sin fondo fijo) */
 body {
   margin: 0;
@@ -31,5 +41,35 @@ body {
   font-family: var(--font-orbitron);
   color: rgb(238, 234, 10);
   height: 100%;
+  overflow-y: auto; /* scroll principal */
 }
 
+main {
+  min-height: 100vh;
+}
+
+/* ==== SCROLLBAR ==== */
+
+/* Para Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000; /* contenedor negro */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #facc15; /* amarillo */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #eab308; /* amarillo más oscuro al pasar el mouse */
+}
+
+/* Para Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #facc15 #000; /* thumb amarillo, track negro */
+}

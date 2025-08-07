@@ -6,14 +6,14 @@ const products = [
   { name: 'MOTOCULTORES', description: 'maquinas increibles adaptables al terreno', image: '/images/prod-home/motocultor.jpg' },
   { name: 'MOTOAZADAS', description: 'maquinas de diferentes marcas', image: '/images/prod-home/motoazada.png' },
   { name: 'DESBROZADORAS', description: 'Perfectas para la epoca de lluvias', image: '/images/prod-home/desbrozadora.png' },
-  { name: 'MINI TRACKTOR', description: 'Vehiculo adaptable a cualquier terreno', image: '/images/prod-home/minitracktor.webp' },
-  { name: 'PODADORAS', description: 'excelentes para arbustos bajos y altos', image: '/images/prod-home/podadoras.jpg' },
   { name: 'MOTOSIERRA', description: 'Diferentes marcas que garantizan un corte suave y limpio', image: '/images/prod-home/motosierra.jpg' },
+  { name: 'PODADORAS', description: 'excelentes para arbustos bajos y altos', image: '/images/prod-home/podadoras.jpg' },
+  { name: 'ACEITES', description: 'Disponibles para cualquier maquinaria', image: '/images/prod-home/aceites.jpg' },
   { name: 'SOPLADORAS', description: 'Ideales para la limpieza de hojas y basura', image: '/images/prod-home/sopladoras.webp' },
   { name: 'BOMBAS DE FUMIGAR', description: 'Ideales para evitar plagas', image: '/images/prod-home/bombas.jpg' },
-  { name: 'ACEITES', description: 'Disponibles para cualquier maquinaria', image: '/images/prod-home/aceites.jpg' },
   { name: 'CUCHILLAS', description: 'Disponibles para cualquier maquina o herramienta', image: '/images/prod-home/cuchillas.webp' },
   { name: 'ALAMBRES', description: 'Solidos y perfectos para la seguridad', image: '/images/prod-home/alambres.webp' },
+  { name: 'MINI TRACKTOR', description: 'Vehiculo adaptable a cualquier terreno', image: '/images/prod-home/minitracktor.webp' },
   { name: 'OTROS', description: 'Tijeras, Machetes, Azadones, etc', image: '/images/prod-home/otros.jpeg' },
 ]
 

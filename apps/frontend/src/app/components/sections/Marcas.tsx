@@ -1,10 +1,17 @@
 'use client'
 import Image from 'next/image'
-import { useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 
-const brands = [
-  { name: 'Husqvarna', logo: '/images/brands/husqvarna.svg', width: 100, height: 100 },
-  { name: 'Maruyama', logo: '/images/brands/Maruyama.png', width: 100, height: 100 },
+type Brand = {
+  name: string
+  logo: string
+  width?: number
+  height?: number
+}
+
+const brands: Brand[] = [
+  { name: 'Husqvarna', logo: '/images/brands/husqvarna.jpg'},
+  { name: 'Maruyama', logo: '/images/brands/Maruyama.png', width: 100 },
   { name: 'Subaru', logo: '/images/brands/subaru.jpeg' },
   { name: 'Kawasaki', logo: '/images/brands/kawasaki.png' },
   { name: 'Oleo-Mac', logo: '/images/brands/oleomac.jpg' },
@@ -12,6 +19,7 @@ const brands = [
   { name: 'Echo', logo: '/images/brands/echo.svg' },
   { name: 'Shindaiwa', logo: '/images/brands/Shindaiwa.png' }
 ]
+
 
 const features = [
   {
@@ -27,46 +35,32 @@ const features = [
 ]
 
 export default function Marcas() {
-  const sliderRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
 
-  useEffect(() => {
-    const slider = sliderRef.current
-    if (!slider) return
-
-    let animationId: number
-    let position = 0
-    const speed = 0.4
-
-    const animate = () => {
-      position -= speed
-      const firstChild = slider.children[0] as HTMLElement
-      if (position <= -firstChild.clientWidth) {
-        position += firstChild.clientWidth
-        slider.appendChild(firstChild)
-      }
-      slider.style.transform = `translate3d(${position}px, 0, 0)`
-      animationId = requestAnimationFrame(animate)
-    }
-
-    animationId = requestAnimationFrame(animate)
-    return () => cancelAnimationFrame(animationId)
-  }, [])
+  const handleBrandClick = (brandName: string) => {
+    router.push(`/productos?search=${encodeURIComponent(brandName)}`)
+  }
 
   return (
-    <section className="py-1 px-4 sm:px-6 lg:px-8 bg-white">
+    <section className="py-8 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto">
 
-        {/* 🔹 Slider */}
+        {/* 🔹 Título */}
+        <h2 className=" text-black text-center text-2xl sm:text-3xl font-bold mb-6">
+          Distribuidores Certificados de:
+        </h2>
+
+        {/* 🔹 Cinta transportadora */}
         <div className="relative overflow-hidden py-8">
-          <div
-            ref={sliderRef}
-            className="flex w-max items-center select-none"
-            style={{ willChange: 'transform' }}
-          >
+          <div className="flex w-max animate-marquee hover:[animation-play-state:paused]">
             {[...brands, ...brands].map((brand, index) => (
-              <div key={`${brand.name}-${index}`} className="mx-8 flex-shrink-0">
+              <div
+                key={`${brand.name}-${index}`}
+                className="mx-8 flex-shrink-0 cursor-pointer grayscale hover:grayscale-0 transition-all duration-300 opacity-80 hover:opacity-100"
+                onClick={() => handleBrandClick(brand.name)}
+              >
                 <div
-                  className="relative opacity-80 hover:opacity-100 transition-opacity duration-300"
+                  className="relative"
                   style={{
                     width: brand.width ? `${brand.width / 10}rem` : '7rem',
                     height: brand.height ? `${brand.height / 10}rem` : '4rem'
@@ -77,14 +71,13 @@ export default function Marcas() {
                     alt={brand.name}
                     fill
                     style={{ objectFit: 'contain' }}
-                    className="grayscale hover:grayscale-0 transition-all duration-300"
                   />
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Fade */}
+          {/* Fade laterales */}
           <div className="pointer-events-none absolute inset-y-0 left-0 w-20 sm:w-24 bg-gradient-to-r from-white via-white/80 to-transparent z-10" />
           <div className="pointer-events-none absolute inset-y-0 right-0 w-20 sm:w-24 bg-gradient-to-l from-white via-white/80 to-transparent z-10" />
         </div>
