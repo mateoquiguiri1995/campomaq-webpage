@@ -107,7 +107,7 @@ export default function Footer() {
 
       {/* Copyright */}
       <div className="mt-8 text-center text-sm text-gray-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] font-bold">
-        © {new Date().getFullYear()} Campo maq. Todos los derechos reservados.
+        © {new Date().getFullYear()} Campo Maq. Todos los derechos reservados.
       </div>
     </footer>
   );

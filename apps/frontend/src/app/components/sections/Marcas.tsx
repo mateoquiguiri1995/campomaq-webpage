@@ -23,7 +23,7 @@ const brands: Brand[] = [
 
 const features = [
   {
-    title: <>¿Por qué comprar en campo maq?</>,
+    title: <>¿Por qué comprar en CAMPO MAQ?</>,
     content: "Más de 20 años de experiencia nos respaldan en la distribución de equipos de calidad para el campo y jardinería.",
     image: "/images/features/agricola.jpg"
   },

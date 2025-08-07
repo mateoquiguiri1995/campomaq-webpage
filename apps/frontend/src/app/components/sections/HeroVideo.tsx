@@ -26,7 +26,7 @@ export default function HeroVideo() {
             text-[clamp(3rem,9vw,5rem)] pl-[clamp(0.5rem,3vw,1rem)] pr-[clamp(0.5rem,3vw,1rem)] pt-[clamp(0.2rem,15vw,2rem)] 
           "
         >
-          CAMPOMAQ    {/* [text-shadow:_0_0_5px_#FFD700,_0_0_10px_#FFD700,_0_0_15px_#FFD700] */}
+          CAMPO MAQ    {/* [text-shadow:_0_0_5px_#FFD700,_0_0_10px_#FFD700,_0_0_15px_#FFD700] */}
         </h1>
 
         {/* párrafo fluido */}
