@@ -112,7 +112,7 @@ export default function ServiciosPage() {
                 variants={itemVariants}
                 className="text-center"
               >
-                <div className="text-4xl md:text-6xl font-bold text-yellow-400 mb-2">
+                <div className="text-4xl md:text-6xl font-bold text-campomaq mb-2">
                   {stat.number}
                 </div>
                 <div className="text-white text-sm md:text-lg">
@@ -139,9 +139,9 @@ export default function ServiciosPage() {
                 key={index}
                 variants={itemVariants}
                 whileHover={{ y: -10, scale: 1.02 }}
-                className="bg-white rounded-2xl shadow-xl p-8 border border-yellow-200 hover:border-yellow-400 transition-all duration-300"
+                className="bg-white rounded-2xl shadow-xl p-8 border border-campomaq hover:border-yellow-400 transition-all duration-300"
               >
-                <div className="bg-yellow-400 w-16 h-16 rounded-full flex items-center justify-center mb-6 mx-auto">
+                <div className="bg-campomaq text-black w-16 h-16 rounded-full flex items-center justify-center mb-6 mx-auto">
                   {service.icon}
                 </div>
                 <h3 className="text-2xl font-bold text-black mb-4 text-center">
@@ -153,7 +153,7 @@ export default function ServiciosPage() {
                 <ul className="space-y-2">
                   {service.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-center text-sm text-gray-700">
-                      <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3" />
+                      <div className="w-2 h-2 bg-campomaq rounded-full mr-3" />
                       {feature}
                     </li>
                   ))}
@@ -165,7 +165,7 @@ export default function ServiciosPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-yellow-400 to-yellow-600">
+      <section className="py-20 bg-gradient-to-r from-campomaq to-yellow-600">
         <div className="max-w-4xl mx-auto text-center px-6">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -182,7 +182,7 @@ export default function ServiciosPage() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="bg-black text-yellow-400 px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-900 transition-colors"
+              className="bg-black text-campomaq px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-black transition-colors cursor-pointer"
             >
               Contactar Ahora
             </motion.button>
