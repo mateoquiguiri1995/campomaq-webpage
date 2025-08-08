@@ -1,6 +1,7 @@
 'use client'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
 
 type Brand = {
   name: string
@@ -19,7 +20,6 @@ const brands: Brand[] = [
   { name: 'Echo', logo: '/images/brands/echo.svg' },
   { name: 'Shindaiwa', logo: '/images/brands/Shindaiwa.png' }
 ]
-
 
 const features = [
   {
@@ -44,18 +44,30 @@ export default function Marcas() {
   return (
     <section className="py-8 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto">
-
         {/* 🔹 Título */}
-        <h2 className=" text-black text-center text-2xl sm:text-3xl font-bold mb-6">
+        <motion.h2 
+          initial={{ opacity: 0, y: -30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="text-black text-center text-2xl sm:text-3xl font-bold mb-6"
+        >
           Distribuidores Certificados de:
-        </h2>
+        </motion.h2>
 
         {/* 🔹 Cinta transportadora */}
-        <div className="relative overflow-hidden py-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="relative overflow-hidden py-8"
+        >
           <div className="flex w-max animate-marquee hover:[animation-play-state:paused]">
             {[...brands, ...brands].map((brand, index) => (
-              <div
+              <motion.div
                 key={`${brand.name}-${index}`}
+                whileHover={{ scale: 1.1, y: -5 }}
                 className="mx-8 flex-shrink-0 cursor-pointer grayscale hover:grayscale-0 transition-all duration-300 opacity-80 hover:opacity-100"
                 onClick={() => handleBrandClick(brand.name)}
               >
@@ -73,23 +85,31 @@ export default function Marcas() {
                     style={{ objectFit: 'contain' }}
                   />
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
 
           {/* Fade laterales */}
           <div className="pointer-events-none absolute inset-y-0 left-0 w-20 sm:w-24 bg-gradient-to-r from-white via-white/80 to-transparent z-10" />
           <div className="pointer-events-none absolute inset-y-0 right-0 w-20 sm:w-24 bg-gradient-to-l from-white via-white/80 to-transparent z-10" />
-        </div>
+        </motion.div>
 
         {/* 🔹 Secciones */}
         {features.map((feature, index) => (
-          <div
+          <motion.div
             key={index}
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: index * 0.2 }}
             className="mb-16 md:mb-24 grid grid-cols-1 md:grid-cols-2 gap-8 items-center"
           >
             {/* Texto */}
-            <div
+            <motion.div
+              initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.3 }}
               className={`space-y-6 ${
                 index % 2 === 0 ? 'md:order-1 md:pr-8' : 'md:order-2 md:pl-8'
               }`}
@@ -98,10 +118,15 @@ export default function Marcas() {
                 {feature.title}
               </h3>
               <p className="text-lg text-gray-600">{feature.content}</p>
-            </div>
+            </motion.div>
 
             {/* Imagen */}
-            <div
+            <motion.div
+              initial={{ opacity: 0, x: index % 2 === 0 ? 30 : -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              whileHover={{ scale: 1.02 }}
               className={`relative h-64 md:h-96 rounded-lg overflow-hidden shadow-lg ${
                 index % 2 === 0 ? 'md:order-2' : 'md:order-1'
               }`}
@@ -113,8 +138,8 @@ export default function Marcas() {
                 style={{ objectFit: 'cover' }}
                 className="hover:scale-105 transition-transform duration-500"
               />
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         ))}
       </div>
     </section>

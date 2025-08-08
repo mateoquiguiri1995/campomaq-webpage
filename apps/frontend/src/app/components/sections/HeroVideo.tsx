@@ -1,5 +1,6 @@
 'use client';
 import { Button } from '../ui/Button';
+import { motion } from 'framer-motion';
 
 export default function HeroVideo() {
   return (
@@ -20,48 +21,69 @@ export default function HeroVideo() {
 
       <div className="relative z-10 pt-20 pl-8 pr-9 md:pl-40 md:pt-60 max-w-4xl">
         {/* h1 fluido */}
-        <h1
+        <motion.h1
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, ease: "easeOut" }}
           className="
             font-bold mb-6 leading-tight drop-shadow-xl text-white
             text-[clamp(3rem,9vw,5rem)] pl-[clamp(0.5rem,3vw,1rem)] pr-[clamp(0.5rem,3vw,1rem)] pt-[clamp(0.2rem,15vw,2rem)] 
           "
         >
-          CAMPO MAQ    {/* [text-shadow:_0_0_5px_#FFD700,_0_0_10px_#FFD700,_0_0_15px_#FFD700] */}
-        </h1>
+          CAMPO MAQ
+        </motion.h1>
 
         {/* párrafo fluido */}
-        <p
+        <motion.p
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
           className="
             mb-6 drop-shadow-md text-white
             text-[clamp(1rem,3vw,2rem)]
           "
         >
           Distribuidores líderes de maquinaria agrícola y de jardinería
-        </p>
+        </motion.p>
 
         {/* botones fluidos */}
-        <div className="flex flex-col min-[515px]:flex-row gap-4">
-          <Button
-            variant="primary"
-            className="
-              text-[clamp(0.8rem,2vw,1.2rem)]
-              px-[clamp(0.75rem,2vw,1.5rem)]
-              py-[clamp(0.5rem,1.2vw,0.75rem)]
-            "
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
+          className="flex flex-col min-[515px]:flex-row gap-4"
+        >
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            Más Información
-          </Button>
-          <Button
-            variant="outline"
-            className="
-              text-[clamp(0.8rem,2vw,1.2rem)]
-              px-[clamp(0.75rem,2vw,1.5rem)]
-              py-[clamp(0.5rem,1.2vw,0.75rem)]
-            "
+            <Button
+              variant="primary"
+              className="
+                text-[clamp(0.8rem,2vw,1.2rem)]
+                px-[clamp(0.75rem,2vw,1.5rem)]
+                py-[clamp(0.5rem,1.2vw,0.75rem)]
+              "
+            >
+              Más Información
+            </Button>
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            Ver Productos Destacados
-          </Button>
-        </div>
+            <Button
+              variant="outline"
+              className="
+                text-[clamp(0.8rem,2vw,1.2rem)]
+                px-[clamp(0.75rem,2vw,1.5rem)]
+                py-[clamp(0.5rem,1.2vw,0.75rem)]
+              "
+            >
+              Ver Productos Destacados
+            </Button>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   );
