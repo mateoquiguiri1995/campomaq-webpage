@@ -30,10 +30,7 @@ export default function ProductosPage() {
             <SearchBar />
           </div>
 
-        
-
           {/* Slider fijo */}
-          
         </div>
 
         {/* Contenido scrollable */}

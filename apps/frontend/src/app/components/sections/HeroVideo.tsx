@@ -1,8 +1,8 @@
 'use client';
 import { Button } from '../ui/Button';
+import { motion } from 'framer-motion';
 
 export default function HeroVideo() {
- 
   return (
     <section className="relative w-full h-[90vh] md:h-screen overflow-hidden bg-black z-0">
       <video
@@ -19,17 +19,71 @@ export default function HeroVideo() {
       {/* Oscurecer video para mejor contraste */}
       <div className="absolute inset-0 bg-black bg-opacity-50" />
 
-      <div className="relative z-10 pt-24 pl-8 pr-8 md:pl-40 md:pt-60 max-w-4xl text-white">
-        <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight drop-shadow-xl underline decoration-white decoration-10">
-          CAMPOMAQ
-        </h1>
-        <p className="text-base md:text-4xl mb-6 drop-shadow-md">
+      <div className="relative z-10 pt-20 pl-8 pr-9 md:pl-40 md:pt-60 max-w-4xl">
+        {/* h1 fluido */}
+        <motion.h1
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          className="
+            font-bold mb-6 leading-tight drop-shadow-xl text-white
+            text-[clamp(3rem,9vw,5rem)] pl-[clamp(0.5rem,3vw,1rem)] pr-[clamp(0.5rem,3vw,1rem)] pt-[clamp(0.2rem,15vw,2rem)] 
+          "
+        >
+          CAMPO MAQ
+        </motion.h1>
+
+        {/* párrafo fluido */}
+        <motion.p
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
+          className="
+            mb-6 drop-shadow-md text-white
+            text-[clamp(1rem,3vw,2rem)]
+          "
+        >
           Distribuidores líderes de maquinaria agrícola y de jardinería
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <Button variant="primary">Más Información</Button>
-          <Button variant="outline">Ver Productos Destacados</Button>
-        </div>
+        </motion.p>
+
+        {/* botones fluidos */}
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
+          className="flex flex-col min-[515px]:flex-row gap-4"
+        >
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Button
+              variant="primary"
+              className="
+                text-[clamp(0.8rem,2vw,1.2rem)]
+                px-[clamp(0.75rem,2vw,1.5rem)]
+                py-[clamp(0.5rem,1.2vw,0.75rem)]
+              "
+            >
+              Más Información
+            </Button>
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Button
+              variant="outline"
+              className="
+                text-[clamp(0.8rem,2vw,1.2rem)]
+                px-[clamp(0.75rem,2vw,1.5rem)]
+                py-[clamp(0.5rem,1.2vw,0.75rem)]
+              "
+            >
+              Ver Productos Destacados
+            </Button>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   );
