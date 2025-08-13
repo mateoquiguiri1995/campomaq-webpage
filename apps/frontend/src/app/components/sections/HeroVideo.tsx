@@ -13,7 +13,7 @@ export default function HeroVideo() {
         className="absolute inset-0 object-cover w-full h-full z-[1]"
         poster="/fallback.jpg"
       >
-        <source src="/videos/v1.mp4" type="video/mp4" />
+        <source src="/videos/videoCM.mp4" type="video/mp4" />
       </video>
 
       {/* Oscurecer video para mejor contraste */}

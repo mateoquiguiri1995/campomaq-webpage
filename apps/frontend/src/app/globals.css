@@ -144,6 +144,12 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Sticky positioning fix */
+.sticky {
+  position: -webkit-sticky;
+  position: sticky;
+}
+
 /* Enhanced focus styles */
 *:focus {
   outline: 2px solid var(--color-campomaq);
@@ -192,4 +198,69 @@ html {
 * {
   scrollbar-width: thin;
   scrollbar-color: #facc15 #000; /* thumb amarillo, track negro */
+}
+
+/* Product card utilities */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Smooth transitions for product cards */
+.product-card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.product-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Loading skeleton animation */
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Custom scrollbar for product grids */
+.product-grid-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f3f4f6;
+}
+
+.product-grid-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.product-grid-scroll::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 3px;
+}
+
+.product-grid-scroll::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.product-grid-scroll::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
 }

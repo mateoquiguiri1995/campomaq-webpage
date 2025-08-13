@@ -16,13 +16,14 @@ const quickLinks = [
 
 export default function Footer() {
   return (
-    <footer className="relative text-gray-300 pt-70 pb-12 px-6 overflow-hidden">
+    <footer className="relative text-gray-300 pt-50 pb-12 px-6 overflow-hidden">
       {/* Imagen de fondo */}
       <div className="absolute inset-0 -z-10">
         <Image
-          src="/images/bg/cayambe.jpg"
+          src="/images/bg/volcan.jpg"
           alt="Volcán Cayambe"
           fill
+          sizes="100vw"
           priority
           className="object-cover object-center"
         />
@@ -35,11 +36,12 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 border-b border-gray-700 pb-16">
         {/* Logo y descripción */}
         <div>
-          <div className="relative w-48 h-12 mb-6">
+          <div className="relative w-50 h-50 mb-6">
             <Image
-              src="/campomaq.png"
+              src="/campo_maq.svg"
               alt="Campomaq Logo"
               fill
+              sizes='w-150px h-150px'
               style={{ objectFit: "contain" }}
             />
           </div>

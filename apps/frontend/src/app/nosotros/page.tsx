@@ -82,7 +82,7 @@ export default function NosotrosPage() {
     <main className="min-h-screen pt-28 bg-gradient-to-b from-yellow-50 to-white">
       {/* Hero Section */}
       <section className="relative py-20 px-6 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-yellow-600/20" />
+        <div className="absolute inset-0 bg-gradient-to-r from-white to-campomaq" />
         <div className="relative z-10 max-w-7xl mx-auto text-center">
           <motion.h1 
             initial={{ opacity: 0, y: -30 }}

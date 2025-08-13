@@ -5,17 +5,17 @@ import { motion } from 'framer-motion'
 
 const products = [
   { name: 'MOTOCULTORES', description: 'maquinas increibles adaptables al terreno', image: '/images/prod-home/motocultor.jpg' },
-  { name: 'MOTOAZADAS', description: 'maquinas de diferentes marcas', image: '/images/prod-home/motoazada.png' },
-  { name: 'DESBROZADORAS', description: 'Perfectas para la epoca de lluvias', image: '/images/prod-home/desbrozadora.png' },
-  { name: 'MOTOSIERRA', description: 'Diferentes marcas que garantizan un corte suave y limpio', image: '/images/prod-home/motosierra.jpg' },
-  { name: 'PODADORAS', description: 'excelentes para arbustos bajos y altos', image: '/images/prod-home/podadoras.jpg' },
-  { name: 'ACEITES', description: 'Disponibles para cualquier maquinaria', image: '/images/prod-home/aceites.jpg' },
+  { name: 'BOMBAS DE FUMIGAR', description: 'Ideales para evitar plagas', image: '/images/prod-home/bombas fumigar.jpg' },
+  { name: 'MOTOAZADAS', description: 'maquinas de diferentes marcas', image: '/images/prod-home/motoazada.jpg' },
+  { name: 'DESBROZADORAS', description: 'Perfectas para la epoca de lluvias', image: '/images/prod-home/desbrozadora.jpg' },
+  { name: 'MOTOSIERRAS', description: 'Diferentes marcas que garantizan un corte suave y limpio', image: '/images/prod-home/motosierra.jpg' },
+  { name: 'CORTACÉSPED', description: 'excelentes para arbustos bajos y altos', image: '/images/prod-home/cortacesped.jpeg' },
+  { name: 'ACEITES', description: 'Disponibles para cualquier maquinaria', image: '/images/prod-home/husqvarna-Aceites.jpeg' },
   { name: 'SOPLADORAS', description: 'Ideales para la limpieza de hojas y basura', image: '/images/prod-home/sopladoras.webp' },
-  { name: 'BOMBAS DE FUMIGAR', description: 'Ideales para evitar plagas', image: '/images/prod-home/bombas.jpg' },
-  { name: 'CUCHILLAS', description: 'Disponibles para cualquier maquina o herramienta', image: '/images/prod-home/cuchillas.webp' },
-  { name: 'ALAMBRES', description: 'Solidos y perfectos para la seguridad', image: '/images/prod-home/alambres.webp' },
-  { name: 'MINI TRACKTOR', description: 'Vehiculo adaptable a cualquier terreno', image: '/images/prod-home/minitracktor.webp' },
-  { name: 'OTROS', description: 'Tijeras, Machetes, Azadones, etc', image: '/images/prod-home/otros.jpeg' },
+  { name: 'CUCHILLAS', description: 'Disponibles para cualquier maquina o herramienta', image: '/images/prod-home/cuchillas-2.jpeg' },
+  { name: 'MANGUERAS', description: 'Solidos y perfectos para la seguridad', image: '/images/prod-home/manguera.jpg' },
+  { name: 'MINI TRACTOR', description: 'Vehiculo adaptable a cualquier terreno', image: '/images/prod-home/mntrack.jpg' },
+  { name: 'Y m', description: 'Tijeras, Machetes, Azadones, etc', image: '/images/prod-home/otros.jpg' },
 ]
 
 const containerVariants = {
@@ -91,6 +91,12 @@ export default function Productos() {
                   src={product.image}
                   alt={product.name}
                   fill
+                  sizes="
+                    (max-width: 640px) 100vw, 
+                    (max-width: 1024px) 50vw, 
+                    (max-width: 1280px) 33vw, 
+                    20vw
+                  "
                   className="object-cover"
                 />
 
@@ -101,18 +107,18 @@ export default function Productos() {
                   className="
                     hidden md:flex
                     absolute inset-0 
-                    bg-yellow-400/40
+                    bg-black/50
                     flex-col items-center justify-center 
                     transition-opacity duration-300
                     text-center p-4
                   "
                 >
-                  <h3 className="text-lg font-semibold text-black mb-2">{product.name}</h3>
-                  <p className="text-sm text-black mb-4">{product.description}</p>
+                  <h3 className="text-lg font-bold text-white mb-2">{product.name}</h3>
+                  
                   <motion.button 
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="bg-black text-campomaq px-4 py-2 font-semibold hover:bg-white hover:text-black cursor-pointer transition-colors rounded"
+                    className="bg-black text-white px-4 py-2 font-semibold hover:bg-white hover:text-black cursor-pointer transition-colors rounded"
                   >
                     Ver más
                   </motion.button>

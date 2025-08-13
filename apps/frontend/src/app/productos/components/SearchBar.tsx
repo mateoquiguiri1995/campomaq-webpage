@@ -5,9 +5,14 @@ import { Search, ShoppingCart, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function SearchBar() {
-  const [cartCount] = useState<number>(1); // Simulación
+interface SearchBarProps {
+  onSearch?: (query: string) => void;
+  cartCount?: number;
+}
+
+export default function SearchBar({ onSearch, cartCount = 1 }: SearchBarProps) {
   const [tags, setTags] = useState<string[]>([]);
+  const [searchInput, setSearchInput] = useState<string>("");
   const [showQuickOptions, setShowQuickOptions] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -15,13 +20,36 @@ export default function SearchBar() {
 
   const addTag = (tag: string) => {
     if (tags.length < 3 && !tags.includes(tag)) {
-      setTags([...tags, tag]);
+      const newTags = [...tags, tag];
+      setTags(newTags);
+      setShowQuickOptions(false);
     }
-    setShowQuickOptions(false);
   };
 
   const removeTag = (tag: string) => {
-    setTags(tags.filter((t) => t !== tag));
+    const newTags = tags.filter((t) => t !== tag);
+    setTags(newTags);
+  };
+
+  const handleSearch = () => {
+    const searchQuery = [...tags, searchInput].filter(Boolean).join(" ");
+    if (searchQuery.trim() && onSearch) {
+      onSearch(searchQuery.trim());
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  const clearSearch = () => {
+    setTags([]);
+    setSearchInput("");
+    if (onSearch) {
+      onSearch("");
+    }
   };
 
   // Cierra el panel al hacer click fuera
@@ -68,11 +96,30 @@ export default function SearchBar() {
         <input
           type="text"
           placeholder="Buscar..."
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyPress={handleKeyPress}
           className="flex-1 outline-none text-sm text-black placeholder-gray-400 bg-transparent"
         />
 
+        {/* Botón limpiar */}
+        {(tags.length > 0 || searchInput) && (
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              clearSearch();
+            }}
+            className="p-1 rounded-full hover:bg-gray-100 transition-colors duration-200"
+          >
+            <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+          </button>
+        )}
+
         {/* Icono buscar */}
-        <button className="p-1 rounded-full hover:bg-black transition-colors duration-200">
+        <button 
+          onClick={handleSearch}
+          className="p-1 rounded-full hover:bg-black transition-colors duration-200"
+        >
           <Search className="w-6 h-6 text-gray-500 hover:text-yellow-200 cursor-pointer" />
         </button>
       </div>

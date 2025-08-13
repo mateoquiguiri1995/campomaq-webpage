@@ -6,10 +6,21 @@ import { Menu, X, Search } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaWhatsapp } from "react-icons/fa";
+
 export default function Navbar() {
   const [open, setOpen] = useState(false)
   const [showCategories, setShowCategories] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
+
+  // Detecta scroll para cambiar estilo
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50)
+    }
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   // Cierra menú al navegar
   useEffect(() => {
@@ -18,7 +29,7 @@ export default function Navbar() {
 
   // Oculta búsqueda en /productos
   const isProductsPage = pathname.startsWith('/productos')
-
+  const [searchInput, setSearchInput] = useState("");
   const categories = [
     { name: 'Bombeo', sub: ['Bombas de agua', 'Motobombas', 'Hidrolavadoras'] },
     { name: 'Bosque y Jardín', sub: ['Motosierras', 'Podadoras', 'Cortasetos'] },
@@ -32,16 +43,21 @@ export default function Navbar() {
   ]
 
   return (
-    <header className="fixed top-0 left-0 w-full bg-black shadow-md z-50">
+    <header
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+        scrolled ? 'bg-white shadow-lg' : 'bg-black'
+      }`}
+    >
       {/* DESKTOP ≥ 825px */}
       <nav className="hidden min-[825px]:flex max-w-7xl mx-auto px-4 lg:px-8 h-24 items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center shrink-0">
-          <div className="relative w-[140px] h-[100px] min-w-[140px]">
+          <div className="relative w-[222px] h-[222px] min-w-[140px]">
             <Image
-              src="/campomaq.png"
+              src="/campo_maq.svg"
               alt="Campomaq Logo"
               fill
+            
               style={{ objectFit: 'contain' }}
               priority
             />
@@ -50,7 +66,9 @@ export default function Navbar() {
 
         {/* Menú principal */}
         <ul
-          className="flex text-lg font-semibold text-campomaq transition-all duration-200"
+          className={`flex text-lg font-semibold transition-all duration-200 ${
+            scrolled ? 'text-black' : 'text-campomaq'
+          }`}
           style={{
             gap: 'clamp(8px, 2vw, 30px)'
           }}
@@ -119,7 +137,11 @@ export default function Navbar() {
           <Link
             href="https://wa.me/593980582555?text=Hola%20quiero%20más%20información"
             target="_blank"
-            className="bg-campomaq text-black font-semibold px-4 py-2 rounded hover:bg-black hover:text-campomaq hover:border-campomaq hover:border-2 transition-colors"
+            className={`font-semibold px-4 py-2 rounded transition-colors ${
+              scrolled
+                ? 'bg-campomaq text-black hover:bg-black hover:text-campomaq hover:border-campomaq hover:border-2'
+                : 'bg-campomaq text-black hover:bg-black hover:text-campomaq hover:border-campomaq hover:border-2'
+            }`}
           >
             Contacto <FaWhatsapp className="inline-block ml-1" />
           </Link>
@@ -138,14 +160,16 @@ export default function Navbar() {
       </nav>
 
       {/* TABLET 640px – 824px */}
-      <div className="hidden min-[640px]:max-[824px]:flex flex-col bg-black px-4 py-3 shadow-md">
-        {/* Logo + búsqueda + menú */}
+      <div className="hidden min-[640px]:max-[824px]:flex flex-col px-4 py-3 shadow-md"
+        style={{ backgroundColor: scrolled ? '#fff' : '#000' }}
+      >
         <div className="flex items-center justify-between gap-2 h-16">
-          <Link href="/" className="relative w-[120px] h-[80px] min-w-[120px] shrink-0">
+          <Link href="/" className="relative  w-[222px] h-[222px] min-w-[120px] shrink-0">
             <Image
-              src="/campomaq.png"
+              src="/campo_maq.svg"
               alt="Campomaq Logo"
               fill
+              sizes='(max-width: 640px) 120px, (max-width: 824px) 120px, 140px'
               style={{ objectFit: 'contain' }}
               priority
             />
@@ -162,12 +186,11 @@ export default function Navbar() {
             </div>
           )}
 
-          <button onClick={() => setOpen(!open)} className="text-campomaq">
+          <button onClick={() => setOpen(!open)} className={scrolled ? "text-black" : "text-campomaq"}>
             {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
 
-        {/* Menú tablet horizontal */}
         <AnimatePresence>
           {open && (
             <motion.div
@@ -175,7 +198,9 @@ export default function Navbar() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.15 }}
-              className="bg-black text-campomaq py-4 rounded shadow-lg flex justify-center gap-6 items-center"
+              className={`py-4 rounded shadow-lg flex justify-center gap-6 items-center ${
+                scrolled ? 'bg-white text-black' : 'bg-black text-campomaq'
+              }`}
             >
               <Link href="/nosotros">Nosotros</Link>
               <Link href="/productos">Productos</Link>
@@ -183,7 +208,7 @@ export default function Navbar() {
               <Link
                 href="https://wa.me/593980582555?text=Hola%20quiero%20más%20información"
                 target="_blank"
-                className="bg-campomaq text-black font-semibold px-4 py-2 rounded hover:bg-black hover:text-campomaq hover:border-campomaq hover:border-2 transition-colors"
+                className="bg-campomaq text-black font-semibold px-4 py-2 rounded hover:opacity-80"
               >
                 Contacto <FaWhatsapp className="inline-block ml-1" />
               </Link>
@@ -193,14 +218,16 @@ export default function Navbar() {
       </div>
 
       {/* MÓVIL < 640px */}
-      <div className="flex max-[639px]:flex sm:hidden flex-col bg-black px-4 py-3 shadow-md">
-        {/* Logo + búsqueda + menú */}
+      <div className="flex max-[639px]:flex sm:hidden flex-col px-4 py-3 shadow-md"
+        style={{ backgroundColor: scrolled ? '#fff' : '#000' }}
+      >
         <div className="flex items-center justify-between gap-2 h-16">
-          <Link href="/" className="relative w-[120px] h-[80px] min-w-[120px] shrink-0">
+          <Link href="/" className="relative  w-[150px] h-[150px] min-w-[120px] shrink-0">
             <Image
-              src="/campomaq.png"
+              src="/campo_maq.svg"
               alt="Campomaq Logo"
               fill
+              sizes='(max-width: 640px) 120px, (max-width: 824px) 140px, 120px'
               style={{ objectFit: 'contain' }}
               priority
             />
@@ -217,12 +244,11 @@ export default function Navbar() {
             </div>
           )}
 
-          <button onClick={() => setOpen(!open)} className="text-campomaq">
+          <button onClick={() => setOpen(!open)} className={scrolled ? "text-black" : "text-campomaq"}>
             {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
 
-        {/* Menú móvil columna */}
         <AnimatePresence>
           {open && (
             <motion.ul
@@ -230,7 +256,9 @@ export default function Navbar() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.15 }}
-              className="bg-black text-campomaq py-4 rounded shadow-lg flex flex-col items-center gap-4"
+              className={`py-4 rounded shadow-lg flex flex-col items-center gap-4 ${
+                scrolled ? 'bg-white text-black' : 'bg-black text-campomaq'
+              }`}
             >
               <li><Link href="/nosotros">Nosotros</Link></li>
               <li><Link href="/productos">Productos</Link></li>
@@ -239,7 +267,7 @@ export default function Navbar() {
                 <Link
                   href="https://wa.me/593980582555?text=Hola%20quiero%20más%20información"
                   target="_blank"
-                  className="bg-campomaq text-black font-semibold px-4 py-2 rounded hover:bg-black hover:text-campomaq hover:border-campomaq hover:border-2 transition-colors"
+                  className="bg-campomaq text-black font-semibold px-4 py-2 rounded hover:opacity-80"
                 >
                   Contacto <FaWhatsapp className="inline-block ml-1" />
                 </Link>
