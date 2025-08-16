@@ -12,7 +12,7 @@ export interface Product {
   isOnSale?: boolean;
   discount?: number;
   description?: string;
-  specifications?: Record<string, any>;
+  specifications?: Record<string, unknown>;
   stock?: number;
   sku?: string;
   // Campos adicionales para futuras integraciones con API

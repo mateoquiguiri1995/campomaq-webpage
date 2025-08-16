@@ -1,57 +1,64 @@
 'use client'
 import Image from 'next/image'
+import Link from 'next/link'
 import { Eye } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 const products = [
-  { name: 'MOTOCULTORES', description: 'maquinas increibles adaptables al terreno', image: '/images/prod-home/motocultor.jpg' },
-  { name: 'BOMBAS DE FUMIGAR', description: 'Ideales para evitar plagas', image: '/images/prod-home/bombas fumigar.jpg' },
-  { name: 'MOTOAZADAS', description: 'maquinas de diferentes marcas', image: '/images/prod-home/motoazada.jpg' },
-  { name: 'DESBROZADORAS', description: 'Perfectas para la epoca de lluvias', image: '/images/prod-home/desbrozadora.jpg' },
-  { name: 'MOTOSIERRAS', description: 'Diferentes marcas que garantizan un corte suave y limpio', image: '/images/prod-home/motosierra.jpg' },
-  { name: 'CORTACÉSPED', description: 'excelentes para arbustos bajos y altos', image: '/images/prod-home/cortacesped.jpeg' },
-  { name: 'ACEITES', description: 'Disponibles para cualquier maquinaria', image: '/images/prod-home/husqvarna-Aceites.jpeg' },
-  { name: 'SOPLADORAS', description: 'Ideales para la limpieza de hojas y basura', image: '/images/prod-home/sopladoras.webp' },
-  { name: 'CUCHILLAS', description: 'Disponibles para cualquier maquina o herramienta', image: '/images/prod-home/cuchillas-2.jpeg' },
-  { name: 'MANGUERAS', description: 'Solidos y perfectos para la seguridad', image: '/images/prod-home/manguera.jpg' },
-  { name: 'MINI TRACTOR', description: 'Vehiculo adaptable a cualquier terreno', image: '/images/prod-home/mntrack.jpg' },
-  { name: 'Y m', description: 'Tijeras, Machetes, Azadones, etc', image: '/images/prod-home/otros.jpg' },
+  { name: 'MOTOCULTORES', image: '/images/prod-home/motocultor.jpg' },
+  { name: 'BOMBAS DE FUMIGAR', image: '/images/prod-home/bombas fumigar.jpg' },
+  { name: 'MOTOAZADAS', image: '/images/prod-home/motoazada.jpg' },
+  { name: 'DESBROZADORAS', image: '/images/prod-home/desbrozadora.jpg' },
+  { name: 'MOTOSIERRAS', image: '/images/prod-home/motosierra.jpg' },
+  { name: 'CORTACÉSPED', image: '/images/prod-home/cortacesped.jpeg' },
+  { name: 'ACEITES', image: '/images/prod-home/husqvarna-Aceites.jpeg' },
+  { name: 'SOPLADORAS', image: '/images/prod-home/sopladoras.webp' },
+  { name: 'CUCHILLAS', image: '/images/prod-home/cuchillas-2.jpeg' },
+  { name: 'MANGUERAS', image: '/images/prod-home/manguera.jpg' },
+  { name: 'MINI TRACTOR', image: '/images/prod-home/mntrack.jpg' },
+  { name: 'Y MUCHO MÁS', image: '/images/prod-home/otros.jpg' },
 ]
 
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
+    transition: { staggerChildren: 0.1 }
   }
-};
+}
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.6,
-      ease: "easeOut" as const
-    }
+    transition: { duration: 0.6, ease: "easeOut" as const }
   }
-};
+}
 
 export default function Productos() {
+  // Función para generar el link de búsqueda
+  const getProductLink = (productName: string) => {
+    if (productName === 'Y MUCHO MÁS') {
+      // Para "Y MUCHO MÁS", solo ir a productos sin búsqueda
+      return '/productos'
+    }
+    // Para otros productos, ir con búsqueda
+    const searchQuery = encodeURIComponent(productName.toLowerCase())
+    return `/productos?search=${searchQuery}`
+  }
+
   return (
-    <section 
+    <section
       className="py-16 px-4 sm:px-6 lg:px-8 relative bg-gray-900 text-white"
       style={{
-        backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('/images/bg/bg-home-prod.jpg')`,
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('/images/bg/fondo.jpg')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center'
       }}
     >
       <div className="max-w-7xl mx-auto relative z-10">
-        <motion.h2 
+        <motion.h2
           initial={{ opacity: 0, y: -30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -61,47 +68,44 @@ export default function Productos() {
           Nuestros Productos
         </motion.h2>
 
-        {/* Grid adaptable */}
+        {/* Flex adaptable y centrado */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           className="
-            grid 
-            gap-8 
-            justify-center
-            grid-cols-1 
-            sm:grid-cols-2 
-            md:grid-cols-3 
-            lg:grid-cols-4 
-            xl:grid-cols-5
+            flex flex-wrap justify-center gap-4
           "
         >
           {products.map((product, index) => (
-            <motion.div 
+            <motion.div
               key={index}
               variants={itemVariants}
               whileHover={{ y: -10, scale: 1.02 }}
-              className="group relative bg-white shadow-md overflow-hidden transition-all duration-300 rounded-lg"
+              className="
+                group relative bg-white shadow-md overflow-hidden 
+                transition-all duration-300 
+                w-[45%] min-[515px]:w-[30%] md:w-[22%] lg:w-[18%]
+              "
             >
               {/* Imagen */}
-              <div className="relative w-full h-56 md:h-48">
+              <div className="relative w-full h-36 min-[515px]:h-40 md:h-44 lg:h-48">
                 <Image
                   src={product.image}
                   alt={product.name}
                   fill
                   sizes="
-                    (max-width: 640px) 100vw, 
-                    (max-width: 1024px) 50vw, 
-                    (max-width: 1280px) 33vw, 
-                    20vw
+                    (max-width: 514px) 45vw, 
+                    (max-width: 767px) 30vw, 
+                    (max-width: 1023px) 22vw, 
+                    18vw
                   "
                   className="object-cover"
                 />
 
                 {/* Overlay solo en desktop */}
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0 }}
                   whileHover={{ opacity: 1 }}
                   className="
@@ -113,28 +117,31 @@ export default function Productos() {
                     text-center p-4
                   "
                 >
-                  <h3 className="text-lg font-bold text-white mb-2">{product.name}</h3>
-                  
-                  <motion.button 
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="bg-black text-white px-4 py-2 font-semibold hover:bg-white hover:text-black cursor-pointer transition-colors rounded"
-                  >
-                    Ver más
-                  </motion.button>
+                  <h3 className="text-sm font-bold text-white mb-2">{product.name}</h3>
+                  <Link href={getProductLink(product.name)}>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="bg-black text-white px-3 py-1 text-sm font-semibold hover:bg-white hover:text-black cursor-pointer transition-colors rounded"
+                    >
+                      Ver más
+                    </motion.button>
+                  </Link>
                 </motion.div>
               </div>
 
               {/* Vista móvil */}
-              <div className="flex md:hidden items-center justify-between p-3 bg-black border-t border-yellow-500">
-                <span className="font-semibold text-white">{product.name}</span>
-                <motion.button 
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="p-2 rounded-full bg-campomaq text-black hover:bg-black hover:text-campomaq hover:border-campomaq hover:border-2 transition-colors cursor-pointer"
-                >
-                  <Eye size={18} />
-                </motion.button>
+              <div className="flex md:hidden items-center justify-between p-2 bg-black border-t border-yellow-500 text-xs min-[515px]:text-sm">
+                <span className="font-semibold text-white truncate">{product.name}</span>
+                <Link href={getProductLink(product.name)}>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="p-1 rounded-full bg-campomaq text-black hover:bg-black hover:text-campomaq hover:border-campomaq hover:border transition-colors cursor-pointer"
+                  >
+                    <Eye size={14} />
+                  </motion.button>
+                </Link>
               </div>
             </motion.div>
           ))}

@@ -1,30 +1,31 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, Suspense, useCallback } from "react";
 import SearchBar from "./components/SearchBar";
 import CategorySidebar from "./components/CategorySidebar";
 import CategoryMenuMobile from "./components/CategoryMenuMobile";
-import WeeklyOffer from "./components/WeeklyOffer";
-import PopularProducts from "./components/PopularProducts";
-import TrendingProducts from "./components/TrendingProducts";
-import AllProducts from "./components/AllProducts";
 import SearchResults from "./components/SearchResults";
-import ProductTabs from "./components/ProductTabs";
 import Breadcrumb from "./components/Breadcrumb";
 import CardProducto from "@/app/components/ui/CardProducto";
 import { products } from "./data/products";
 import { ChevronDown } from "lucide-react";
 import { Product, FilterState } from "./types";
-import { ProductService, getFallbackProducts, handleApiError } from "./services/productService";
+import { ProductService, getFallbackProducts } from "./services/productService";
+import { useSearchParams } from "next/navigation";
 
-export default function ProductosPage() {
-  // Estado centralizado para filtros
+// Componente interno con Suspense
+function ProductosPageContent() {
+  const searchParams = useSearchParams();
+  const brandFromURL = searchParams.get('brand');
+  const searchFromURL = searchParams.get('search'); // 👈 Nuevo: obtener búsqueda desde URL
+
+  // Estado centralizado para filtros (con búsqueda inicial desde URL)
   const [filters, setFilters] = useState<FilterState>({
-    searchQuery: "",
-    showSearchResults: false,
+    searchQuery: searchFromURL || "", // 👈 Inicializar con búsqueda desde URL
+    showSearchResults: !!searchFromURL, // 👈 Mostrar resultados si hay búsqueda inicial
     activeTab: "all",
     selectedCategory: "",
-    selectedBrand: "",
+    selectedBrand: brandFromURL || "",
     sortBy: "name",
     showPriceFilters: false,
     showBrandFilters: false,
@@ -36,10 +37,6 @@ export default function ProductosPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Obtener categorías y marcas únicas
-  const categories = useMemo(() => {
-    return [...new Set(allProducts.map(p => p.category))];
-  }, [allProducts]);
-
   const brands = useMemo(() => {
     return [...new Set(allProducts.map(p => p.brand).filter(Boolean))];
   }, [allProducts]);
@@ -65,7 +62,29 @@ export default function ProductosPage() {
   // Cargar productos al montar el componente
   useEffect(() => {
     loadProductsFromAPI();
-  }, []);
+    
+    // 👈 Manejar parámetros iniciales desde URL
+    if (brandFromURL) {
+      setFilters((prev) => ({
+        ...prev,
+        selectedBrand: brandFromURL,
+        selectedCategory: "",
+        activeTab: "all",
+      }));
+    }
+    
+    // 👈 Nuevo: manejar búsqueda inicial desde URL
+    if (searchFromURL) {
+      setFilters((prev) => ({
+        ...prev,
+        searchQuery: searchFromURL,
+        showSearchResults: true,
+        selectedCategory: "",
+        selectedBrand: "",
+        activeTab: "all",
+      }));
+    }
+  }, [brandFromURL, searchFromURL]); // 👈 Agregar searchFromURL como dependencia
 
   // Filtrar productos
   const filteredProducts = useMemo(() => {
@@ -116,17 +135,21 @@ export default function ProductosPage() {
     return filtered;
   }, [filters.activeTab, filters.selectedCategory, filters.selectedBrand, filters.sortBy, allProducts]);
 
-  // Función para actualizar filtros
-  const updateFilters = (updates: Partial<FilterState>) => {
+  // Función para actualizar filtros (usando useCallback)
+  const updateFilters = useCallback((updates: Partial<FilterState>) => {
     setFilters(prev => ({ ...prev, ...updates }));
-  };
+  }, []);
 
-  // Manejadores de eventos
-  const handleSearch = (query: string) => {
+  // Manejadores de eventos (usando useCallback para evitar re-renders)
+  const handleSearch = useCallback((query: string) => {
     if (query.trim()) {
       updateFilters({
         searchQuery: query.trim(),
         showSearchResults: true,
+        // Limpiar otros filtros cuando se busca
+        selectedCategory: "",
+        selectedBrand: "",
+        activeTab: "all",
       });
     } else {
       updateFilters({
@@ -134,28 +157,23 @@ export default function ProductosPage() {
         showSearchResults: false,
       });
     }
-  };
+  }, []); // Sin dependencias porque updateFilters es estable
 
-  const handleBackFromSearch = () => {
+  const handleBackFromSearch = useCallback(() => {
     updateFilters({
       showSearchResults: false,
       searchQuery: "",
     });
-  };
+  }, [updateFilters]);
 
   const handleTabChange = (tab: string) => {
     updateFilters({
       activeTab: tab,
       selectedCategory: "",
       selectedBrand: "",
-    });
-  };
-
-  const handleCategoryClick = (category: string) => {
-    updateFilters({
-      selectedCategory: category,
-      selectedBrand: "",
-      activeTab: "all",
+      // 👈 También limpiar búsqueda al cambiar tabs
+      showSearchResults: false,
+      searchQuery: "",
     });
   };
 
@@ -165,6 +183,9 @@ export default function ProductosPage() {
         selectedBrand: brand,
         selectedCategory: "",
         activeTab: "all",
+        // 👈 También limpiar búsqueda al filtrar por marca
+        showSearchResults: false,
+        searchQuery: "",
       });
     }
   };
@@ -198,17 +219,19 @@ export default function ProductosPage() {
   return (
     <div className="flex flex-col md:flex-row min-h-screen pt-24">
       {/* Sidebar en desktop */}
-      <aside className="hidden md:block w-64 bg-white border-r">
+      <aside className="sticky hidden md:block w-64 bg-white pt-8 top-31 py-4 self-start overflow-y-auto">
         <CategorySidebar />
       </aside>
 
       {/* Contenido principal */}
       <div className="flex-1 flex flex-col">
         {/* SearchBar fijo */}
-        <div className="sticky top-24 bg-white z-20 p-4 border-b">
+        <div className="top-40 pt-15 bg-white z-20 p-4">
           {/* Menú lateral + barra de búsqueda en móviles */}
-          <div className="md:hidden flex items-center gap-2 mb-4">
-            <CategoryMenuMobile />
+          <div className="md:hidden flex items-center gap-2 mb-4 pt-5">
+              <CategoryMenuMobile />
+            
+            
             <div className="flex-1">
               <SearchBar onSearch={handleSearch} />
             </div>
@@ -264,7 +287,7 @@ export default function ProductosPage() {
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                           filters.activeTab === "ofertas"
                             ? "bg-red-100 text-red-800 ring-2 ring-offset-2 ring-campomaq"
-                            : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+                            : "bg-white text-gray-700 hover:bg-campomaq/40 border border-gray-200 cursor-pointer"
                         }`}
                       >
                         Ofertas
@@ -276,7 +299,7 @@ export default function ProductosPage() {
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                           filters.activeTab === "tendencia"
                             ? "bg-purple-100 text-purple-800 ring-2 ring-offset-2 ring-campomaq"
-                            : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+                            : "bg-white text-gray-700 hover:bg-campomaq/40 border border-gray-200 cursor-pointer"
                         }`}
                       >
                         Tendencia
@@ -288,7 +311,7 @@ export default function ProductosPage() {
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                           filters.activeTab === "nuevos"
                             ? "bg-green-100 text-green-800 ring-2 ring-offset-2 ring-campomaq"
-                            : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+                            : "bg-white text-gray-700 hover:bg-campomaq/40 border border-gray-200 cursor-pointer"
                         }`}
                       >
                         Nuevos
@@ -298,7 +321,7 @@ export default function ProductosPage() {
                       <div className="relative">
                         <button
                           onClick={() => updateFilters({ showPriceFilters: !filters.showPriceFilters })}
-                          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 transition-all duration-200"
+                          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-white text-gray-700 hover:bg-campomaq/40 border border-gray-200 transition-all duration-200 cursor-pointer"
                         >
                           Filtro x precios
                           <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${filters.showPriceFilters ? 'rotate-180' : ''}`} />
@@ -389,7 +412,7 @@ export default function ProductosPage() {
 
                   {/* Grid de productos */}
                   {filteredProducts.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                       {filteredProducts.map((product) => (
                         <div key={product.id} className="relative">
                           <CardProducto
@@ -424,5 +447,19 @@ export default function ProductosPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// 👈 Componente principal con Suspense wrapper
+export default function ProductosPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-campomaq"></div>
+        <span className="ml-2 text-gray-600">Cargando...</span>
+      </div>
+    }>
+      <ProductosPageContent />
+    </Suspense>
   );
 }

@@ -1,40 +1,73 @@
 // src/app/productos/components/SearchBar.tsx
 "use client";
 
-import { Search, ShoppingCart, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSearchParams, useRouter } from "next/navigation";
 
 interface SearchBarProps {
   onSearch?: (query: string) => void;
-  cartCount?: number;
 }
 
-export default function SearchBar({ onSearch, cartCount = 1 }: SearchBarProps) {
+export default function SearchBar({ onSearch }: SearchBarProps) {
   const [tags, setTags] = useState<string[]>([]);
   const [searchInput, setSearchInput] = useState<string>("");
   const [showQuickOptions, setShowQuickOptions] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   const quickOptions = ["Motocultor", "Motoguadaña", "Bombas de Fumigar", "Generadores", "Motosierra", "Desbrozadora", "Herramientas de Jardín"];
+
+  // Efecto para cargar la búsqueda desde URL al montar el componente
+  useEffect(() => {
+    const searchFromUrl = searchParams.get('search');
+    if (searchFromUrl && searchFromUrl !== searchInput) {
+      setSearchInput(searchFromUrl);
+      // Ejecutar búsqueda automáticamente solo si es diferente
+      if (onSearch) {
+        onSearch(searchFromUrl);
+      }
+    }
+  }, [searchParams]); // Removido onSearch de las dependencias
 
   const addTag = (tag: string) => {
     if (tags.length < 3 && !tags.includes(tag)) {
       const newTags = [...tags, tag];
       setTags(newTags);
       setShowQuickOptions(false);
+      // Ejecutar búsqueda automáticamente con los nuevos tags
+      const searchQuery = [...newTags, searchInput].filter(Boolean).join(" ");
+      if (onSearch && searchQuery.trim()) {
+        onSearch(searchQuery.trim());
+      }
     }
   };
 
   const removeTag = (tag: string) => {
     const newTags = tags.filter((t) => t !== tag);
     setTags(newTags);
+    // Ejecutar búsqueda automáticamente después de remover tag
+    const searchQuery = [...newTags, searchInput].filter(Boolean).join(" ");
+    if (onSearch) {
+      onSearch(searchQuery.trim());
+    }
   };
 
   const handleSearch = () => {
     const searchQuery = [...tags, searchInput].filter(Boolean).join(" ");
     if (searchQuery.trim() && onSearch) {
       onSearch(searchQuery.trim());
+      // Actualizar URL sin recargar la página
+      const params = new URLSearchParams(searchParams.toString());
+      if (searchQuery.trim()) {
+        params.set('search', searchQuery.trim());
+      } else {
+        params.delete('search');
+      }
+      router.replace(`/productos?${params.toString()}`, { scroll: false });
     }
   };
 
@@ -50,6 +83,10 @@ export default function SearchBar({ onSearch, cartCount = 1 }: SearchBarProps) {
     if (onSearch) {
       onSearch("");
     }
+    // Limpiar parámetro de búsqueda de la URL
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('search');
+    router.replace(`/productos?${params.toString()}`, { scroll: false });
   };
 
   // Cierra el panel al hacer click fuera
@@ -62,6 +99,23 @@ export default function SearchBar({ onSearch, cartCount = 1 }: SearchBarProps) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // REMOVIDO: Efecto que causaba el bucle infinito
+  // Este useEffect estaba causando re-renders constantes
+  /*
+  useEffect(() => {
+    if (searchInput || tags.length > 0) {
+      const searchQuery = [...tags, searchInput].filter(Boolean).join(" ");
+      if (onSearch && searchQuery.trim()) {
+        // Debounce para evitar demasiadas búsquedas
+        const timeoutId = setTimeout(() => {
+          onSearch(searchQuery.trim());
+        }, 500);
+        return () => clearTimeout(timeoutId);
+      }
+    }
+  }, [searchInput, tags, onSearch]);
+  */
 
   return (
     <div
@@ -124,18 +178,6 @@ export default function SearchBar({ onSearch, cartCount = 1 }: SearchBarProps) {
         </button>
       </div>
 
-      {/* Carrito */}
-      <div className="relative flex-shrink-0">
-        <button className="relative p-2 rounded-full bg-white hover:bg-black shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer">
-          <ShoppingCart className="w-6 h-6 text-gray-700 hover:text-yellow-200" />
-          {cartCount > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs font-semibold w-5 h-5 flex items-center justify-center rounded-full shadow cursor-pointer">
-              {cartCount}
-            </span>
-          )}
-        </button>
-      </div>
-
       {/* Panel de botones rápidos con animación */}
       <AnimatePresence>
         {showQuickOptions && (
@@ -151,6 +193,7 @@ export default function SearchBar({ onSearch, cartCount = 1 }: SearchBarProps) {
                 key={opt}
                 onClick={() => addTag(opt)}
                 className="px-4 py-1.5 rounded-full bg-gray-100 text-black hover:bg-black hover:text-yellow-200 text-sm transition-colors duration-200 cursor-pointer"
+                disabled={tags.includes(opt) || tags.length >= 3}
               >
                 {opt}
               </button>

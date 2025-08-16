@@ -1,7 +1,8 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { Send, MessageCircle, X, Bot } from 'lucide-react';
+import { Send, X, Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FaRobot } from 'react-icons/fa';
 import clsx from 'clsx';
 
 const CHAT_W = 380;
@@ -162,9 +163,9 @@ export default function Chatbot() {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             onClick={toggleOpen}
-            className="w-16 h-16 bg-campomaq text-black rounded-full shadow-2xl flex items-center justify-center"
+            className="w-16 h-16 bg-black text-white rounded-full shadow-2xl flex items-center justify-center font-bold hover:bg-campomaq hover:text-black transition-colors duration-400 cursor-pointer"
           >
-            <MessageCircle size={38} />
+            <FaRobot size={24} />
           </motion.button>
         )}
       </AnimatePresence>

@@ -1,4 +1,5 @@
 import { Product, ProductsResponse, SearchFilters } from '../types';
+import {products} from '../data/products'; // Importación ES6 en lugar de require
 
 // Configuración base para la API
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
@@ -43,14 +44,14 @@ class ApiClient {
     return this.request<T>(endpoint);
   }
 
-  async post<T>(endpoint: string, data: any): Promise<T> {
+  async post<T>(endpoint: string, data: unknown): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async put<T>(endpoint: string, data: any): Promise<T> {
+  async put<T>(endpoint: string, data: unknown): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'PUT',
       body: JSON.stringify(data),
@@ -104,28 +105,18 @@ export class ProductService {
     return this.getProducts({ query, ...filters });
   }
 
-  // Obtener productos por categoría
-  static async getProductsByCategory(category: string, filters?: Omit<SearchFilters, 'category'>): Promise<ProductsResponse> {
-    return this.getProducts({ category, ...filters });
-  }
-
-  // Obtener productos por marca
-  static async getProductsByBrand(brand: string, filters?: Omit<SearchFilters, 'brand'>): Promise<ProductsResponse> {
-    return this.getProducts({ brand, ...filters });
-  }
-
   // Obtener productos en oferta
-  static async getProductsOnSale(filters?: Omit<SearchFilters, 'query'>): Promise<ProductsResponse> {
+  static async getProductsOnSale(): Promise<ProductsResponse> {
     return apiClient.get<ProductsResponse>('/products/sale');
   }
 
   // Obtener productos nuevos
-  static async getNewProducts(filters?: Omit<SearchFilters, 'query'>): Promise<ProductsResponse> {
+  static async getNewProducts(): Promise<ProductsResponse> {
     return apiClient.get<ProductsResponse>('/products/new');
   }
 
   // Obtener productos en tendencia
-  static async getTrendingProducts(filters?: Omit<SearchFilters, 'query'>): Promise<ProductsResponse> {
+  static async getTrendingProducts(): Promise<ProductsResponse> {
     return apiClient.get<ProductsResponse>('/products/trending');
   }
 
@@ -160,8 +151,6 @@ export const useProductService = () => {
     getProducts: ProductService.getProducts,
     getProductById: ProductService.getProductById,
     searchProducts: ProductService.searchProducts,
-    getProductsByCategory: ProductService.getProductsByCategory,
-    getProductsByBrand: ProductService.getProductsByBrand,
     getProductsOnSale: ProductService.getProductsOnSale,
     getNewProducts: ProductService.getNewProducts,
     getTrendingProducts: ProductService.getTrendingProducts,
@@ -174,13 +163,11 @@ export const useProductService = () => {
 
 // Función de fallback para cuando la API no esté disponible
 export const getFallbackProducts = (): Product[] => {
-  // Importar productos locales como fallback
-  const { products } = require('../data/products');
   return products;
 };
 
 // Función para manejar errores de API y usar datos locales como fallback
-export const handleApiError = (error: any, fallbackData: any) => {
+export const handleApiError = <T>(error: Error, fallbackData: T): T => {
   console.warn('API error, using fallback data:', error);
   return fallbackData;
 };

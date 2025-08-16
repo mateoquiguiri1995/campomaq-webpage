@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap');
 @import "tailwindcss";
 
 /* 1. Define theme variables */
@@ -8,6 +9,8 @@
   --animate-wave2: wave2 12s ease-in-out infinite;
   --animate-wave3: wave3 12s ease-in-out infinite;
   --color-campomaq: #fef011;
+  --text-ssm: 0.7rem; /* extra extra small */
+  --font-campomaq: "Play", sans-serif;
 }
 
 /* 2. Keyframes */
@@ -129,7 +132,7 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: var(--font-orbitron);
+  font-family: var(--font-campomaq);
   color: rgb(238, 234, 10);
   height: 100%;
   overflow-y: auto; /* scroll principal */
@@ -148,12 +151,6 @@ html {
 .sticky {
   position: -webkit-sticky;
   position: sticky;
-}
-
-/* Enhanced focus styles */
-*:focus {
-  outline: 2px solid var(--color-campomaq);
-  outline-offset: 2px;
 }
 
 /* Enhanced hover effects */

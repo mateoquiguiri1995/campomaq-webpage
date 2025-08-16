@@ -12,6 +12,9 @@ type Brand = {
 
 const brands: Brand[] = [
   { name: 'Husqvarna', logo: '/images/brands/Husqvarna.jpg'},
+  { name: 'Annovi', logo: '/images/brands/annovi.jpg'},
+  { name: 'Ducati', logo: '/images/brands/ducati.png'},
+  { name: 'Whalebest', logo: '/images/brands/whalebest.png', width: 100, height: 50 },
   { name: 'Maruyama', logo: '/images/brands/Maruyama.png', width: 100 },
   { name: 'Subaru', logo: '/images/brands/subaru.jpeg' },
   { name: 'Kawasaki', logo: '/images/brands/kawasaki.png' },
@@ -33,12 +36,12 @@ const features = [
     youtubeId: "j1wLY4I1QP8"
   }
 ]
-
+//
 export default function Marcas() {
   const router = useRouter()
 
   const handleBrandClick = (brandName: string) => {
-    router.push(`/productos?search=${encodeURIComponent(brandName)}`)
+    router.push(`/productos?brand=${encodeURIComponent(brandName)}`)
   }
 
   return (
@@ -104,7 +107,7 @@ export default function Marcas() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: index * 0.2 }}
-            className="mb-16 md:mb-24 grid grid-cols-1 md:grid-cols-2 gap-8 items-center"
+            className="mb-16 md:mb-24 grid grid-cols-1 md:grid-cols-2 gap-8 items-center pt-10"
           >
             {/* Texto */}
             <motion.div
@@ -129,21 +132,18 @@ export default function Marcas() {
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.3 }}
               whileHover={{ scale: 1.02 }}
-              className={`relative h-64 md:h-96 rounded-lg overflow-hidden shadow-lg cursor-pointer ${
+              className={`relative h-50 md:h-50 xl:h-60 overflow-hidden shadow-lg cursor-pointer ${
                 index % 2 === 0 ? 'md:order-2' : 'md:order-1'
               }`}
               onClick={() => window.open(`https://www.youtube.com/watch?v=${feature.youtubeId}`, "_blank")}
             >
               <iframe
                 className="absolute inset-0 w-full h-full"
-                src={`https://www.youtube.com/embed/${feature.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${feature.youtubeId}&controls=0&modestbranding=1&rel=0&showinfo=0`}
+                src={`https://www.youtube.com/embed/${feature.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${feature.youtubeId}&modestbranding=1&rel=0&showinfo=0`}
                 title={typeof feature.title === 'string' ? feature.title : "Video"}
                 allow="autoplay; encrypted-media; picture-in-picture"
               />
-              {/* Overlay efecto hover */}
-              <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-colors duration-300 z-10 flex items-end justify-end p-4">
-                <span className="bg-red-600 text-white px-3 py-1 rounded-md text-sm">Ver en YouTube</span>
-              </div>
+              
             </motion.div>
           </motion.div>
         ))}

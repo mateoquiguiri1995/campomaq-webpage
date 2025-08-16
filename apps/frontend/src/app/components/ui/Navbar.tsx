@@ -1,170 +1,296 @@
 'use client'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Menu, X, Search } from 'lucide-react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaWhatsapp } from "react-icons/fa";
+import { FaWhatsapp, FaInstagram, FaFacebookF, FaYoutube, FaMapMarker, FaPhone, FaClock } from "react-icons/fa";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
   const [showCategories, setShowCategories] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [showTopBar, setShowTopBar] = useState(true)
+  const [showFloatingSocials, setShowFloatingSocials] = useState(false)
+  const [lastScrollY, setLastScrollY] = useState(0)
+  const [searchInput, setSearchInput] = useState("")
   const pathname = usePathname()
+  const router = useRouter()
+  const topBarRef = useRef<HTMLDivElement>(null)
 
-  // Detecta scroll para cambiar estilo
+  // Control de scroll unificado
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50)
+      const currentScrollY = window.scrollY
+      const isAtTop = currentScrollY <= 10
+      const isScrollingDown = currentScrollY > lastScrollY
+      
+      // Cambiar estilo del navbar principal
+      setScrolled(currentScrollY > 50)
+      
+      // Lógica para barra superior y redes sociales
+      if (isAtTop) {
+        setShowTopBar(true)
+        setShowFloatingSocials(false)
+      } else if (isScrollingDown && currentScrollY > 50) {
+        setShowTopBar(false)
+        setShowFloatingSocials(true)
+      } else if (!isScrollingDown && currentScrollY < 50) {
+        setShowTopBar(true)
+        setShowFloatingSocials(false)
+      }
+      
+      setLastScrollY(currentScrollY)
     }
-    window.addEventListener("scroll", handleScroll)
+
+    window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  }, [lastScrollY])
 
   // Cierra menú al navegar
   useEffect(() => {
     setOpen(false)
   }, [pathname])
 
-  // Oculta búsqueda en /productos
+  // Función para manejar la búsqueda
+  const handleSearch = () => {
+    if (searchInput.trim()) {
+      const searchQuery = encodeURIComponent(searchInput.trim())
+      router.push(`/productos?search=${searchQuery}`)
+      setSearchInput("") // Limpiar el input después de buscar
+    }
+  }
+
+  // Manejar Enter en el input
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch()
+    }
+  }
+
   const isProductsPage = pathname.startsWith('/productos')
-  const [searchInput, setSearchInput] = useState("");
+  
   const categories = [
     { name: 'Bombeo', sub: ['Bombas de agua', 'Motobombas', 'Hidrolavadoras'] },
     { name: 'Bosque y Jardín', sub: ['Motosierras', 'Podadoras', 'Cortasetos'] },
-    { name: 'Energía', sub: ['Generadores', 'Inversores', 'Paneles solares'] },
     { name: 'Hélices', sub: ['Hélices metálicas', 'Hélices plásticas'] },
     { name: 'Fumigación', sub: ['Fumigadoras manuales', 'Fumigadoras motorizadas'] },
     { name: 'Motores', sub: ['Motores gasolina', 'Motores diésel'] },
     { name: 'Lubricantes', sub: ['Aceites', 'Grasas', 'Aditivos'] },
     { name: 'Repuestos y Accesorios', sub: ['Filtros', 'Cuchillas', 'Correas'] },
-    { name: 'Marcas', sub: ['Honda', 'Stihl', 'Kawasaki'] },
+    { name: 'Marcas', sub: ['Husqvarna','Annovi','Ducati','Whale Best', 'Stihl','Kawasaki', 'Subaru','Maruyama','Oleo-Mac', 'Echo'] },
   ]
 
   return (
-    <header
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-        scrolled ? 'bg-white shadow-lg' : 'bg-black'
-      }`}
-    >
-      {/* DESKTOP ≥ 825px */}
-      <nav className="hidden min-[825px]:flex max-w-7xl mx-auto px-4 lg:px-8 h-24 items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex items-center shrink-0">
-          <div className="relative w-[222px] h-[222px] min-w-[140px]">
-            <Image
-              src="/campo_maq.svg"
-              alt="Campomaq Logo"
-              fill
+    <>
+      {/* Barra superior - Oculta al hacer scroll */}
+      
+      <motion.div
+        ref={topBarRef}
+        initial={{ y: 0 }}
+        animate={{ 
+          y: showTopBar ? 0 : -(topBarRef.current?.clientHeight || 0),
+          opacity: showTopBar ? 1 : 0
+        }}
+        transition={{ type: 'tween', duration: 0.3 }}
+        className={`fixed top-0 left-0 w-full z-50 bg-white text-black transition-all duration-300 ${showTopBar ? 'pointer-events-auto' : 'pointer-events-none'}`}
+      >
+        <div className="container mx-auto px-4 lg:px-8 py-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            {/* Información de contacto */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+              {/* Dirección - siempre visible */}
+              <span className="flex items-center gap-1 whitespace-nowrap">
+                <FaMapMarker size={16} className='text-red-400 shrink-0' />
+                <span className="hidden sm:inline">Pichincha, Cayambe</span>
+                <span className="sm:hidden">Pichincha, Cayambe</span>
+              </span>
+              
+              {/* Separador */}
+              <span className="sm:inline-block md:inline-block h-4 w-px bg-gray-300"></span>
+              
+              {/* Teléfono - oculto en móvil muy pequeño */}
+              <a 
+                href="tel:(02) 1185008" 
+                className="flex items-center gap-1 hover:text-blue-500 transition-colors whitespace-nowrap"
+              >
+                <FaPhone size={16} className='text-blue-500' />
+                <span>(02) 1185008</span>
+              </a>
+              
+              {/* Separador */}
+              <span className="sm:inline-block md:inline-block h-4 w-px bg-gray-300"></span>
+              {/* WhatsApp - siempre visible */}
+              <a
+                href="https://wa.me/593980582555?text=Hola%20quiero%20más%20información"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 hover:text-green-500 transition-colors whitespace-nowrap"
+              >
+                <FaWhatsapp size={16} className='text-green-500' />
+                <span className="sm:inline">0980582555</span>
+              </a>
+              
+              {/* Separador */}
+              <span className="hidden md:inline-block lg:inline-block h-4 w-px bg-gray-300"></span>
+                
+              {/* Horario - oculto en móvil */}
+              <span className="hidden md:flex lg:flex items-center gap-1 whitespace-nowrap">
+                <FaClock size={16} className='text-black shrink-0' />
+                <span>Lun-Vie: 8:00 - 17:30</span>
+              </span>
+            </div>
             
-              style={{ objectFit: 'contain' }}
-              priority
-            />
+            {/* Redes sociales - ocultas en móvil */}
+            <div className={`hidden md:flex items-center gap-3 transition-opacity duration-300 ${showTopBar ? 'opacity-100' : 'opacity-0'}`}>
+              <a 
+                href="https://www.facebook.com/campomaqoficial/?locale=es_LA" 
+                target="_blank" 
+                className="hover:text-blue-500 transition-colors"
+                aria-label="Facebook"
+              >
+                <FaFacebookF size={16} />
+              </a>
+              <a 
+                href="https://www.instagram.com/campomaq/" 
+                target="_blank" 
+                className="hover:text-pink-500 transition-colors"
+                aria-label="Instagram"
+              >
+                <FaInstagram size={16} />
+              </a>
+              <a 
+                href="https://www.youtube.com/@campomaq9918" 
+                target="_blank" 
+                className="hover:text-red-500 transition-colors"
+                aria-label="YouTube"
+              >
+                <FaYoutube size={16} />
+              </a>
+            </div>
           </div>
-        </Link>
+        </div>
+      </motion.div>
 
-        {/* Menú principal */}
-        <ul
-          className={`flex text-lg font-semibold transition-all duration-200 ${
-            scrolled ? 'text-black' : 'text-campomaq'
-          }`}
-          style={{
-            gap: 'clamp(8px, 2vw, 30px)'
-          }}
-        >
-          <li onMouseEnter={() => setShowCategories(false)}>
-            <Link href="/nosotros">Nosotros</Link>
-          </li>
-          <li
-            className="relative"
-            onMouseEnter={() => setShowCategories(true)}
-          >
-            <Link href="/productos">Productos</Link>
-
-            {/* Panel categorías */}
-            <AnimatePresence>
-              {showCategories && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.15 }}
-                  className="fixed left-1/2 -translate-x-1/2 top-[96px] mt-2
-                  bg-white text-black rounded-lg shadow-2xl border border-gray-200
-                  w-screen px-4 sm:px-8 z-50"
-                  onMouseLeave={() => setShowCategories(false)}
-                  onMouseEnter={() => setShowCategories(true)}
-                >
-                  <div
-                    className="grid gap-x-6 gap-y-4 py-6"
-                    style={{
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))'
-                    }}
-                  >
-                    {categories.map((cat) => (
-                      <div
-                        key={cat.name}
-                        className="border-l border-gray-200 first:border-none pl-4"
-                      >
-                        <h3 className="font-bold text-gray-800 mb-2">{cat.name}</h3>
-                        <ul className="space-y-1">
-                          {cat.sub.map((s) => (
-                            <li key={s}>
-                              <Link
-                                href={`/productos?categoria=${encodeURIComponent(cat.name)}&sub=${encodeURIComponent(s)}`}
-                                className="text-gray-600 hover:text-campomaq text-sm"
-                              >
-                                {s}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </li>
-          <li onMouseEnter={() => setShowCategories(false)}>
-            <Link href="/servicios">Servicios</Link>
-          </li>
-        </ul>
-
-        {/* Botón de contacto + búsqueda */}
-        <div className="flex items-center gap-3 shrink-0">
-          <Link
-            href="https://wa.me/593980582555?text=Hola%20quiero%20más%20información"
-            target="_blank"
-            className={`font-semibold px-4 py-2 rounded transition-colors ${
-              scrolled
-                ? 'bg-campomaq text-black hover:bg-black hover:text-campomaq hover:border-campomaq hover:border-2'
-                : 'bg-campomaq text-black hover:bg-black hover:text-campomaq hover:border-campomaq hover:border-2'
-            }`}
-          >
-            Contacto <FaWhatsapp className="inline-block ml-1" />
+      {/* Navbar principal */}
+      <header
+        className={`fixed top-0 left-0 w-full z-40 transition-all duration-300 ${
+          scrolled ? 'bg-white shadow-lg' : 'bg-black'
+        }`}
+        style={{ 
+          top: showTopBar ? (topBarRef.current?.clientHeight || 0) + 'px' : '0',
+          transitionProperty: 'top, background-color, box-shadow'
+        }}
+      >
+        {/* DESKTOP ≥ 825px */}
+        <nav className="hidden min-[825px]:flex max-w-7xl mx-auto px-4 lg:px-8 h-24 items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="flex items-center shrink-0">
+            <div className="relative w-[120px] h-[200px] min-w-[140px]">
+              <Image
+                src="/campo_maq.svg"
+                alt="Campomaq Logo"
+                fill
+                style={{ objectFit: 'contain' }}
+                priority
+              />
+            </div>
           </Link>
 
-          {!isProductsPage && (
-            <div className="flex items-center bg-white rounded px-2 py-1 w-[clamp(160px,20vw,240px)]">
-              <input
-                type="text"
-                placeholder="Buscar..."
-                className="outline-none text-black w-full text-sm"
-              />
-              <Search className="text-gray-500 w-5 h-5 shrink-0" />
-            </div>
-          )}
-        </div>
-      </nav>
+          {/* Menú principal */}
+          <ul
+            className={`flex text-l font-semibold transition-all duration-200 ${
+              scrolled ? 'text-black' : 'text-campomaq'
+            }`}
+            style={{ gap: 'clamp(8px, 2vw, 30px)' }}
+          >
+            <li onMouseEnter={() => setShowCategories(false)}>
+              <Link href="/nosotros">Nosotros</Link>
+            </li>
+            <li className="relative" onMouseEnter={() => setShowCategories(true)}>
+              <Link href="/productos">Productos</Link>
+              <AnimatePresence>
+                {showCategories && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.15 }}
+                    className="fixed left-1/2 -translate-x-1/2 top-[96px] mt-2 bg-white text-black rounded-lg shadow-2xl border border-gray-200 w-200 px-4 sm:px-8 z-50"
+                    onMouseLeave={() => setShowCategories(false)}
+                    onMouseEnter={() => setShowCategories(true)}
+                  >
+                    <div className="grid gap-x-6 gap-y-4 py-6" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}>
+                      {categories.map((cat) => (
+                        <div key={cat.name} className="border-l border-gray-200 first:border-none pl-4">
+                          <h3 className="font-bold text-gray-800 mb-2">{cat.name}</h3>
+                          <ul className="space-y-1">
+                            {cat.sub.map((s) => (
+                              <li key={s}>
+                                <Link
+                                  href={`/productos?categoria=${encodeURIComponent(cat.name)}&sub=${encodeURIComponent(s)}`}
+                                  className="text-gray-600 hover:text-campomaq/50 text-sm"
+                                >
+                                  {s}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </li>
+            <li onMouseEnter={() => setShowCategories(false)}>
+              <Link href="/servicios">Servicios</Link>
+            </li>
+          </ul>
 
-      {/* TABLET 640px – 824px */}
+          {/* Botón de contacto + búsqueda */}
+          <div className="flex items-center gap-3 shrink-0 text-sm">
+            <Link
+              href="https://wa.me/593980582555?text=Hola%20quiero%20más%20información"
+              target="_blank"
+              className={`font-semibold px-4 py-2 transition-colors ${
+                scrolled
+                  ? 'bg-green-500 text-black hover:bg-green-400 hover:text-white'
+                  : 'bg-green-400 text-white hover:bg-green-500 hover:text-black'
+              }`}
+            >
+              Contacto <FaWhatsapp className="inline-block ml-1" />
+            </Link>
+
+            {!isProductsPage && (
+              <div className={`flex items-center rounded px-2 py-1 w-[clamp(160px,20vw,240px)] ${
+                scrolled
+                  ? 'bg-gray-300 text-black hover:text-white'
+                  : 'bg-white text-white hover:text-black'
+              }`}>
+                <input
+                  type="text"
+                  placeholder="Buscar..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="outline-none text-black w-full text-sm"
+                />
+                <button onClick={handleSearch} className='cursor-pointer'>
+                  <Search className="text-gray-500 w-5 h-5 shrink-0" />
+                </button>
+              </div>
+            )}
+          </div>
+        </nav>
+
+        {/* TABLET 640px – 824px */}
       <div className="hidden min-[640px]:max-[824px]:flex flex-col px-4 py-3 shadow-md"
         style={{ backgroundColor: scrolled ? '#fff' : '#000' }}
       >
         <div className="flex items-center justify-between gap-2 h-16">
-          <Link href="/" className="relative  w-[222px] h-[222px] min-w-[120px] shrink-0">
+          <Link href="/" className="relative  w-[150px] h-[120px] min-w-[120px] shrink-0">
             <Image
               src="/campo_maq.svg"
               alt="Campomaq Logo"
@@ -180,9 +306,14 @@ export default function Navbar() {
               <input
                 type="text"
                 placeholder="Buscar..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyPress={handleKeyPress}
                 className="outline-none text-black w-full text-sm"
               />
-              <Search className="text-gray-500 w-4 h-4 shrink-0" />
+              <button onClick={handleSearch} className='cursor-pointer'>
+                <Search className="text-gray-500 w-4 h-4 shrink-0" />
+              </button>
             </div>
           )}
 
@@ -208,9 +339,14 @@ export default function Navbar() {
               <Link
                 href="https://wa.me/593980582555?text=Hola%20quiero%20más%20información"
                 target="_blank"
-                className="bg-campomaq text-black font-semibold px-4 py-2 rounded hover:opacity-80"
+                className={`px-4 py-2 rounded hover:opacity-80 ${
+                  scrolled
+                    ? 'bg-green-500 text-black hover:bg-green-400 hover:text-white'
+                    : 'bg-green-400 text-white hover:bg-green-500 hover:text-black'
+                }`}
               >
-                Contacto <FaWhatsapp className="inline-block ml-1" />
+            
+                Contacto <FaWhatsapp className={`inline-block ml-1 `} />
               </Link>
             </motion.div>
           )}
@@ -238,9 +374,14 @@ export default function Navbar() {
               <input
                 type="text"
                 placeholder="Buscar..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyPress={handleKeyPress}
                 className="outline-none text-black w-full text-sm"
               />
-              <Search className="text-gray-500 w-4 h-4 shrink-0" />
+              <button onClick={handleSearch} className='cursor-pointer'>
+                <Search className="text-gray-500 w-4 h-4 shrink-0" />
+              </button>
             </div>
           )}
 
@@ -267,7 +408,11 @@ export default function Navbar() {
                 <Link
                   href="https://wa.me/593980582555?text=Hola%20quiero%20más%20información"
                   target="_blank"
-                  className="bg-campomaq text-black font-semibold px-4 py-2 rounded hover:opacity-80"
+                  className={`px-4 py-2 ${
+                  scrolled
+                    ? 'bg-green-500 text-black hover:bg-green-400 hover:text-white'
+                    : 'bg-green-400 text-white hover:bg-green-500 hover:text-black'
+                }`}
                 >
                   Contacto <FaWhatsapp className="inline-block ml-1" />
                 </Link>
@@ -276,6 +421,45 @@ export default function Navbar() {
           )}
         </AnimatePresence>
       </div>
-    </header>
+      </header>
+
+      {/* Redes sociales flotantes */}
+      <AnimatePresence>
+        {showFloatingSocials && (
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 50 }}
+            transition={{ duration: 0.3 }}
+            className="fixed right-4 top-1/2 transform -translate-y-1/2 z-30 flex flex-col gap-4"
+          >
+            <a 
+              href="https://www.facebook.com/campomaqoficial/?locale=es_LA" 
+              target="_blank" 
+              className="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg flex items-center justify-center"
+              aria-label="Facebook"
+            >
+              <FaFacebookF size={18} />
+            </a>
+            <a 
+              href="https://www.instagram.com/campomaq/" 
+              target="_blank" 
+              className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full hover:from-purple-600 hover:to-pink-600 transition-colors shadow-lg flex items-center justify-center"
+              aria-label="Instagram"
+            >
+              <FaInstagram size={18} />
+            </a>
+            <a 
+              href="https://www.youtube.com/@campomaq9918" 
+              target="_blank" 
+              className="p-3 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-lg flex items-center justify-center"
+              aria-label="YouTube"
+            >
+              <FaYoutube size={18} />
+            </a>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   )
 }

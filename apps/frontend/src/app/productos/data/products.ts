@@ -27,7 +27,7 @@ export const products: Product[] = [
     isOnSale: true,
     discount: 10,
     description: "Motocultor compacto ideal para jardines pequeños y medianos",
-    tags: ["motocultor", "husqvarna", "jardín", "agricultura"]
+    tags: ["motocultor", "Maruyama", "jardín", "agricultura", "maruyama"]
   },
   {
     id: "2",
@@ -39,7 +39,7 @@ export const products: Product[] = [
     brandLogo: "/images/brands/Maruyama.png",
     isNew: true,
     description: "Desbrozadora profesional para trabajos de desbroce",
-    tags: ["motoguadaña", "stihl", "desbroce", "profesional"]
+    tags: ["motoguadaña", "Maruyama", "desbroce", "profesional", "maruyama"]
   },
   {
     id: "3",
@@ -48,12 +48,12 @@ export const products: Product[] = [
     originalPrice: 150,
     image: "/images/prod-home/bombaf.jpg",
     category: "Bombas",
-    brand: "echo",
+    brand: "Echo",
     brandLogo: "/images/brands/echo.svg",
     isOnSale: true,
     discount: 20,
     description: "Bomba de fumigación manual de 20 litros",
-    tags: ["bomba", "fumigación", "manual", "20l"]
+    tags: ["bomba", "fumigación", "manual", "20l", "echo","Echo"]
   },
   {
     id: "4",
@@ -61,10 +61,10 @@ export const products: Product[] = [
     price: 400,
     image: "/images/prod-home/motosierra.jpg",
     category: "Motosierras",
-    brand: "STIHL",
+    brand: "Stihl",
     brandLogo: "/images/brands/STIHL.jpg",
     description: "Motosierra ligera para uso doméstico y profesional",
-    tags: ["motosierra", "husqvarna", "madera", "corte"]
+    tags: ["motosierra", "STIHL", "madera", "corte", "profesional", "stihl"]
   },
   {
     id: "5",
@@ -78,7 +78,7 @@ export const products: Product[] = [
     isOnSale: true,
     discount: 15,
     description: "Desbrozadora de hilo para jardines y terrenos",
-    tags: ["desbrozadora", "echo", "hilo", "jardín"]
+    tags: ["desbrozadora", "echo", "hilo", "jardín", "Echo"]
   },
   {
     id: "6",
@@ -90,7 +90,7 @@ export const products: Product[] = [
     brandLogo: "/images/brands/subaru.jpeg",
     isNew: true,
     description: "Generador portátil de 3000W para emergencias",
-    tags: ["generador", "subaru", "3000w", "emergencia"]
+    tags: ["generador", "subaru", "3000w", "emergencia","Subaru"]
   },
   {
     id: "7",
@@ -101,7 +101,7 @@ export const products: Product[] = [
     brand: "Husqvarna",
     brandLogo: "/images/brands/Husqvarna.jpg",
     description: "Podadora de setos eléctrica profesional",
-    tags: ["podadora", "makita", "setos", "eléctrica"]
+    tags: ["podadora", "Husqvarna", "setos", "eléctrica", "profesional", "husqvarna"]
   },
   {
     id: "8",
@@ -115,18 +115,18 @@ export const products: Product[] = [
     isOnSale: true,
     discount: 16,
     description: "Sopladora de hojas portátil",
-    tags: ["sopladora", "echo", "hojas", "portátil"]
+    tags: ["sopladora", "echo", "hojas", "portátil", "Echo"]
   },
   {
     id: "9",
-    name: "Motoazada Honda FJ500",
+    name: "Motoazada Husqvarna FJ500",
     price: 920,
     image: "/images/prod-home/motoazada.jpg",
     category: "Motoazadas",
-    brand: "Honda",
+    brand: "Husqvarna",
     brandLogo: "/images/brands/Husqvarna.jpg",
     description: "Motoazada profesional para terrenos duros",
-    tags: ["motoazada", "honda", "terreno", "profesional"]
+    tags: ["motoazada", "husqvarna", "terreno", "profesional", "Husqvarna"]
   },
   {
     id: "10",
@@ -137,7 +137,7 @@ export const products: Product[] = [
     brand: "Husqvarna",
     brandLogo: "/images/brands/Husqvarna.jpg",
     description: "Set de cuchillas para motoazada",
-    tags: ["cuchillas", "desbrozadora", "repuestos", "set"]
+    tags: ["cuchillas", "motoazada", "repuestos", "set", "husqvarna", "motocultor","Husqvarna"]
   },
   {
     id: "11",
@@ -145,10 +145,10 @@ export const products: Product[] = [
     price: 25,
     image: "/images/prod-home/stihl-aceite_2t.jpg",
     category: "Lubricantes",
-    brand: "STIHL",
+    brand: "Stihl",
     brandLogo: "/images/brands/STIHL.jpg",
     description: "Aceite 2T de alta calidad para motores",
-    tags: ["aceite", "2t", "stihl", "motor"]
+    tags: ["aceite", "2t", "stihl", "motor", "lubricante", "STIHL"]
   },
   {
     id: "12",
@@ -159,7 +159,7 @@ export const products: Product[] = [
     brand: "Echo",
     brandLogo: "/images/brands/echo.svg",
     description: "manguera para el riego agricola disponible en diferentes longitudes",
-    tags: ["manguera","riego", "100m"]
+    tags: ["manguera","riego", "100m", "echo", "Echo"]
   }
 ];
 

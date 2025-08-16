@@ -4,14 +4,14 @@ import { motion } from 'framer-motion';
 
 export default function HeroVideo() {
   return (
-    <section className="relative w-full h-[90vh] md:h-screen overflow-hidden bg-black z-0">
+    <section className="relative w-full h-[100vh] md:h-screen overflow-hidden bg-black z-0">
       <video
         autoPlay
         loop
         muted
         playsInline
         className="absolute inset-0 object-cover w-full h-full z-[1]"
-        poster="/fallback.jpg"
+        poster="/images/bg/fondo.jpg"
       >
         <source src="/videos/videoCM.mp4" type="video/mp4" />
       </video>
@@ -27,7 +27,7 @@ export default function HeroVideo() {
           transition={{ duration: 1, ease: "easeOut" }}
           className="
             font-bold mb-6 leading-tight drop-shadow-xl text-white
-            text-[clamp(3rem,9vw,5rem)] pl-[clamp(0.5rem,3vw,1rem)] pr-[clamp(0.5rem,3vw,1rem)] pt-[clamp(0.2rem,15vw,2rem)] 
+            text-[clamp(3rem,9vw,5rem)] pl-[clamp(0.5rem,3vw,1rem)] pr-[clamp(0.5rem,3vw,1rem)] pt-[clamp(0.2rem,25vw,5rem)] 
           "
         >
           CAMPO MAQ
@@ -58,6 +58,7 @@ export default function HeroVideo() {
             whileTap={{ scale: 0.95 }}
           >
             <Button
+              href='/nosotros'
               variant="primary"
               className="
                 text-[clamp(0.8rem,2vw,1.2rem)]
@@ -73,6 +74,7 @@ export default function HeroVideo() {
             whileTap={{ scale: 0.95 }}
           >
             <Button
+              href='/productos'
               variant="outline"
               className="
                 text-[clamp(0.8rem,2vw,1.2rem)]
@@ -80,7 +82,7 @@ export default function HeroVideo() {
                 py-[clamp(0.5rem,1.2vw,0.75rem)]
               "
             >
-              Ver Productos Destacados
+              Ver Productos en Tendencia
             </Button>
           </motion.div>
         </motion.div>

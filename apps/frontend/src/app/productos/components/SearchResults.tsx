@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import CardProducto from "@/app/components/ui/CardProducto";
 import { searchProducts, getRelatedProducts, Product } from "../data/products";
-import { Search, X, ArrowLeft } from "lucide-react";
+import { Search, ArrowLeft } from "lucide-react";
 
 interface SearchResultsProps {
   searchQuery: string;
@@ -54,7 +54,7 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
           <div className="flex items-center gap-2 text-gray-600">
             <Search className="w-4 h-4" />
             <span>Resultados para: </span>
-            <span className="font-semibold text-gray-900">"{searchQuery}"</span>
+            <span className="font-semibold text-gray-900">&quot;{searchQuery}&quot;</span>
           </div>
         </div>
         <span className="text-sm text-gray-500">
@@ -103,7 +103,7 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
                 Productos Relacionados
                 {selectedProduct && (
                   <span className="text-lg font-normal text-gray-600 ml-2">
-                    con "{selectedProduct.name}"
+                    con &quot;{selectedProduct.name}&quot;
                   </span>
                 )}
               </h2>
@@ -139,7 +139,7 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
             No se encontraron productos
           </h3>
           <p className="text-gray-600 mb-6">
-            No encontramos productos que coincidan con "{searchQuery}"
+            No encontramos productos que coincidan con &quot;{searchQuery}&quot;.
           </p>
           <div className="space-y-2">
             <p className="text-sm text-gray-500">Sugerencias:</p>
