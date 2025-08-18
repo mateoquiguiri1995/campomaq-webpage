@@ -6,6 +6,9 @@ import Navbar from "@/app/components/ui/Navbar";
 import Footer from "@/app/components/ui/Footer";
 import Chatbot from "@/app/components/Chatbot";
 
+
+
+
 export const metadata: Metadata = {
   title: "Campo Maq",
   description: "Official Campo Maq website. Muy pronto.",

@@ -12,6 +12,9 @@ type Brand = {
 
 const brands: Brand[] = [
   { name: 'Husqvarna', logo: '/images/brands/Husqvarna.jpg'},
+  { name: 'Annovi', logo: '/images/brands/annovi.jpg'},
+  { name: 'Ducati', logo: '/images/brands/ducati.png'},
+  { name: 'Whalebest', logo: '/images/brands/whalebest.png', width: 100, height: 50 },
   { name: 'Maruyama', logo: '/images/brands/Maruyama.png', width: 100 },
   { name: 'Subaru', logo: '/images/brands/subaru.jpeg' },
   { name: 'Kawasaki', logo: '/images/brands/kawasaki.png' },
@@ -23,27 +26,28 @@ const brands: Brand[] = [
 
 const features = [
   {
-    title: <>¿Por qué comprar en CAMPO MAQ?</>,
-    content: "Más de 20 años de experiencia nos respaldan en la distribución de equipos de calidad para el campo y jardinería.",
-    image: "/images/features/agricola.jpg"
+    title: <>Tu cultivo merece lo mejor y nosotros te lo ofrecemos</>,
+    content: "Con más de 20 años de experiencia trabajando con Floricolas y agricultores, somos tu aliado confiable en maquinaria y equipos de alta calidad",
+    youtubeId: "pkHpA-Nvb-U"
   },
   {
-    title: <>Soporte técnico especializado</>,
-    content: "Contamos con técnicos certificados por las principales marcas para brindarte el mejor servicio post-venta.",
-    image: "/images/features/soporte.jpg"
+    title: <>Servicio Técnico Garantizado</>,
+    content: "Nuestro equipo certificado está siempre listo para ayudarte, desde que instalas tu maquinaria hasta que la usas día a día.",
+    youtubeId: "j1wLY4I1QP8"
   }
 ]
-
+//
 export default function Marcas() {
   const router = useRouter()
 
   const handleBrandClick = (brandName: string) => {
-    router.push(`/productos?search=${encodeURIComponent(brandName)}`)
+    router.push(`/productos?brand=${encodeURIComponent(brandName)}`)
   }
 
   return (
     <section className="py-8 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto">
+        
         {/* 🔹 Título */}
         <motion.h2 
           initial={{ opacity: 0, y: -30 }}
@@ -52,7 +56,7 @@ export default function Marcas() {
           transition={{ duration: 0.8 }}
           className="text-black text-center text-2xl sm:text-3xl font-bold mb-6"
         >
-          Distribuidores Certificados de:
+          Trabajamos con las mejores marcas
         </motion.h2>
 
         {/* 🔹 Cinta transportadora */}
@@ -82,6 +86,7 @@ export default function Marcas() {
                     src={brand.logo}
                     alt={brand.name}
                     fill
+                    sizes="(max-width: 768px) 30vw, (max-width: 1200px) 15vw, 7rem"
                     style={{ objectFit: 'contain' }}
                   />
                 </div>
@@ -102,7 +107,7 @@ export default function Marcas() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: index * 0.2 }}
-            className="mb-16 md:mb-24 grid grid-cols-1 md:grid-cols-2 gap-8 items-center"
+            className="mb-16 md:mb-24 grid grid-cols-1 md:grid-cols-2 gap-8 items-center pt-10"
           >
             {/* Texto */}
             <motion.div
@@ -120,24 +125,25 @@ export default function Marcas() {
               <p className="text-lg text-gray-600">{feature.content}</p>
             </motion.div>
 
-            {/* Imagen */}
+            {/* Video YouTube */}
             <motion.div
               initial={{ opacity: 0, x: index % 2 === 0 ? 30 : -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.3 }}
               whileHover={{ scale: 1.02 }}
-              className={`relative h-64 md:h-96 rounded-lg overflow-hidden shadow-lg ${
+              className={`relative h-50 md:h-50 xl:h-60 overflow-hidden shadow-lg cursor-pointer ${
                 index % 2 === 0 ? 'md:order-2' : 'md:order-1'
               }`}
+              onClick={() => window.open(`https://www.youtube.com/watch?v=${feature.youtubeId}`, "_blank")}
             >
-              <Image
-                src={feature.image}
-                alt={typeof feature.title === 'string' ? feature.title : ''}
-                fill
-                style={{ objectFit: 'cover' }}
-                className="hover:scale-105 transition-transform duration-500"
+              <iframe
+                className="absolute inset-0 w-full h-full"
+                src={`https://www.youtube.com/embed/${feature.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${feature.youtubeId}&modestbranding=1&rel=0&showinfo=0`}
+                title={typeof feature.title === 'string' ? feature.title : "Video"}
+                allow="autoplay; encrypted-media; picture-in-picture"
               />
+              
             </motion.div>
           </motion.div>
         ))}

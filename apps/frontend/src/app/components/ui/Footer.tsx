@@ -16,37 +16,32 @@ const quickLinks = [
 
 export default function Footer() {
   return (
-    <footer className="relative text-gray-300 pt-70 pb-12 px-6 overflow-hidden">
+    <footer className="relative text-gray-300 pt-25 pb-12 px-6 overflow-hidden">
       {/* Imagen de fondo */}
       <div className="absolute inset-0 -z-10">
         <Image
-          src="/images/bg/cayambe.jpg"
+          src="/images/bg/volcan.jpg"
           alt="Volcán Cayambe"
           fill
+          sizes="100vw"
           priority
           className="object-cover object-center"
         />
-        {/* Degradado oscuro inferior */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent" />
-        {/* Degradado superior celeste a blanco */}
-        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-white via-blue-100/20 to-transparent" />
       </div>
 
       <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 border-b border-gray-700 pb-16">
         {/* Logo y descripción */}
         <div>
-          <div className="relative w-48 h-12 mb-6">
+          <div className="relative w-50 h-50 top-0 left-1/2 transform -translate-x-1/2 mb-6">
             <Image
-              src="/campomaq.png"
+              src="/campo_maq.svg"
               alt="Campomaq Logo"
               fill
+              sizes='w-150px h-150px'
               style={{ objectFit: "contain" }}
             />
           </div>
-          <p className="font-bold mb-6 leading-relaxed drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-            Distribuidores líderes de maquinaria agrícola y de jardinería con más de 20 años de experiencia en el mercado.
-          </p>
-          <div className="flex space-x-4">
+          <div className="flex space-x-6 justify-center mb-6 pt-0 mt-0">
             {socialLinks.map((social, index) => (
               <Link
                 key={index}
@@ -87,7 +82,7 @@ export default function Footer() {
             <p>Calle Venezuela OE4-64 y Sergio Mejía</p>
             <p>Cayambe, Quito, Ecuador</p>
             <p>Tel: (02) 1185008</p>
-            <p>Email: ventasAlex@campomaq.com</p>
+            <p>Email: ventas@campomaq.com</p>
           </address>
         </div>
 
@@ -97,17 +92,17 @@ export default function Footer() {
             Horario de atención
           </h3>
           <p className="mb-3 drop-shadow-[0_2px_3px_rgba(0,0,0,0.8)]">
-            Lunes a Viernes: 7:30 AM - 17:30 PM
+            Lunes a Viernes: 8:00 AM - 17:30 PM
           </p>
           <p className="drop-shadow-[0_2px_3px_rgba(0,5,5,5)]">
-            Sábados: 7:30 AM - 13:00 PM
+            Sábados: 8:00 AM - 13:00 PM
           </p>
         </div>
       </div>
 
       {/* Copyright */}
       <div className="mt-8 text-center text-sm text-gray-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] font-bold">
-        © {new Date().getFullYear()} Campo Maq. Todos los derechos reservados.
+        © {new Date().getFullYear()} Campo Maq
       </div>
     </footer>
   );

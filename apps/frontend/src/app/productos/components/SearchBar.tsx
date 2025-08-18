@@ -1,27 +1,92 @@
 // src/app/productos/components/SearchBar.tsx
 "use client";
 
-import { Search, ShoppingCart, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSearchParams, useRouter } from "next/navigation";
 
-export default function SearchBar() {
-  const [cartCount] = useState<number>(1); // Simulación
+interface SearchBarProps {
+  onSearch?: (query: string) => void;
+}
+
+export default function SearchBar({ onSearch }: SearchBarProps) {
   const [tags, setTags] = useState<string[]>([]);
+  const [searchInput, setSearchInput] = useState<string>("");
   const [showQuickOptions, setShowQuickOptions] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   const quickOptions = ["Motocultor", "Motoguadaña", "Bombas de Fumigar", "Generadores", "Motosierra", "Desbrozadora", "Herramientas de Jardín"];
 
+  // Efecto para cargar la búsqueda desde URL al montar el componente
+  useEffect(() => {
+    const searchFromUrl = searchParams.get('search');
+    if (searchFromUrl && searchFromUrl !== searchInput) {
+      setSearchInput(searchFromUrl);
+      // Ejecutar búsqueda automáticamente solo si es diferente
+      if (onSearch) {
+        onSearch(searchFromUrl);
+      }
+    }
+  }, [searchParams]); // Removido onSearch de las dependencias
+
   const addTag = (tag: string) => {
     if (tags.length < 3 && !tags.includes(tag)) {
-      setTags([...tags, tag]);
+      const newTags = [...tags, tag];
+      setTags(newTags);
+      setShowQuickOptions(false);
+      // Ejecutar búsqueda automáticamente con los nuevos tags
+      const searchQuery = [...newTags, searchInput].filter(Boolean).join(" ");
+      if (onSearch && searchQuery.trim()) {
+        onSearch(searchQuery.trim());
+      }
     }
-    setShowQuickOptions(false);
   };
 
   const removeTag = (tag: string) => {
-    setTags(tags.filter((t) => t !== tag));
+    const newTags = tags.filter((t) => t !== tag);
+    setTags(newTags);
+    // Ejecutar búsqueda automáticamente después de remover tag
+    const searchQuery = [...newTags, searchInput].filter(Boolean).join(" ");
+    if (onSearch) {
+      onSearch(searchQuery.trim());
+    }
+  };
+
+  const handleSearch = () => {
+    const searchQuery = [...tags, searchInput].filter(Boolean).join(" ");
+    if (searchQuery.trim() && onSearch) {
+      onSearch(searchQuery.trim());
+      // Actualizar URL sin recargar la página
+      const params = new URLSearchParams(searchParams.toString());
+      if (searchQuery.trim()) {
+        params.set('search', searchQuery.trim());
+      } else {
+        params.delete('search');
+      }
+      router.replace(`/productos?${params.toString()}`, { scroll: false });
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  const clearSearch = () => {
+    setTags([]);
+    setSearchInput("");
+    if (onSearch) {
+      onSearch("");
+    }
+    // Limpiar parámetro de búsqueda de la URL
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('search');
+    router.replace(`/productos?${params.toString()}`, { scroll: false });
   };
 
   // Cierra el panel al hacer click fuera
@@ -68,24 +133,31 @@ export default function SearchBar() {
         <input
           type="text"
           placeholder="Buscar..."
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyPress={handleKeyPress}
           className="flex-1 outline-none text-sm text-black placeholder-gray-400 bg-transparent"
         />
 
-        {/* Icono buscar */}
-        <button className="p-1 rounded-full hover:bg-black transition-colors duration-200">
-          <Search className="w-6 h-6 text-gray-500 hover:text-yellow-200 cursor-pointer" />
-        </button>
-      </div>
+        {/* Botón limpiar */}
+        {(tags.length > 0 || searchInput) && (
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              clearSearch();
+            }}
+            className="p-1 rounded-full hover:bg-gray-100 transition-colors duration-200"
+          >
+            <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+          </button>
+        )}
 
-      {/* Carrito */}
-      <div className="relative flex-shrink-0">
-        <button className="relative p-2 rounded-full bg-white hover:bg-black shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer">
-          <ShoppingCart className="w-6 h-6 text-gray-700 hover:text-yellow-200" />
-          {cartCount > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs font-semibold w-5 h-5 flex items-center justify-center rounded-full shadow cursor-pointer">
-              {cartCount}
-            </span>
-          )}
+        {/* Icono buscar */}
+        <button 
+          onClick={handleSearch}
+          className="p-1 rounded-full hover:bg-black transition-colors duration-200"
+        >
+          <Search className="w-6 h-6 text-gray-500 hover:text-yellow-200 cursor-pointer" />
         </button>
       </div>
 
@@ -104,6 +176,7 @@ export default function SearchBar() {
                 key={opt}
                 onClick={() => addTag(opt)}
                 className="px-4 py-1.5 rounded-full bg-gray-100 text-black hover:bg-black hover:text-yellow-200 text-sm transition-colors duration-200 cursor-pointer"
+                disabled={tags.includes(opt) || tags.length >= 3}
               >
                 {opt}
               </button>
