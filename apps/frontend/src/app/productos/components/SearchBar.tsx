@@ -100,23 +100,6 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // REMOVIDO: Efecto que causaba el bucle infinito
-  // Este useEffect estaba causando re-renders constantes
-  /*
-  useEffect(() => {
-    if (searchInput || tags.length > 0) {
-      const searchQuery = [...tags, searchInput].filter(Boolean).join(" ");
-      if (onSearch && searchQuery.trim()) {
-        // Debounce para evitar demasiadas búsquedas
-        const timeoutId = setTimeout(() => {
-          onSearch(searchQuery.trim());
-        }, 500);
-        return () => clearTimeout(timeoutId);
-      }
-    }
-  }, [searchInput, tags, onSearch]);
-  */
-
   return (
     <div
       ref={containerRef}
