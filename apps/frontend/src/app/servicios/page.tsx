@@ -7,14 +7,14 @@ import { useState, useRef, useEffect } from 'react';
 
 const stats = [
   { number: "20+", label: "Años de Experiencia", icon: <Clock className="w-6 h-6" />, color: "from-blue-500 to-blue-600" },
-  { number: "100+", label: "Clientes Satisfechos", icon: <Users className="w-6 h-6" />, color: "from-green-500 to-green-600" },
+  { number: "1000+", label: "Clientes Satisfechos", icon: <Users className="w-6 h-6" />, color: "from-green-500 to-green-600" },
   { number: '24/', label: "Soporte Técnico", icon: <Headphones className="w-6 h-6" />, color: "from-purple-500 to-purple-600" },
   { number: "100%", label: "Garantía", icon: <Shield className="w-6 h-6" />, color: "from-orange-500 to-orange-600" }
 ];
 
 const services = [
   {
-    icon: <Wrench className="w-10 h-10" />,
+    icon: <Wrench className="w-10 h-10 text-black/60" />,
     title: "Servicio Técnico Especializado",
     description: "Contamos con técnicos certificados por las principales marcas para brindarte el mejor servicio post-venta y mantenimiento preventivo con tecnología de punta.",
     features: ["Diagnóstico especializado", "Reparación garantizada", "Mantenimiento preventivo", "Certificaciones oficiales"],
@@ -23,7 +23,7 @@ const services = [
     benefits: ["Reducción de tiempos de inactividad", "Mayor vida útil del equipo", "Costos operativos menores"]
   },
   {
-    icon: <Truck className="w-10 h-10" />,
+    icon: <Truck className="w-10 h-10 text-gray-700" />,
     title: "Entrega y Logística",
     description: "Servicio de entrega a domicilio en todo el país con seguimiento en tiempo real, flota propia y garantía de entrega segura y puntual.",
     features: ["Entrega a domicilio", "Seguimiento en tiempo real", "Embalaje seguro", "Cobertura nacional"],
@@ -32,7 +32,7 @@ const services = [
     benefits: ["Entrega garantizada", "Seguimiento GPS", "Instalación incluida"]
   },
   {
-    icon: <Headphones className="w-10 h-10" />,
+    icon: <Headphones className="w-10 h-10 text-gray-700" />,
     title: "Asesoría Técnica",
     description: "Asesoramiento especializado personalizado para ayudarte a elegir la mejor maquinaria según tus necesidades específicas y presupuesto.",
     features: ["Asesoría personalizada", "Análisis de necesidades", "Comparativas técnicas", "Recomendaciones expertas"],
@@ -41,7 +41,7 @@ const services = [
     benefits: ["Decisiones informadas", "Máximo ROI", "Soluciones a medida"]
   },
   {
-    icon: <Shield className="w-10 h-10" />,
+    icon: <Shield className="w-10 h-10 text-gray-700" />,
     title: "Garantía Extendida",
     description: "Garantías extendidas en todos nuestros productos con cobertura completa, soporte técnico incluido y repuestos originales garantizados.",
     features: ["Garantía extendida", "Cobertura completa", "Soporte técnico", "Repuestos originales"],
@@ -50,7 +50,7 @@ const services = [
     benefits: ["Tranquilidad total", "Protección de inversión", "Servicio premium"]
   },
   {
-    icon: <Clock className="w-10 h-10" />,
+    icon: <Clock className="w-10 h-10 text-gray-700" />,
     title: "Servicio 24/7",
     description: "Atención al cliente disponible las 24 horas del día, 7 días a la semana para emergencias técnicas con respuesta inmediata garantizada.",
     features: ["Atención 24/7", "Emergencias técnicas", "Respuesta rápida", "Soporte continuo"],
@@ -59,7 +59,7 @@ const services = [
     benefits: ["Disponibilidad total", "Respuesta inmediata", "Soporte de emergencia"]
   },
   {
-    icon: <Users className="w-10 h-10" />,
+    icon: <Users className="w-10 h-10 text-gray-700" />,
     title: "Capacitación",
     description: "Programas de capacitación integral para el uso correcto, mantenimiento y optimización de la maquinaria agrícola con certificación oficial.",
     features: ["Capacitación técnica", "Manuales de uso", "Videos instructivos", "Sesiones prácticas"],

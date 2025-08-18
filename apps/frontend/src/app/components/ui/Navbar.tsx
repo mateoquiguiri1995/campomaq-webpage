@@ -14,11 +14,38 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [showTopBar, setShowTopBar] = useState(true)
   const [showFloatingSocials, setShowFloatingSocials] = useState(false)
+  const [isFooterVisible, setIsFooterVisible] = useState(false)
   const [lastScrollY, setLastScrollY] = useState(0)
   const [searchInput, setSearchInput] = useState("")
   const pathname = usePathname()
   const router = useRouter()
   const topBarRef = useRef<HTMLDivElement>(null)
+
+  // Observer para detectar cuando el footer está visible
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsFooterVisible(entry.isIntersecting)
+      },
+      {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1 // Se activa cuando el 10% del footer está visible
+      }
+    )
+
+    // Buscar el footer en el DOM
+    const footer = document.querySelector('footer')
+    if (footer) {
+      observer.observe(footer)
+    }
+
+    return () => {
+      if (footer) {
+        observer.unobserve(footer)
+      }
+    }
+  }, [])
 
   // Control de scroll unificado
   useEffect(() => {
@@ -142,19 +169,19 @@ export default function Navbar() {
               <span className="flex items-center gap-1 whitespace-nowrap">
                 <FaMapMarker size={16} className='text-red-400 shrink-0' />
                 <span className="hidden sm:inline">Pichincha, Cayambe</span>
-                <span className="sm:hidden">Pichincha, Cayambe</span>
+                <span className="sm:hidden text-xs sm:text-[0.7rem]">Cayambe</span>
               </span>
               
               {/* Separador */}
               <span className="sm:inline-block md:inline-block h-4 w-px bg-gray-300"></span>
               
-              {/* Teléfono - oculto en móvil muy pequeño */}
+              {/* Teléfono */}
               <a 
                 href="tel:(02) 1185008" 
                 className="flex items-center gap-1 hover:text-blue-500 transition-colors whitespace-nowrap"
               >
                 <FaPhone size={16} className='text-blue-500' />
-                <span>(02) 1185008</span>
+                <span className='text-xs sm:text-[0.7rem]'>(02) 1185008</span>
               </a>
               
               {/* Separador */}
@@ -167,7 +194,7 @@ export default function Navbar() {
                 className="flex items-center gap-1 hover:text-green-500 transition-colors whitespace-nowrap"
               >
                 <FaWhatsapp size={16} className='text-green-500' />
-                <span className="sm:inline">0980582555</span>
+                <span className="sm:inline text-xs sm:text-[0.7rem]">0980582555</span>
               </a>
               
               {/* Separador */}
@@ -239,13 +266,13 @@ export default function Navbar() {
           {/* Menú principal */}
           <ul
             className={`flex text-l font-semibold transition-all duration-200 ${
-              scrolled ? 'text-black' : 'text-yellow-400'
+              scrolled ? 'text-black' : 'text-campomaq'
             }`}
             style={{ gap: 'clamp(8px, 2vw, 30px)' }}
           >
             <li 
               onMouseEnter={() => setShowCategories(false)}
-              className="hover:text-yellow-500 transition-colors"
+              className="hover:text-campomaq font-bold transition-colors"
             >
               <Link href="/nosotros">Nosotros</Link>
             </li>
@@ -256,7 +283,7 @@ export default function Navbar() {
             >
               <Link 
                 href="/productos"
-                className="flex items-center gap-1 hover:text-yellow-500 transition-colors relative"
+                className="flex items-center gap-1 hover:text-campomaq transition-colors relative"
               >
                 Productos
                 {/* Indicador de flecha */}
@@ -394,7 +421,7 @@ export default function Navbar() {
             </li>
             <li 
               onMouseEnter={() => setShowCategories(false)}
-              className="hover:text-yellow-500 transition-colors"
+              className="hover:text-campomaq transition-colors"
             >
               <Link href="/servicios">Servicios</Link>
             </li>
@@ -481,7 +508,7 @@ export default function Navbar() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.15 }}
                 className={`py-4 rounded shadow-lg flex justify-center gap-6 items-center ${
-                  scrolled ? 'bg-white text-black' : 'bg-black text-yellow-400'
+                  scrolled ? 'bg-white text-black' : 'bg-black text-campomaq'
                 }`}
               >
                 <Link href="/nosotros">Nosotros</Link>
@@ -573,20 +600,20 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* Redes sociales flotantes */}
+      {/* Redes sociales flotantes - Ahora se ocultan cuando el footer está visible */}
       <AnimatePresence>
-        {showFloatingSocials && (
+        {showFloatingSocials && !isFooterVisible && (
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 50 }}
+            exit={{ opacity: 0, x: 50}}
             transition={{ duration: 0.3 }}
             className="fixed right-4 top-1/2 transform -translate-y-1/2 z-30 flex flex-col gap-4"
           >
             <a 
               href="https://www.facebook.com/campomaqoficial/?locale=es_LA" 
               target="_blank" 
-              className="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg flex items-center justify-center"
+              className="p-3 bg-black text-blue-600 rounded-full hover:bg-campomaq transition-colors shadow-lg flex items-center justify-center"
               aria-label="Facebook"
             >
               <FaFacebookF size={18} />
@@ -594,7 +621,7 @@ export default function Navbar() {
             <a 
               href="https://www.instagram.com/campomaq/" 
               target="_blank" 
-              className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full hover:from-purple-600 hover:to-pink-600 transition-colors shadow-lg flex items-center justify-center"
+              className="p-3 bg-black text-pink-500 rounded-full hover:bg-campomaq transition-colors shadow-lg flex items-center justify-center"
               aria-label="Instagram"
             >
               <FaInstagram size={18} />
@@ -602,7 +629,7 @@ export default function Navbar() {
             <a 
               href="https://www.youtube.com/@campomaq9918" 
               target="_blank" 
-              className="p-3 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-lg flex items-center justify-center"
+              className="p-3 bg-black text-red-500 rounded-full hover:bg-campomaq transition-colors shadow-lg flex items-center justify-center"
               aria-label="YouTube"
             >
               <FaYoutube size={18} />

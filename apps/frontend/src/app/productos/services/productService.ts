@@ -2,7 +2,7 @@ import { Product, ProductsResponse, SearchFilters } from '../types';
 import {products} from '../data/products'; // Importación ES6 en lugar de require
 
 // Configuración base para la API
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://campomaq.azurewebsites.net/search';
 
 // Cliente HTTP básico
 class ApiClient {

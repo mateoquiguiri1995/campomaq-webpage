@@ -183,18 +183,18 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #facc15; /* amarillo */
+  background: var(--color-campomaq); /* amarillo */
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #eab308; /* amarillo más oscuro al pasar el mouse */
+  background: var(--color-campomaq); /* amarillo más oscuro al pasar el mouse */
 }
 
 /* Para Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #facc15 #000; /* thumb amarillo, track negro */
+  scrollbar-color: var(--color-campomaq) #000; /* thumb amarillo, track negro */
 }
 
 /* Product card utilities */
