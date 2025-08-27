@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import CardProducto from "@/app/components/ui/CardProducto";
-import { searchProducts, getRelatedProducts} from "../data/products";
+import { ProductService } from "../services/productService";
 import { Product } from "../types"; 
 import { Search, ArrowLeft } from "lucide-react";
 
@@ -15,28 +15,46 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (searchQuery.trim()) {
-      const results = searchProducts(searchQuery);
-      setSearchResults(results);
-      
-      // Si hay resultados, obtener productos relacionados del primer resultado
-      if (results.length > 0) {
-        const related = getRelatedProducts(results[0].id, 4);
-        setRelatedProducts(related);
+    const fetchSearchResults = async () => {
+      if (searchQuery.trim()) {
+        setIsLoading(true);
+        try {
+          const results = await ProductService.searchProducts(searchQuery);
+          setSearchResults(results);
+          
+          // Si hay resultados, obtener productos relacionados del primer resultado
+          if (results.length > 0) {
+            // Para productos relacionados, por ahora usamos datos locales como fallback
+            // ya que la API no parece tener endpoint para relacionados
+            const related = results.slice(0, 4); // Tomar primeros 4 como relacionados
+            setRelatedProducts(related);
+          } else {
+            setRelatedProducts([]);
+          }
+        } catch (error) {
+          console.error('Error searching products:', error);
+          setSearchResults([]);
+          setRelatedProducts([]);
+        } finally {
+          setIsLoading(false);
+        }
       } else {
+        setSearchResults([]);
         setRelatedProducts([]);
+        setIsLoading(false);
       }
-    } else {
-      setSearchResults([]);
-      setRelatedProducts([]);
-    }
+    };
+
+    fetchSearchResults();
   }, [searchQuery]);
 
   const handleProductClick = (product: Product) => {
     setSelectedProduct(product);
-    const related = getRelatedProducts(product.id, 4);
+    // Para productos relacionados, usar primeros 4 resultados como relacionados
+    const related = searchResults.filter(p => p.id !== product.id).slice(0, 4);
     setRelatedProducts(related);
   };
 
@@ -64,7 +82,12 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
       </div>
 
       {/* Resultados de búsqueda */}
-      {searchResults.length > 0 ? (
+      {isLoading ? (
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Buscando productos...</p>
+        </div>
+      ) : searchResults.length > 0 ? (
         <div className="space-y-8">
           {/* Productos encontrados */}
           <section>

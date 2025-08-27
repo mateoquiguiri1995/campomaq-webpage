@@ -2,7 +2,8 @@ import { Product, ProductsResponse, SearchFilters } from '../types';
 import {products} from '../data/products'; // Importación ES6 en lugar de require
 
 // Configuración base para la API
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://campomaq.azurewebsites.net/search';
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://campomaq.azurewebsites.net/search';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
 
 // Cliente HTTP básico
 class ApiClient {
@@ -36,6 +37,10 @@ class ApiClient {
       return await response.json();
     } catch (error) {
       console.error('API request failed:', error);
+      // Check if it's a network error (failed to fetch)
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        throw new Error('Network error: Could not connect to the server. Please check if the backend is running.');
+      }
       throw error;
     }
   }
@@ -70,23 +75,36 @@ const apiClient = new ApiClient(API_BASE_URL);
 
 // Servicio de productos
 export class ProductService {
-  // Obtener todos los productos con filtros opcionales
+  // Obtener todos los productos usando el endpoint /search solo si hay query, sino usar datos locales
   static async getProducts(filters?: SearchFilters): Promise<ProductsResponse> {
-    const params = new URLSearchParams();
-    
-    if (filters) {
-      if (filters.query) params.append('q', filters.query);
-      if (filters.category) params.append('category', filters.category);
-      if (filters.brand) params.append('brand', filters.brand);
-      if (filters.tags?.length) {
-        filters.tags.forEach(tag => params.append('tags', tag));
-      }
-      if (filters.sortBy) params.append('sortBy', filters.sortBy);
-      if (filters.page) params.append('page', filters.page.toString());
+    // Si no hay query, usar datos locales directamente para evitar llamar a la API con query vacío
+    if (!filters?.query) {
+      return {
+        data: getFallbackProducts(),
+        success: false,
+        message: 'No query provided, using local data'
+      };
     }
 
-    const endpoint = `/products${params.toString() ? `?${params.toString()}` : ''}`;
-    return apiClient.get<ProductsResponse>(endpoint);
+    const params = new URLSearchParams();
+    params.append('q', filters.query);
+    
+    const endpoint = `/search?${params.toString()}`;
+    try {
+      const productsArray = await apiClient.get<Product[]>(endpoint);
+      return {
+        data: productsArray,
+        success: true,
+      };
+    } catch (error) {
+      console.error('Error getting products via API:', error);
+      // Fallback to local data
+      return {
+        data: getFallbackProducts(),
+        success: false,
+        message: 'API not available, using local data'
+      };
+    }
   }
 
   // Obtener un producto por ID
@@ -94,48 +112,185 @@ export class ProductService {
     return apiClient.get<Product>(`/products/${id}`);
   }
 
-  // Buscar productos
-  static async searchProducts(query: string, filters?: Omit<SearchFilters, 'query'>): Promise<ProductsResponse> {
-    return this.getProducts({ query, ...filters });
+  // Buscar productos usando el endpoint Flask
+  static async searchProducts(query: string, filters?: Omit<SearchFilters, 'query'>): Promise<Product[]> {
+    const params = new URLSearchParams();
+    params.append('q', query);
+    
+    // Eliminar otros filtros ya que el backend solo soporta 'q'
+    // Los filtros adicionales se manejarán en el frontend si es necesario
+
+    const endpoint = `/search?${params.toString()}`;
+    try {
+      const apiProducts = await apiClient.get<any[]>(endpoint);
+      // Mapear la respuesta de la API al formato Product
+      const products = apiProducts.map(apiProduct => this.mapApiProductToProduct(apiProduct));
+      return products;
+    } catch (error) {
+      console.error('Error searching products via API:', error);
+      // Fallback to local data using the existing getProducts which returns ProductsResponse
+      const fallbackResponse = await this.getProducts({ query });
+      return fallbackResponse.data;
+    }
   }
 
-  // Obtener productos en oferta
+  // Mapear producto de API a formato local
+  private static mapApiProductToProduct(apiProduct: any): Product {
+    return {
+      id: apiProduct.id || `api-${Math.random().toString(36).substr(2, 9)}`,
+      name: apiProduct.product_name?.trim() || 'Producto sin nombre',
+      image: (apiProduct.link && Array.isArray(apiProduct.link) && apiProduct.link.length > 0)
+        ? apiProduct.link[0]
+        : '/images/placeholder.jpg',
+      category: apiProduct.category_name?.trim() || 'Sin categoría',
+      brand: apiProduct.brand_name?.trim() || 'Sin marca',
+      brandLogo: apiProduct.brand_logo || '/images/brands/placeholder.png',
+      isNew: apiProduct.is_new || false,
+      isOnSale: apiProduct.is_on_sale || false,
+      discount: apiProduct.discount || 0,
+      description: apiProduct.description || 'Sin descripción',
+      tags: apiProduct.tags || [],
+      additionalImages: Array.isArray(apiProduct.link) ? apiProduct.link : []
+    };
+  }
+
+
+  // Obtener productos en oferta - usar datos locales como fallback
   static async getProductsOnSale(): Promise<ProductsResponse> {
-    return apiClient.get<ProductsResponse>('/products/sale');
+    try {
+      const allProducts = await this.getProducts();
+      const saleProducts = allProducts.data.filter(product => product.isOnSale);
+      return {
+        data: saleProducts,
+        success: true,
+      };
+    } catch (error) {
+      console.error('Error getting sale products:', error);
+      return {
+        data: getFallbackProducts().filter(product => product.isOnSale),
+        success: false,
+        message: 'API not available, using local data'
+      };
+    }
   }
 
-  // Obtener productos nuevos
+  // Obtener productos nuevos - usar datos locales como fallback
   static async getNewProducts(): Promise<ProductsResponse> {
-    return apiClient.get<ProductsResponse>('/products/new');
+    try {
+      const allProducts = await this.getProducts();
+      const newProducts = allProducts.data.filter(product => product.isNew);
+      return {
+        data: newProducts,
+        success: true,
+      };
+    } catch (error) {
+      console.error('Error getting new products:', error);
+      return {
+        data: getFallbackProducts().filter(product => product.isNew),
+        success: false,
+        message: 'API not available, using local data'
+      };
+    }
   }
 
-  // Obtener productos en tendencia
+  // Obtener productos en tendencia - usar datos locales como fallback
   static async getTrendingProducts(): Promise<ProductsResponse> {
-    return apiClient.get<ProductsResponse>('/products/trending');
+    try {
+      const allProducts = await this.getProducts();
+      const trendingIds = ["3", "5", "7", "9", "11", "12"];
+      const trendingProducts = allProducts.data.filter(p => trendingIds.includes(p.id));
+      return {
+        data: trendingProducts,
+        success: true,
+      };
+    } catch (error) {
+      console.error('Error getting trending products:', error);
+      const trendingIds = ["3", "5", "7", "9", "11", "12"];
+      return {
+        data: getFallbackProducts().filter(p => trendingIds.includes(p.id)),
+        success: false,
+        message: 'API not available, using local data'
+      };
+    }
   }
 
-  // Obtener productos relacionados
+  // Obtener productos relacionados - usar datos locales como fallback
   static async getRelatedProducts(productId: string, limit: number = 4): Promise<Product[]> {
-    return apiClient.get<Product[]>(`/products/${productId}/related?limit=${limit}`);
+    try {
+      const allProducts = await this.getProducts();
+      const product = allProducts.data.find(p => p.id === productId);
+      if (!product) return [];
+      
+      return allProducts.data
+        .filter(p => p.id !== productId &&
+                   (p.category === product.category || p.brand === product.brand))
+        .slice(0, limit);
+    } catch (error) {
+      console.error('Error getting related products:', error);
+      const product = getFallbackProducts().find(p => p.id === productId);
+      if (!product) return [];
+      
+      return getFallbackProducts()
+        .filter(p => p.id !== productId &&
+                   (p.category === product.category || p.brand === product.brand))
+        .slice(0, limit);
+    }
   }
 
-  // Obtener categorías disponibles
+  // Obtener categorías disponibles - usar datos locales como fallback
   static async getCategories(): Promise<string[]> {
-    return apiClient.get<string[]>('/categories');
+    try {
+      const allProducts = await this.getProducts();
+      const categories = [...new Set(allProducts.data.map(p => p.category).filter(Boolean))] as string[];
+      return categories;
+    } catch (error) {
+      console.error('Error getting categories:', error);
+      const categories = [...new Set(getFallbackProducts().map(p => p.category).filter(Boolean))] as string[];
+      return categories;
+    }
   }
 
-  // Obtener marcas disponibles
+  // Obtener marcas disponibles - usar datos locales como fallback
   static async getBrands(): Promise<string[]> {
-    return apiClient.get<string[]>('/brands');
+    try {
+      const allProducts = await this.getProducts();
+      const brands = [...new Set(allProducts.data.map(p => p.brand).filter(Boolean))] as string[];
+      return brands;
+    } catch (error) {
+      console.error('Error getting brands:', error);
+      const brands = [...new Set(getFallbackProducts().map(p => p.brand).filter(Boolean))] as string[];
+      return brands;
+    }
   }
 
-  // Obtener filtros disponibles
+  // Obtener filtros disponibles - usar datos locales como fallback
   static async getAvailableFilters(): Promise<{
     categories: string[];
     brands: string[];
     priceRange: { min: number; max: number };
   }> {
-    return apiClient.get('/filters');
+    try {
+      const [categories, brands] = await Promise.all([
+        this.getCategories(),
+        this.getBrands()
+      ]);
+      
+      return {
+        categories,
+        brands,
+        priceRange: { min: 0, max: 10000 } // Default price range
+      };
+    } catch (error) {
+      console.error('Error getting filters:', error);
+      const categories = [...new Set(getFallbackProducts().map(p => p.category).filter(Boolean))] as string[];
+      const brands = [...new Set(getFallbackProducts().map(p => p.brand).filter(Boolean))] as string[];
+      
+      return {
+        categories,
+        brands,
+        priceRange: { min: 0, max: 10000 }
+      };
+    }
   }
 }
 
