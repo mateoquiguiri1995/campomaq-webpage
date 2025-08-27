@@ -132,7 +132,7 @@ export default function Marcas() {
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.3 }}
               whileHover={{ scale: 1.02 }}
-              className={`relative h-50 md:h-50 xl:h-60 overflow-hidden shadow-lg cursor-pointer ${
+              className={`relative h-50 w-88 md:h-50 xl:h-80 xl:w-140 overflow-hidden shadow-lg cursor-pointer ${
                 index % 2 === 0 ? 'md:order-2' : 'md:order-1'
               }`}
               onClick={() => window.open(`https://www.youtube.com/watch?v=${feature.youtubeId}`, "_blank")}

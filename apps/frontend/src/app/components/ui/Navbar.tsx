@@ -177,11 +177,11 @@ export default function Navbar() {
               
               {/* Teléfono */}
               <a 
-                href="tel:(02) 1185008" 
+                href="tel:(02) 2110537" 
                 className="flex items-center gap-1 hover:text-blue-500 transition-colors whitespace-nowrap"
               >
                 <FaPhone size={16} className='text-blue-500' />
-                <span className='text-xs sm:text-[0.7rem]'>(02) 1185008</span>
+                <span className='text-xs sm:text-[0.7rem]'>(02) 2110537</span>
               </a>
               
               {/* Separador */}

@@ -81,8 +81,8 @@ export default function Footer() {
           <address className="not-italic space-y-3 leading-relaxed drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
             <p>Calle Venezuela OE4-64 y Sergio Mejía</p>
             <p>Cayambe, Quito, Ecuador</p>
-            <p>Tel: (02) 1185008</p>
-            <p>Email: ventas@campomaq.com</p>
+            <p>Tel: (02) 2110537</p>
+            <p>Email: ventas@campomaq.com.ec</p>
           </address>
         </div>
 
@@ -95,7 +95,7 @@ export default function Footer() {
             Lunes a Viernes: 8:00 AM - 17:30 PM
           </p>
           <p className="drop-shadow-[0_2px_3px_rgba(0,5,5,5)]">
-            Sábados: 8:00 AM - 13:00 PM
+            Sábados: 8:00 AM - 12:30 PM
           </p>
         </div>
       </div>
