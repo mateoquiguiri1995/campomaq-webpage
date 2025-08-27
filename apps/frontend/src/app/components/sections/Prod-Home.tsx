@@ -5,8 +5,8 @@ import { Eye } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 const products = [
-  { name: 'MOTOCULTORES', image: '/images/prod-home/motocultor.jpg' },
-  { name: 'BOMBAS DE FUMIGAR', image: '/images/prod-home/bombas fumigar.jpg' },
+  { name: 'MOTOCULTORES', image: '/images/prod-home/MOTOCULTOR-TKC-450-1.png' },
+  { name: 'BOMBAS DE FUMIGAR', image: '/images/prod-home/bomba-fumigacion.jpeg' },
   { name: 'MOTOAZADAS', image: '/images/prod-home/motoazada.jpg' },
   { name: 'DESBROZADORAS', image: '/images/prod-home/desbrozadora.jpg' },
   { name: 'MOTOSIERRAS', image: '/images/prod-home/motosierra.jpg' },

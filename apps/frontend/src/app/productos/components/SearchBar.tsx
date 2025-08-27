@@ -176,7 +176,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                 key={opt}
                 onClick={() => addTag(opt)}
                 className="px-4 py-1.5 rounded-full bg-gray-100 text-black hover:bg-black hover:text-yellow-200 text-sm transition-colors duration-200 cursor-pointer"
-                disabled={tags.includes(opt) || tags.length >= 3}
+                disabled={tags.includes(opt) || tags.length >= 2}
               >
                 {opt}
               </button>

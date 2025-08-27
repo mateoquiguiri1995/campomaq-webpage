@@ -29,11 +29,11 @@ const team = [
 ];
 
 const milestones = [
-  { year: "2003", title: "Fundación", description: "Inicio de operaciones en Quito", icon: <Leaf className="w-6 h-6 text-black" /> },
-  { year: "2008", title: "Expansión", description: "Traslado de Empresa a Cayambe", icon: <Globe className="w-6 h-6 text-black" /> },
+  { year: "2000", title: "Fundación", description: "Inicio de operaciones en Cayambe", icon: <Leaf className="w-6 h-6 text-black" /> },
   { year: "2013", title: "Certificaciones", description: "Obtuvimos certificaciones oficiales de las principales marcas", icon: <Award className="w-6 h-6 text-black" /> },
-  { year: "2015", title: "Cobertura Nacional", description: "Llegamos a todo el país con maquinaria de calidad", icon: <Tractor className="w-6 h-6 text-black" /> },
-  { year: "2023", title: "20 Años", description: "Celebramos 20 años de servicio al sector agrícola", icon: <Users className="w-6 h-6 text-black" /> }
+  { year: "2015", title: "Preparación", description: "Operaciones de Servicio Asistido a Nivel Nacional", icon: <Globe className="w-6 h-6 text-black" /> },
+  { year: "2021", title: "Primera Importación", description: "Llegamos a todo el país con maquinaria Extranjera de la mejor calidad", icon: <Tractor className="w-6 h-6 text-black" /> },
+  { year: "2025", title: "25 Años", description: "Celebramos 25 años de brindar servicio al sector agrícola, motivandonos siempre a mejorar", icon: <Users className="w-6 h-6 text-black" /> }
 ];
 
 const values = [
@@ -41,25 +41,25 @@ const values = [
     icon: <Target className="w-10 h-10" />, 
     title: "Excelencia", 
     description: "Buscamos la excelencia en cada aspecto de nuestro servicio",
-    color: "from-blue-500 to-purple-600"
+    color: "from-yellow-500 to-gray-500"
   },
   { 
     icon: <Users className="w-10 h-10" />, 
     title: "Confianza", 
     description: "Construimos relaciones duraderas basadas en la confianza",
-    color: "from-green-500 to-teal-600"
+    color: "from-yellow-500 to-gray-500"
   },
   { 
     icon: <Award className="w-10 h-10" />, 
     title: "Calidad", 
     description: "Ofrecemos solo productos de la más alta calidad",
-    color: "from-orange-500 to-red-600"
+    color: "from-yellow-500 to-gray-500"
   },
   { 
     icon: <Eye className="w-10 h-10" />, 
     title: "Innovación", 
     description: "Siempre buscamos las mejores soluciones tecnológicas",
-    color: "from-purple-500 to-pink-600"
+    color: "from-yellow-500 to-gray-500"
   }
 ];
 
@@ -182,6 +182,110 @@ export default function NosotrosPage() {
               </div>
             </motion.div>
           </div>
+        </div>
+      </section>
+
+      {/* Company Story */}
+      <section className="py-32 bg-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-campomaq/5 to-yellow-50" />
+        
+        <div className="relative z-10 max-w-7xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <h2 className="text-6xl md:text-7xl font-black text-gray-900 mb-6">
+              NUESTRA
+              <span className="block bg-gradient-to-r from-campomaq to-yellow-500 bg-clip-text text-transparent">
+                EMPRESA
+              </span>
+            </h2>
+          </motion.div>
+
+          <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
+            <motion.div
+              initial={{ opacity: 0, x: -100 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+            >
+
+             {/* Contenedor del video */}
+              <div className="flex items-center justify-center">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: 0.3 }}
+                  whileHover={{ scale: 1.02 }}
+                  className="relative w-full max-w-3xl aspect-video shadow-lg rounded-lg overflow-hidden cursor-pointer"
+                  onClick={() =>
+                    window.open(`https://www.youtube.com/watch?v=2x8fautz2HA`, "_blank")
+                  }
+                >
+                  <iframe
+                    className="w-full h-full"
+                    src="https://www.youtube.com/embed/2x8fautz2HA?autoplay=1&mute=1&loop=1&playlist=2x8fautz2HA&modestbranding=1&rel=0&showinfo=0"
+                    title="Video de YouTube"
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    allowFullScreen
+                  />
+                </motion.div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 100 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="space-y-6"
+            >
+              <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                <p className="text-lg text-gray-700 leading-relaxed">
+                  <span className="font-bold text-black">CAMPOMAQ</span> nace con la finalidad de comercializar 
+                  Maquinaria Agrícola, dar un Servicio Técnico y ofrecer Partes y Accesorios en todas las marcas, 
+                  previamente seleccionadas bajo las premisas de <span className="font-semibold">calidad, productividad</span> y 
+                  capacidad de satisfacer las necesidades del agricultor moderno.
+                </p>
+              </div>
+              
+              <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                <p className="text-lg text-gray-700 leading-relaxed">
+                  Somos una empresa <span className="font-semibold text-black">dinámica</span>, habituada a cambiar 
+                  constantemente nuestra gama de productos en función de los nuevos desarrollos tecnológicos y 
+                  las cada vez más exigentes demandas de nuestros clientes.
+                </p>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Services Grid */}
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="grid md:grid-cols-3 gap-8 mb-16"
+          >
+            {services.map((service, index) => (
+              <motion.div
+                key={index}
+                whileHover={{ y: -10, scale: 1.02 }}
+                className="bg-black/5 rounded-3xl p-8 shadow-lg border border-gray-100 text-center"
+              >
+                <div className="w-16 h-16 bg-gradient-to-r from-campomaq to-yellow-400 rounded-2xl flex items-center justify-center mx-auto mb-6 text-white">
+                  {service.icon}
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">{service.title}</h3>
+                <p className="text-gray-600">{service.description}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          
         </div>
       </section>
 
@@ -388,107 +492,9 @@ export default function NosotrosPage() {
           </div>
         </div>
       </section>
-
-      {/* Company Story */}
-      <section className="py-32 bg-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-campomaq/5 to-yellow-50" />
-        
+      
+      <section className='py-32 bg-white relative overflow-hidden'>
         <div className="relative z-10 max-w-7xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-20"
-          >
-            <h2 className="text-6xl md:text-7xl font-black text-gray-900 mb-6">
-              NUESTRA
-              <span className="block bg-gradient-to-r from-campomaq to-yellow-500 bg-clip-text text-transparent">
-                EMPRESA
-              </span>
-            </h2>
-          </motion.div>
-
-          <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
-            <motion.div
-              initial={{ opacity: 0, x: -100 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-            >
-
-             {/* Contenedor del video */}
-              <div className="flex items-center justify-center">
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.8, delay: 0.3 }}
-                  whileHover={{ scale: 1.02 }}
-                  className="relative w-full max-w-3xl aspect-video shadow-lg rounded-lg overflow-hidden cursor-pointer"
-                  onClick={() =>
-                    window.open(`https://www.youtube.com/watch?v=2x8fautz2HA`, "_blank")
-                  }
-                >
-                  <iframe
-                    className="w-full h-full"
-                    src="https://www.youtube.com/embed/2x8fautz2HA?autoplay=1&mute=1&loop=1&playlist=2x8fautz2HA&modestbranding=1&rel=0&showinfo=0"
-                    title="Video de YouTube"
-                    allow="autoplay; encrypted-media; picture-in-picture"
-                    allowFullScreen
-                  />
-                </motion.div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 100 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="space-y-6"
-            >
-              <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
-                <p className="text-lg text-gray-700 leading-relaxed">
-                  <span className="font-bold text-black">CAMPOMAQ</span> nace con la finalidad de comercializar 
-                  Maquinaria Agrícola, dar un Servicio Técnico y ofrecer Partes y Accesorios en todas las marcas, 
-                  previamente seleccionadas bajo las premisas de <span className="font-semibold">calidad, productividad</span> y 
-                  capacidad de satisfacer las necesidades del agricultor moderno.
-                </p>
-              </div>
-              
-              <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
-                <p className="text-lg text-gray-700 leading-relaxed">
-                  Somos una empresa <span className="font-semibold text-black">dinámica</span>, habituada a cambiar 
-                  constantemente nuestra gama de productos en función de los nuevos desarrollos tecnológicos y 
-                  las cada vez más exigentes demandas de nuestros clientes.
-                </p>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Services Grid */}
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="grid md:grid-cols-3 gap-8 mb-16"
-          >
-            {services.map((service, index) => (
-              <motion.div
-                key={index}
-                whileHover={{ y: -10, scale: 1.02 }}
-                className="bg-black/5 rounded-3xl p-8 shadow-lg border border-gray-100 text-center"
-              >
-                <div className="w-16 h-16 bg-gradient-to-r from-campomaq to-yellow-400 rounded-2xl flex items-center justify-center mx-auto mb-6 text-white">
-                  {service.icon}
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">{service.title}</h3>
-                <p className="text-gray-600">{service.description}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-
           {/* Final Statement */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -508,6 +514,7 @@ export default function NosotrosPage() {
           </motion.div>
         </div>
       </section>
+
     </main>
   );
 }

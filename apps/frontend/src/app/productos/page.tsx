@@ -7,6 +7,7 @@ import CategoryMenuMobile from "./components/CategoryMenuMobile";
 import SearchResults from "./components/SearchResults";
 import Breadcrumb from "./components/Breadcrumb";
 import CardProducto from "@/app/components/ui/CardProducto";
+import ProductModal from "./components/ProductDetailModal"; // 👈 Nuevo import
 import { products } from "./data/products";
 import { ChevronDown } from "lucide-react";
 import { Product, FilterState } from "./types";
@@ -17,12 +18,12 @@ import { useSearchParams } from "next/navigation";
 function ProductosPageContent() {
   const searchParams = useSearchParams();
   const brandFromURL = searchParams.get('brand');
-  const searchFromURL = searchParams.get('search'); // 👈 Nuevo: obtener búsqueda desde URL
+  const searchFromURL = searchParams.get('search');
 
-  // Estado centralizado para filtros (con búsqueda inicial desde URL)
+  // Estado centralizado para filtros
   const [filters, setFilters] = useState<FilterState>({
-    searchQuery: searchFromURL || "", // 👈 Inicializar con búsqueda desde URL
-    showSearchResults: !!searchFromURL, // 👈 Mostrar resultados si hay búsqueda inicial
+    searchQuery: searchFromURL || "",
+    showSearchResults: !!searchFromURL,
     activeTab: "all",
     selectedCategory: "",
     selectedBrand: brandFromURL || "",
@@ -36,6 +37,10 @@ function ProductosPageContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // 👈 Nuevo: Estado para el modal
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   // Obtener categorías y marcas únicas
   const brands = useMemo(() => {
     return [...new Set(allProducts.map(p => p.brand).filter(Boolean))];
@@ -47,11 +52,9 @@ function ProductosPageContent() {
     setError(null);
     
     try {
-      // Intentar cargar desde la API
       const response = await ProductService.getProducts();
       setAllProducts(response.data);
     } catch (apiError) {
-      // Si falla la API, usar datos locales como fallback
       console.warn('API not available, using local data:', apiError);
       setAllProducts(getFallbackProducts());
     } finally {
@@ -63,7 +66,6 @@ function ProductosPageContent() {
   useEffect(() => {
     loadProductsFromAPI();
     
-    // 👈 Manejar parámetros iniciales desde URL
     if (brandFromURL) {
       setFilters((prev) => ({
         ...prev,
@@ -73,7 +75,6 @@ function ProductosPageContent() {
       }));
     }
     
-    // 👈 Nuevo: manejar búsqueda inicial desde URL
     if (searchFromURL) {
       setFilters((prev) => ({
         ...prev,
@@ -84,23 +85,20 @@ function ProductosPageContent() {
         activeTab: "all",
       }));
     }
-  }, [brandFromURL, searchFromURL]); // 👈 Agregar searchFromURL como dependencia
+  }, [brandFromURL, searchFromURL]);
 
   // Filtrar productos
   const filteredProducts = useMemo(() => {
     let filtered = allProducts;
 
-    // Filtrar por categoría
     if (filters.selectedCategory) {
       filtered = filtered.filter(p => p.category === filters.selectedCategory);
     }
 
-    // Filtrar por marca
     if (filters.selectedBrand) {
       filtered = filtered.filter(p => p.brand === filters.selectedBrand);
     }
 
-    // Aplicar filtros según la pestaña activa
     switch (filters.activeTab) {
       case "ofertas":
         filtered = filtered.filter(p => p.isOnSale);
@@ -114,39 +112,34 @@ function ProductosPageContent() {
         break;
       case "all":
       default:
-        // Mostrar todos los productos
         break;
     }
-
-    // Ordenar productos
-    switch (filters.sortBy) {
-      case "price-low":
-        filtered = [...filtered].sort((a, b) => a.price - b.price);
-        break;
-      case "price-high":
-        filtered = [...filtered].sort((a, b) => b.price - a.price);
-        break;
-      case "name":
-      default:
-        filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
-        break;
-    }
-
+    
     return filtered;
   }, [filters.activeTab, filters.selectedCategory, filters.selectedBrand, filters.sortBy, allProducts]);
 
-  // Función para actualizar filtros (usando useCallback)
+  // 👈 Nuevas funciones para el modal
+  const handleProductClick = (product: Product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedProduct(null);
+  };
+
+  // Función para actualizar filtros
   const updateFilters = useCallback((updates: Partial<FilterState>) => {
     setFilters(prev => ({ ...prev, ...updates }));
   }, []);
 
-  // Manejadores de eventos (usando useCallback para evitar re-renders)
+  // Manejadores de eventos
   const handleSearch = useCallback((query: string) => {
     if (query.trim()) {
       updateFilters({
         searchQuery: query.trim(),
         showSearchResults: true,
-        // Limpiar otros filtros cuando se busca
         selectedCategory: "",
         selectedBrand: "",
         activeTab: "all",
@@ -157,7 +150,7 @@ function ProductosPageContent() {
         showSearchResults: false,
       });
     }
-  }, []); // Sin dependencias porque updateFilters es estable
+  }, []);
 
   const handleBackFromSearch = useCallback(() => {
     updateFilters({
@@ -171,7 +164,6 @@ function ProductosPageContent() {
       activeTab: tab,
       selectedCategory: "",
       selectedBrand: "",
-      // 👈 También limpiar búsqueda al cambiar tabs
       showSearchResults: false,
       searchQuery: "",
     });
@@ -183,7 +175,6 @@ function ProductosPageContent() {
         selectedBrand: brand,
         selectedCategory: "",
         activeTab: "all",
-        // 👈 También limpiar búsqueda al filtrar por marca
         showSearchResults: false,
         searchQuery: "",
       });
@@ -229,9 +220,7 @@ function ProductosPageContent() {
         <div className="top-40 pt-15 bg-white z-20 p-4">
           {/* Menú lateral + barra de búsqueda en móviles */}
           <div className="md:hidden flex items-center gap-2 mb-4 pt-5">
-              <CategoryMenuMobile />
-            
-            
+            <CategoryMenuMobile />
             <div className="flex-1">
               <SearchBar onSearch={handleSearch} />
             </div>
@@ -245,7 +234,6 @@ function ProductosPageContent() {
 
         {/* Contenido scrollable */}
         <div className="flex-1 overflow-y-auto p-4">
-          {/* Breadcrumb */}
           <Breadcrumb items={getBreadcrumbItems()} />
 
           {/* Indicador de carga */}
@@ -317,48 +305,6 @@ function ProductosPageContent() {
                         Nuevos
                       </button>
 
-                      {/* Botón deslizante para filtros de precio */}
-                      <div className="relative">
-                        <button
-                          onClick={() => updateFilters({ showPriceFilters: !filters.showPriceFilters })}
-                          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-white text-gray-700 hover:bg-campomaq/40 border border-gray-200 transition-all duration-200 cursor-pointer"
-                        >
-                          Filtro x precios
-                          <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${filters.showPriceFilters ? 'rotate-180' : ''}`} />
-                        </button>
-                        
-                        {filters.showPriceFilters && (
-                          <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-10">
-                            <div className="space-y-2">
-                              <button
-                                onClick={() => {
-                                  updateFilters({ sortBy: "price-low", showPriceFilters: false });
-                                }}
-                                className="w-full text-left px-2 py-1 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors duration-200"
-                              >
-                                Menos caro
-                              </button>
-                              <button
-                                onClick={() => {
-                                  updateFilters({ sortBy: "price-high", showPriceFilters: false });
-                                }}
-                                className="w-full text-left px-2 py-1 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors duration-200"
-                              >
-                                Más caro
-                              </button>
-                              <button
-                                onClick={() => {
-                                  updateFilters({ sortBy: "name", showPriceFilters: false });
-                                }}
-                                className="w-full text-left px-2 py-1 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors duration-200"
-                              >
-                                Por nombre
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
                       {/* Botón deslizante para filtros de marcas */}
                       <div className="relative">
                         <button
@@ -412,23 +358,24 @@ function ProductosPageContent() {
 
                   {/* Grid de productos */}
                   {filteredProducts.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6">
                       {filteredProducts.map((product) => (
                         <div key={product.id} className="relative">
-                          <CardProducto
-                            id={product.id}
-                            name={product.name}
-                            price={product.price}
-                            originalPrice={product.originalPrice}
-                            image={product.image}
-                            category={product.category}
-                            brand={product.brand}
-                            brandLogo={product.brandLogo}
-                            isNew={product.isNew}
-                            isOnSale={product.isOnSale}
-                            discount={product.discount}
-                            description={product.description}
-                          />
+                          {/* 👈 Cambio: onClick en lugar de Link */}
+                          <div onClick={() => handleProductClick(product)} className="cursor-pointer">
+                            <CardProducto
+                              id={product.id}
+                              name={product.name}
+                              image={product.image}
+                              category={product.category}
+                              brand={product.brand}
+                              brandLogo={product.brandLogo}
+                              isNew={product.isNew}
+                              isOnSale={product.isOnSale}
+                              discount={product.discount}
+                              description={product.description}
+                            />
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -446,11 +393,18 @@ function ProductosPageContent() {
           )}
         </div>
       </div>
+
+      {/* 👈 Nuevo: Modal de producto */}
+      <ProductModal
+        product={selectedProduct}
+        isOpen={isModalOpen}
+        onClose={closeModal}
+      />
     </div>
   );
 }
 
-// 👈 Componente principal con Suspense wrapper
+// Componente principal con Suspense wrapper
 export default function ProductosPage() {
   return (
     <Suspense fallback={

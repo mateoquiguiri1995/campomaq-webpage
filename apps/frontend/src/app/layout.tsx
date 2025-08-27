@@ -11,7 +11,7 @@ import Chatbot from "@/app/components/Chatbot";
 
 export const metadata: Metadata = {
   title: "Campo Maq",
-  description: "Official Campo Maq website. Muy pronto.",
+  description: "Official Campo Maq website.",
 };
 
 export default function RootLayout({

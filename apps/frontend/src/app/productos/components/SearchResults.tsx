@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import CardProducto from "@/app/components/ui/CardProducto";
-import { searchProducts, getRelatedProducts, Product } from "../data/products";
+import { searchProducts, getRelatedProducts} from "../data/products";
+import { Product } from "../types"; 
 import { Search, ArrowLeft } from "lucide-react";
 
 interface SearchResultsProps {
@@ -70,7 +71,7 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
             <h2 className="text-xl font-bold text-gray-900 mb-4">
               Productos Encontrados
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6">
               {searchResults.map((product) => (
                 <div
                   key={product.id}
@@ -80,8 +81,6 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
                   <CardProducto
                     id={product.id}
                     name={product.name}
-                    price={product.price}
-                    originalPrice={product.originalPrice}
                     image={product.image}
                     category={product.category}
                     brand={product.brand}
@@ -107,14 +106,12 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
                   </span>
                 )}
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6">
                 {relatedProducts.map((product) => (
                   <CardProducto
                     key={product.id}
                     id={product.id}
                     name={product.name}
-                    price={product.price}
-                    originalPrice={product.originalPrice}
                     image={product.image}
                     category={product.category}
                     brand={product.brand}

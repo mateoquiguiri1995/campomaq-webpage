@@ -78,17 +78,11 @@ export class ProductService {
       if (filters.query) params.append('q', filters.query);
       if (filters.category) params.append('category', filters.category);
       if (filters.brand) params.append('brand', filters.brand);
-      if (filters.priceRange) {
-        params.append('minPrice', filters.priceRange.min.toString());
-        params.append('maxPrice', filters.priceRange.max.toString());
-      }
       if (filters.tags?.length) {
         filters.tags.forEach(tag => params.append('tags', tag));
       }
-      if (filters.inStockOnly) params.append('inStock', 'true');
       if (filters.sortBy) params.append('sortBy', filters.sortBy);
       if (filters.page) params.append('page', filters.page.toString());
-      if (filters.limit) params.append('limit', filters.limit.toString());
     }
 
     const endpoint = `/products${params.toString() ? `?${params.toString()}` : ''}`;
