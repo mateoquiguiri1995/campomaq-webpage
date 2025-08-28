@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import CardProducto from "@/app/components/ui/CardProducto";
-import { searchProducts, getRelatedProducts} from "../data/products";
+import { ProductService } from "../services/productService";
 import { Product } from "../types"; 
 import { Search, ArrowLeft } from "lucide-react";
 
@@ -15,29 +15,54 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (searchQuery.trim()) {
-      const results = searchProducts(searchQuery);
-      setSearchResults(results);
-      
-      // Si hay resultados, obtener productos relacionados del primer resultado
-      if (results.length > 0) {
-        const related = getRelatedProducts(results[0].id, 4);
-        setRelatedProducts(related);
-      } else {
+    let cancelled = false;
+
+    const fetchSearchResults = async () => {
+      const q = searchQuery.trim();
+      if (!q) {
+        setSearchResults([]);
         setRelatedProducts([]);
+        setSelectedProduct(null);
+        setIsLoading(false);
+        return;
       }
-    } else {
-      setSearchResults([]);
-      setRelatedProducts([]);
-    }
+
+      setIsLoading(true);
+      try {
+        const results = await ProductService.searchProducts(q);
+        if (!cancelled) {
+          setSearchResults(results);
+          setRelatedProducts([]);
+          setSelectedProduct(null);
+        }
+      } catch (error) {
+        console.error('Error searching products:', error);
+        if (!cancelled) {
+          setSearchResults([]);
+          setRelatedProducts([]);
+          setSelectedProduct(null);
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    };
+
+    fetchSearchResults();
+    return () => { cancelled = true; };
   }, [searchQuery]);
 
-  const handleProductClick = (product: Product) => {
+  const handleProductClick = async (product: Product) => {
     setSelectedProduct(product);
-    const related = getRelatedProducts(product.id, 4);
-    setRelatedProducts(related);
+    try {
+      const related = await ProductService.getRelatedProducts(product);
+      setRelatedProducts(related);
+    } catch (error) {
+      console.error("Error fetching related products:", error);
+      setRelatedProducts([]);
+    }
   };
 
   return (
@@ -64,7 +89,12 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
       </div>
 
       {/* Resultados de búsqueda */}
-      {searchResults.length > 0 ? (
+      {isLoading ? (
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Buscando productos...</p>
+        </div>
+      ) : searchResults.length > 0 ? (
         <div className="space-y-8">
           {/* Productos encontrados */}
           <section>
