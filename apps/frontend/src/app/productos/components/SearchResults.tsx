@@ -18,44 +18,51 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchSearchResults = async () => {
-      if (searchQuery.trim()) {
-        setIsLoading(true);
-        try {
-          const results = await ProductService.searchProducts(searchQuery);
-          setSearchResults(results);
-          
-          // Si hay resultados, obtener productos relacionados del primer resultado
-          if (results.length > 0) {
-            // Para productos relacionados, por ahora usamos datos locales como fallback
-            // ya que la API no parece tener endpoint para relacionados
-            const related = results.slice(0, 4); // Tomar primeros 4 como relacionados
-            setRelatedProducts(related);
-          } else {
-            setRelatedProducts([]);
-          }
-        } catch (error) {
-          console.error('Error searching products:', error);
-          setSearchResults([]);
-          setRelatedProducts([]);
-        } finally {
-          setIsLoading(false);
-        }
-      } else {
+      const q = searchQuery.trim();
+      if (!q) {
         setSearchResults([]);
         setRelatedProducts([]);
+        setSelectedProduct(null);
         setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        const results = await ProductService.searchProducts(q);
+        if (!cancelled) {
+          setSearchResults(results);
+          setRelatedProducts([]);
+          setSelectedProduct(null);
+        }
+      } catch (error) {
+        console.error('Error searching products:', error);
+        if (!cancelled) {
+          setSearchResults([]);
+          setRelatedProducts([]);
+          setSelectedProduct(null);
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
       }
     };
 
     fetchSearchResults();
+    return () => { cancelled = true; };
   }, [searchQuery]);
 
-  const handleProductClick = (product: Product) => {
+  const handleProductClick = async (product: Product) => {
     setSelectedProduct(product);
-    // Para productos relacionados, usar primeros 4 resultados como relacionados
-    const related = searchResults.filter(p => p.id !== product.id).slice(0, 4);
-    setRelatedProducts(related);
+    try {
+      const related = await ProductService.getRelatedProducts(product);
+      setRelatedProducts(related);
+    } catch (error) {
+      console.error("Error fetching related products:", error);
+      setRelatedProducts([]);
+    }
   };
 
   return (

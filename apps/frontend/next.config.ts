@@ -5,6 +5,17 @@ const nextConfig: import('next').NextConfig = {
   output: 'standalone',
   reactStrictMode: true,
   trailingSlash: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'campomaq.blob.core.windows.net',
+        pathname: '/**',
+      },
+    ],
+    // OR if you want to allow multiple domains:
+    // domains: ['campomaq.blob.core.windows.net'],
+  },
   webpack(config) {
     config.module.rules.push({
       test: /\.(mp4|webm)$/,
