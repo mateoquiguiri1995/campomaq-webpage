@@ -20,6 +20,13 @@ export default function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
   const topBarRef = useRef<HTMLDivElement>(null)
+ const [topBarHeight, setTopBarHeight] = useState(0)
+  // Medir altura inicial de la topbar
+  useEffect(() => {
+    if (topBarRef.current) {
+      setTopBarHeight(topBarRef.current.clientHeight)
+    }
+  }, [])
 
   // Observer para detectar cuando el footer está visible
   useEffect(() => {
@@ -27,37 +34,26 @@ export default function Navbar() {
       ([entry]) => {
         setIsFooterVisible(entry.isIntersecting)
       },
-      {
-        root: null,
-        rootMargin: '0px',
-        threshold: 0.1 // Se activa cuando el 10% del footer está visible
-      }
+      { root: null, rootMargin: '0px', threshold: 0.1 }
     )
 
-    // Buscar el footer en el DOM
     const footer = document.querySelector('footer')
-    if (footer) {
-      observer.observe(footer)
-    }
+    if (footer) observer.observe(footer)
 
     return () => {
-      if (footer) {
-        observer.unobserve(footer)
-      }
+      if (footer) observer.unobserve(footer)
     }
   }, [])
 
-  // Control de scroll unificado
+  // Control de scroll
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
       const isAtTop = currentScrollY <= 10
       const isScrollingDown = currentScrollY > lastScrollY
-      
-      // Cambiar estilo del navbar principal
+
       setScrolled(currentScrollY > 50)
-      
-      // Lógica para barra superior y redes sociales
+
       if (isAtTop) {
         setShowTopBar(true)
         setShowFloatingSocials(false)
@@ -68,7 +64,7 @@ export default function Navbar() {
         setShowTopBar(true)
         setShowFloatingSocials(false)
       }
-      
+
       setLastScrollY(currentScrollY)
     }
 
@@ -81,53 +77,28 @@ export default function Navbar() {
     setOpen(false)
   }, [pathname])
 
-  // Función para manejar la búsqueda
   const handleSearch = () => {
     if (searchInput.trim()) {
       const searchQuery = encodeURIComponent(searchInput.trim())
       router.push(`/productos?search=${searchQuery}`)
-      setSearchInput("") // Limpiar el input después de buscar
+      setSearchInput("")
     }
   }
 
-  // Manejar Enter en el input
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch()
-    }
+    if (e.key === 'Enter') handleSearch()
   }
 
   const isProductsPage = pathname.startsWith('/productos')
-  
+
   const categories = [
-    { 
-      name: 'Bombeo', 
-      sub: ['Bombas de agua', 'Motobombas', 'Hidrolavadoras']
-    },
-    { 
-      name: 'Bosque y Jardín', 
-      sub: ['Motosierras', 'Podadoras', 'Cortasetos']
-    },
-    { 
-      name: 'Hélices', 
-      sub: ['Hélices metálicas', 'Hélices plásticas']
-    },
-    { 
-      name: 'Fumigación', 
-      sub: ['Fumigadoras manuales', 'Fumigadoras motorizadas']
-    },
-    { 
-      name: 'Motores', 
-      sub: ['Motores gasolina', 'Motores diésel']
-    },
-    { 
-      name: 'Lubricantes', 
-      sub: ['Aceites', 'Grasas', 'Aditivos']
-    },
-    { 
-      name: 'Repuestos y Accesorios', 
-      sub: ['Filtros', 'Cuchillas', 'Correas']
-    },
+    { name: 'Bombeo', sub: ['Bombas de agua', 'Motobombas', 'Hidrolavadoras'] },
+    { name: 'Bosque y Jardín', sub: ['Motosierras', 'Podadoras', 'Cortasetos'] },
+    { name: 'Hélices', sub: ['Hélices metálicas', 'Hélices plásticas'] },
+    { name: 'Fumigación', sub: ['Fumigadoras manuales', 'Fumigadoras motorizadas'] },
+    { name: 'Motores', sub: ['Motores gasolina', 'Motores diésel'] },
+    { name: 'Lubricantes', sub: ['Aceites', 'Grasas', 'Aditivos'] },
+    { name: 'Repuestos y Accesorios', sub: ['Filtros', 'Cuchillas', 'Correas'] },
     { 
       name: 'Marcas', 
       sub: ['Husqvarna','Annovi','Ducati','Whale Best', 'Stihl','Kawasaki', 'Subaru','Maruyama','Oleo-Mac', 'Echo'],
@@ -147,6 +118,7 @@ export default function Navbar() {
     'Oleo-Mac': '/images/brands/oleomac.jpg',
     'Echo': '/images/brands/echo.svg'
   }
+
 
   return (
     <>
@@ -257,6 +229,7 @@ export default function Navbar() {
                 src="/campo_maq.svg"
                 alt="Campomaq Logo"
                 fill
+                sizes="(max-width: 768px) 120px, (max-width: 1200px) 160px, 200px"
                 style={{ objectFit: 'contain' }}
                 priority
               />
@@ -366,6 +339,7 @@ export default function Navbar() {
                                                 src={brandLogos[subcat]}
                                                 alt={`${subcat} logo`}
                                                 fill
+                                                sizes="24px"
                                                 className="object-contain"
                                               />
                                             </div>
