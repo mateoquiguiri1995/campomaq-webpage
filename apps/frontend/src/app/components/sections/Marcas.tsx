@@ -11,17 +11,16 @@ type Brand = {
 }
 
 const brands: Brand[] = [
-  { name: 'Husqvarna', logo: '/images/brands/Husqvarna.jpg'},
-  { name: 'Annovi', logo: '/images/brands/annovi.jpg'},
+  { name: 'Husqvarna', logo: '/images/brands/husqvarna.png'},
+  { name: 'Casamoto', logo: '/images/brands/casamoto.png'},
+  { name: 'Annovi', logo: '/images/brands/annovi-reberberi.png'},
   { name: 'Ducati', logo: '/images/brands/ducati.png'},
   { name: 'Whalebest', logo: '/images/brands/whalebest.png', width: 100, height: 50 },
   { name: 'Maruyama', logo: '/images/brands/Maruyama.png', width: 100 },
-  { name: 'Subaru', logo: '/images/brands/subaru.jpeg' },
-  { name: 'Kawasaki', logo: '/images/brands/kawasaki.png' },
-  { name: 'Oleo-Mac', logo: '/images/brands/oleomac.jpg' },
-  { name: 'Stihl', logo: '/images/brands/STIHL.jpg' },
-  { name: 'Echo', logo: '/images/brands/echo.svg' },
-  { name: 'Shindaiwa', logo: '/images/brands/Shindaiwa.png' }
+  { name: 'Oleo-Mac', logo: '/images/brands/oleo-mac.png' },
+  { name: 'Stihl', logo: '/images/brands/stihl.png' },
+  { name: 'Echo', logo: '/images/brands/echo.png' },
+  { name: 'shindaiwa', logo: '/images/brands/shindaiwa.png' }
 ]
 
 const features = [
@@ -43,7 +42,7 @@ export default function Marcas() {
   const handleBrandClick = (brandName: string) => {
     router.push(`/productos?brand=${encodeURIComponent(brandName)}`)
   }
-
+//
   return (
     <section className="py-8 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto">

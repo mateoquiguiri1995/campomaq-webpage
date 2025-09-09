@@ -38,6 +38,29 @@ export default function CardProducto({
     window.open(whatsappUrl, "_blank");
   };
 
+  // Función para extraer solo el primer párrafo descriptivo
+  const getDescriptionPreview = (htmlDescription: string | undefined): string => {
+    if (!htmlDescription) return '';
+    
+    // Buscar el primer párrafo <p> que no esté vacío
+    const pRegex = /<p[^>]*>(.*?)<\/p>/i;
+    const match = htmlDescription.match(pRegex);
+    
+    if (match && match[1]) {
+      // Limpiar el HTML del párrafo para mostrar solo texto plano en la tarjeta
+      return match[1]
+        .replace(/<[^>]*>/g, '') // Remover todas las etiquetas HTML
+        .replace(/&nbsp;/g, ' ') // Reemplazar espacios no separables
+        .replace(/&amp;/g, '&')  // Reemplazar &amp; con &
+        .replace(/&lt;/g, '<')   // Reemplazar &lt; con <
+        .replace(/&gt;/g, '>')   // Reemplazar &gt; con >
+        .trim();
+    }
+    
+    return '';
+  };
+
+  const descriptionPreview = getDescriptionPreview(description);
 
   return (
     <div
@@ -105,9 +128,9 @@ export default function CardProducto({
           </h3>
 
           {/* Descripción resumida */}
-          {description && (
+          {descriptionPreview && (
             <p className="text-xs text-gray-500 mb-3 leading-relaxed line-clamp-2">
-              {description}
+              {descriptionPreview}
             </p>
           )}
         </div>

@@ -46,13 +46,13 @@ function ProductosPageContent() {
     return [...new Set(allProducts.map(p => p.brand).filter(Boolean))];
   }, [allProducts]);
 
-  // Función para cargar productos desde la API
+  /* Función para cargar productos desde la API
   const loadProductsFromAPI = async () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      const response = await ProductService.getProducts();
+      const response = await ProductService.getRelatedProducts();
       setAllProducts(response.data);
     } catch (apiError) {
       console.warn('API not available, using local data:', apiError);
@@ -60,11 +60,11 @@ function ProductosPageContent() {
     } finally {
       setIsLoading(false);
     }
-  };
+  };*/
 
   // Cargar productos al montar el componente
   useEffect(() => {
-    loadProductsFromAPI();
+    //loadProductsFromAPI();
     
     if (brandFromURL) {
       setFilters((prev) => ({
@@ -249,7 +249,7 @@ function ProductosPageContent() {
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
               <p className="text-red-800">Error: {error}</p>
               <button
-                onClick={loadProductsFromAPI}
+               // onClick={loadProductsFromAPI}
                 className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
               >
                 Reintentar

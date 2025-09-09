@@ -5,7 +5,10 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient
 
-import os
+import os, math
+from bson import ObjectId
+from bson.errors import InvalidId
+
 import openai
 from openai import OpenAI
 from dotenv import load_dotenv, find_dotenv
@@ -33,6 +36,29 @@ VECTOR_PATH = "embedding"                 # field with stored vector
 POPULARITY_SCALE = 1                   # scale factor applied to popularity when adding it
 RESULT_LIMIT = 20
 # ------------------------------------------------------------------------------
+
+def serialize_product(product):
+    """Convert MongoDB document to JSON serializable format"""
+    if not product:
+        return None
+
+    def fix_value(value):
+        if isinstance(value, ObjectId):
+            return str(value)
+        elif isinstance(value, float):
+            # Replace NaN or inf with None (or 0 if you prefer)
+            if math.isnan(value) or math.isinf(value):
+                return None
+            return value
+        elif isinstance(value, list):
+            return [fix_value(v) for v in value]
+        elif isinstance(value, dict):
+            return {k: fix_value(v) for k, v in value.items()}
+        else:
+            return value
+
+    return {k: fix_value(v) for k, v in product.items()}
+
 
 def build_text_pipeline(query, limit=RESULT_LIMIT, index_name=TEXT_INDEX, popularity_scale=POPULARITY_SCALE):
     """
@@ -120,9 +146,11 @@ def search():
     pipeline = build_text_pipeline(q)
     docs = list(collection.aggregate(pipeline))
     # print(f"Text search pipeline: {docs}")
-    for x in docs:
+    serialized_products = [serialize_product(product) for product in docs]
+
+    for x in serialized_products:
         x["product_name"] = x["product_name"].strip()
-    return jsonify(docs)
+    return jsonify(serialized_products)
     
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -150,6 +178,10 @@ def chat():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.getenv('PORT', 5000))
+    debug = os.getenv('FLASK_ENV') == 'development'
+    
+    print(f"Starting Flask server on port {port}")
+    app.run(host='0.0.0.0', port=port, debug=debug)
 # if __name__ == "__main__":
 #     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
