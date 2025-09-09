@@ -5,6 +5,7 @@ import CardProducto from "@/app/components/ui/CardProducto";
 import { ProductService } from "../services/productService";
 import { Product } from "../types"; 
 import { Search, ArrowLeft } from "lucide-react";
+import ProductModal from "./ProductDetailModal";
 
 interface SearchResultsProps {
   searchQuery: string;
@@ -15,6 +16,7 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -54,8 +56,11 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
     return () => { cancelled = true; };
   }, [searchQuery]);
 
+  // Función para manejar el click en un producto
   const handleProductClick = async (product: Product) => {
     setSelectedProduct(product);
+    setIsModalOpen(true);
+    
     try {
       const related = await ProductService.getRelatedProducts(product);
       setRelatedProducts(related);
@@ -63,6 +68,12 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
       console.error("Error fetching related products:", error);
       setRelatedProducts([]);
     }
+  };
+
+  // Función para cerrar el modal
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedProduct(null);
   };
 
   return (
@@ -138,19 +149,24 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6">
                 {relatedProducts.map((product) => (
-                  <CardProducto
+                  <div
                     key={product.id}
-                    id={product.id}
-                    name={product.name}
-                    image={product.image}
-                    category={product.category}
-                    brand={product.brand}
-                    brandLogo={product.brandLogo}
-                    isNew={product.isNew}
-                    isOnSale={product.isOnSale}
-                    discount={product.discount}
-                    description={product.description}
-                  />
+                    onClick={() => handleProductClick(product)}
+                    className="cursor-pointer"
+                  >
+                    <CardProducto
+                      id={product.id}
+                      name={product.name}
+                      image={product.image}
+                      category={product.category}
+                      brand={product.brand}
+                      brandLogo={product.brandLogo}
+                      isNew={product.isNew}
+                      isOnSale={product.isOnSale}
+                      discount={product.discount}
+                      description={product.description}
+                    />
+                  </div>
                 ))}
               </div>
             </section>
@@ -178,6 +194,13 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
           </div>
         </div>
       )}
+
+      {/* Modal de producto - Posicionado al final del componente */}
+      <ProductModal
+        product={selectedProduct}
+        isOpen={isModalOpen}
+        onClose={closeModal}
+      />
     </div>
   );
 }

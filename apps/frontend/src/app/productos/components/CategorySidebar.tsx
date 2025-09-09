@@ -9,73 +9,277 @@ import {
   Droplets,
   SprayCan,
   Wrench,
-  Hammer,
-  Tags
+  ChevronDown,
+  ChevronRight,
+  Tag,
+  Grid3x3,
+  Building2
 } from "lucide-react";
 
+interface Category {
+  name: string;
+  icon: React.ReactNode;
+  sub: string[];
+}
+
+interface Brand {
+  name: string;
+  logo: string;
+  slug: string;
+}
 
 export default function CategorySidebar() {
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [activeCategories, setActiveCategories] = useState<string[]>([]);
+  const [activeBrands, setActiveBrands] = useState<boolean>(false);
 
-  const categories = [
-    { name: "Agrícola", icon: <Tractor size={18} />, sub: ["Motocultores", "Tractores", "Motoguadañas"] },
-    { name: "Forestal", icon: <Trees size={18} />, sub: ["Motosierras", "Desbrozadoras"] },
-    { name: "Riego", icon: <Droplets size={18} />, sub: ["Bombas de agua", "Aspersores"] },
-    { name: "Fumigación", icon: <SprayCan size={18} />, sub: ["Pulverizadores", "Nebulizadores"] },
-    { name: "Repuestos", icon: <Wrench size={18} />, sub: ["Filtros", "Cuchillas", "Bujías"] },
-    { name: "Accesorios", icon: <Hammer size={18} />, sub: ["Herramientas", "Equipos de protección"] },
-    { name: "Marcas", icon: <Tags size={18} />, sub: ["echo", "Stihl", "Husqvarna", "Kawasaki", "Echo", "shindaiwa", "maruyama"] },
+  const categories: Category[] = [
+    { 
+      name: "Agrícola", 
+      icon: <Tractor size={18} />, 
+      sub: ["Motocultores", "Mini Tractores Cortacésped", "Motoazadas", "Accesorios"] 
+    },
+    { 
+      name: "Bosque y Jardín", 
+      icon: <Trees size={18} />, 
+      sub: ["Cortacésped", "Cortacetos", "Desbrozadoras", "Motosierras", "Sopladoras", "Accesorios"] 
+    },
+    { 
+      name: "Fumigación", 
+      icon: <SprayCan size={18} />, 
+      sub: ["Discos fumigación", "Fumigadoras motorizadas", "Fumigadoras manuales", "Espolvoreadores", "Accesorios"] 
+    },
+    { 
+      name: "Lubricantes", 
+      icon: <Droplets size={18} />, 
+      sub: ["Aceites 2 Tiempos", "Aceites 4 Tiempos", "Grasas"] 
+    },
+    { 
+      name: "Riego", 
+      icon: <Droplets size={18} />, 
+      sub: ["Bombas de caudal", "Bombas de presión", "Accesorios"] 
+    },
+    { 
+      name: "Otros", 
+      icon: <Wrench size={18} />, 
+      sub: ["Motores", "Generadores", "Tijeras"] 
+    },
+  ];
+
+  const brands: Brand[] = [
+    { name: "Annovi Reverberi", logo: "/images/brands/annovi-reberberi.png", slug: "annovi-reverberi" },
+    { name: "Casamoto", logo: "/images/brands/casamoto.png", slug: "casamoto" },
+    { name: "Ducati", logo: "/images/brands/ducati.png", slug: "ducati" },
+    { name: "Echo", logo: "/images/brands/echo.png", slug: "echo" },
+    { name: "Husqvarna", logo: "/images/brands/husqvarna.png", slug: "husqvarna" },
+    { name: "Maruyama", logo: "/images/brands/Maruyama.png", slug: "Maruyama" },
+    { name: "Stihl", logo: "/images/brands/stihl.png", slug: "stihl" },
+    { name: "Whale Best", logo: "/images/brands/whalebest.png", slug: "whale-best" },
+    { name: "Shindaiwa", logo: "/images/brands/Shindaiwa.png", slug: "shindaiwa" },
+    { name: "Oleo-Mac", logo: "/images/brands/oleo-mac.png", slug: "oleo-mac" },
   ];
 
   const toggleCategory = (categoryName: string) => {
-    setActiveCategory(activeCategory === categoryName ? null : categoryName);
+    setActiveCategories(prev => 
+      prev.includes(categoryName) 
+        ? prev.filter(name => name !== categoryName)
+        : [...prev, categoryName]
+    );
+  };
+
+  const toggleBrands = () => {
+    setActiveBrands(!activeBrands);
+  };
+
+  const generateBrandColors = (brand: string) => {
+    const colors = [
+      'bg-blue-600', 'bg-green-600', 'bg-purple-600', 'bg-red-600', 
+      'bg-orange-600', 'bg-teal-600', 'bg-indigo-600', 'bg-pink-600',
+      'bg-cyan-600', 'bg-amber-600'
+    ];
+    let hash = 0;
+    for (let i = 0; i < brand.length; i++) {
+      hash = brand.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
   };
 
   return (
-    <nav className="p-4 bg-white rounded-lg shadow-md border border-gray-200 min-h-screen flex flex-col">
-      <h2 className="font-bold text-lg mb-4 text-gray-800 border-b pb-2">Categorías</h2>
-      <ul className="flex-1 space-y-1 overflow-y-auto pr-1">
-        {categories.map((cat) => (
-          <li key={cat.name} className="border-b border-gray-100 last:border-b-0">
-            <div
-              className="flex justify-between items-center py-2 px-2 cursor-pointer hover:bg-campomaq rounded-md transition-colors"
-              onClick={() => toggleCategory(cat.name)}
+    <nav className="bg-white rounded-xl shadow-lg border border-gray-100 min-h-screen flex flex-col overflow-hidden">
+ 
+      <div className="flex-1 overflow-y-auto">
+        {/* Categories Section */}
+        <div className="p-6 border-b border-gray-100">
+          <div className="flex items-center gap-2 mb-4">
+            <Building2 className="w-4 h-4 text-gray-600" />
+            <h3 className="font-semibold text-sm uppercase tracking-wide text-gray-600">Categorías</h3>
+          </div>
+          
+          <ul className="space-y-1">
+            {categories.map((cat) => (
+              <li key={cat.name}>
+                <motion.div
+                  className="group"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <button
+                    className="w-full flex items-center justify-between px-4 py-3 rounded-lg hover:bg-gray-50 transition-all duration-200 group-hover:shadow-md cursor-pointer"
+                    onClick={() => toggleCategory(cat.name)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-1.5 rounded-md bg-gray-100 text-gray-600 group-hover:bg-campomaq/80 group-hover:text-black transition-colors cursor-pointer">
+                        {cat.icon}
+                      </div>
+                      <span className="font-medium text-gray-900 text-sm">{cat.name}</span>
+                    </div>
+                    <motion.div
+                      animate={{ rotate: activeCategories.includes(cat.name) ? 180 : 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <ChevronDown className="w-4 h-4 text-gray-500" />
+                    </motion.div>
+                  </button>
+
+                  <AnimatePresence initial={false}>
+                    {activeCategories.includes(cat.name) && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                        className="overflow-hidden"
+                      >
+                        <ul className="ml-10 mt-2 space-y-1 pb-2">
+                          {cat.sub.map((sub, index) => (
+                            <motion.li
+                              key={sub}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.05 }}
+                            >
+                              <Link
+                                href={`/productos?search=${sub.toLowerCase()}`}
+                                className="block px-4 py-2 text-sm text-gray-600 hover:text-black hover:font-bold hover:bg-blue-50 rounded-md transition-all duration-150 hover:translate-x-1"
+                              >
+                                <span className="flex items-center gap-2">
+                                  <span className="w-1.5 h-1.5 bg-gray-300 rounded-full"></span>
+                                  {sub}
+                                </span>
+                              </Link>
+                            </motion.li>
+                          ))}
+                        </ul>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Brands Section */}
+        <div className="p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Tag className="w-4 h-4 text-gray-600" />
+            <h3 className="font-semibold text-sm uppercase tracking-wide text-gray-600">Marcas</h3>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <button
+              className="w-full flex items-center justify-between px-4 py-3 rounded-lg hover:bg-gray-50 transition-all duration-200 hover:shadow-sm"
+              onClick={toggleBrands}
             >
-              <div className="flex items-center gap-2 text-black font-medium">
-                {cat.icon}
-                {cat.name}
+              <div className="flex items-center gap-3">
+                <div className="p-1.5 rounded-md bg-gray-100 text-gray-600 hover:bg-purple-100 hover:text-purple-600 transition-colors">
+                  <Tag size={18} />
+                </div>
+                <span className="font-medium text-gray-900 text-sm">Todas las marcas</span>
+                <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
+                  {brands.length}
+                </span>
               </div>
-              <span className="text-black text-lg font-bold">
-                {activeCategory === cat.name ? "−" : "+"}
-              </span>
-            </div>
+              <motion.div
+                animate={{ rotate: activeBrands ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronDown className="w-4 h-4 text-gray-500" />
+              </motion.div>
+            </button>
 
             <AnimatePresence initial={false}>
-              {activeCategory === cat.name && cat.sub && (
-                <motion.ul
-                  key="submenu"
+              {activeBrands && (
+                <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.25, ease: "easeInOut" }}
-                  className="ml-6 mt-1 mb-2 space-y-1.5 overflow-hidden"
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  className="overflow-hidden"
                 >
-                  {cat.sub.map((sub) => (
-                    <li key={sub}>
-                      <Link
-                        href={`/productos?categoria=${sub.toLowerCase()}`}
-                        className="block py-1.5 px-2 text-sm text-black hover:text-black hover:bg-campomaq rounded transition-colors hover:pl-5"
+                  <ul className="ml-10 mt-3 space-y-2 pb-2">
+                    {brands.map((brand, index) => (
+                      <motion.li
+                        key={brand.slug}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.03 }}
                       >
-                        {sub}
-                      </Link>
-                    </li>
-                  ))}
-                </motion.ul>
+                        <Link
+                          href={`/productos?brand=${brand.slug}`}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-150 group hover:translate-x-1"
+                        >
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow overflow-hidden">
+                            {brand.logo.startsWith('/') || brand.logo.startsWith('http') ? (
+                              <img 
+                                src={brand.logo} 
+                                alt={`${brand.name} logo`}
+                                className="w-full h-full object-contain rounded-lg"
+                                onError={(e) => {
+                                  // Fallback si la imagen no carga
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  const fallback = target.nextElementSibling as HTMLElement;
+                                  if (fallback) fallback.style.display = 'flex';
+                                }}
+                              />
+                            ) : (
+                              <div className={`w-full h-full ${generateBrandColors(brand.name)} rounded-lg flex items-center justify-center text-white text-xs font-bold`}>
+                                {brand.logo}
+                              </div>
+                            )}
+                            {/* Fallback hidden by default */}
+                            <div 
+                              className={`w-full h-full ${generateBrandColors(brand.name)} rounded-lg items-center justify-center text-white text-xs font-bold`}
+                              style={{ display: 'none' }}
+                            >
+                              {brand.name.charAt(0)}{brand.name.split(' ')[1]?.charAt(0) || ''}
+                            </div>
+                          </div>
+                          <span className="font-medium group-hover:font-semibold transition-all">
+                            {brand.name}
+                          </span>
+                        </Link>
+                      </motion.li>
+                    ))}
+                  </ul>
+                </motion.div>
               )}
             </AnimatePresence>
-          </li>
-        ))}
-      </ul>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+        <p className="text-xs text-gray-500 text-center">
+          Explora nuestro catálogo completo
+        </p>
+      </div>
     </nav>
   );
 }

@@ -11,43 +11,39 @@ export const products: Product[] = [
     isOnSale: true,
     discount: 10,
     description: `
-    Motocultor compacto ideal para jardines pequeños y medianos.
-
-    El Motocultor Maruyama es una herramienta esencial para el trabajo agrícola y de jardinería. Diseñado con tecnología japonesa de alta calidad, ofrece un rendimiento excepcional para la preparación del suelo en jardines, huertos familiares y pequeñas parcelas agrícolas.
-
-    **Características principales:**
-    - Motor de 4 tiempos confiable
-    - Transmisión por cadena duradera
-    - Manillar ajustable en altura
-    - Ruedas neumáticas de alta tracción
-    - Fácil arranque manual
-    - Bajo consumo de combustible
-
-    **Especificaciones técnicas:**
-    - Ancho de trabajo: 60 cm
-    - Profundidad máxima: 20 cm
-    - Velocidades: 2 adelante, 1 atrás
-    - Tipo de transmisión: Cadena
-
-    **Motor:**
-    - 4 tiempos monocilíndrico
-    - Potencia: 6.5 HP
-    - Combustible: Gasolina
-    - Consumo: 1.2 L/hora
-
-    **Dimensiones:**
-    - Largo: 140 cm
-    - Ancho: 60 cm
-    - Alto: 95 cm
-    - Peso: 85 kg
-
-    **Recomendaciones de uso:**
-    - Ideal para suelos en jardines y huertos
-    - Perfecto para terrenos de hasta 2000 m²
-    - Recomendado para uso doméstico y semi-profesional
-    - Excelente para cultivos en línea
-
-    Garantía: 2 años del fabricante.
+      <h2>Motocultor Maruyama</h2>
+      <p>El <strong>Motocultor Maruyama</strong> es una herramienta esencial para el trabajo agrícola y de jardinería. Diseñado con <strong>tecnología japonesa</strong> de alta calidad, ofrece un <em>rendimiento excepcional</em> para la preparación del suelo en jardines, huertos familiares y pequeñas parcelas agrícolas.</p>
+      
+      <h3>Características principales</h3>
+      <ul>
+        <li>Motor de 4 tiempos confiable</li>
+        <li>Transmisión por cadena duradera</li>
+        <li>Manillar ajustable en altura</li>
+        <li>Ruedas neumáticas de alta tracción</li>
+        <li>Fácil arranque manual</li>
+        <li>Bajo consumo de combustible</li>
+      </ul>
+      
+      <h3>Beneficios</h3>
+      <ul>
+        <li>Ideal para suelos en jardines y huertos</li>
+        <li>Perfecto para terrenos de hasta 2000 m²</li>
+        <li>Recomendado para uso doméstico y semi-profesional</li>
+        <li>Excelente para cultivos en línea</li>
+      </ul>
+      
+      <h3>Especificaciones técnicas</h3>
+      <table>
+        <tr><td><strong>Motor</strong></td><td>4 tiempos monocilíndrico, 6.5 HP</td></tr>
+        <tr><td><strong>Combustible</strong></td><td>Gasolina</td></tr>
+        <tr><td><strong>Ancho de trabajo</strong></td><td>60 cm</td></tr>
+        <tr><td><strong>Profundidad máxima</strong></td><td>20 cm</td></tr>
+        <tr><td><strong>Velocidades</strong></td><td>2 adelante, 1 atrás</td></tr>
+        <tr><td><strong>Peso</strong></td><td>85 kg</td></tr>
+        <tr><td><strong>Consumo</strong></td><td>1.2 L/hora</td></tr>
+      </table>
+      
+      <p>Con el <strong>Motocultor Maruyama</strong>, tendrás una máquina confiable para la preparación del suelo con la calidad y durabilidad que caracteriza a los productos japoneses. <em>Garantía de 2 años del fabricante.</em></p>
     `,
     tags: ["motocultor", "Maruyama", "floricola", "agricultura", "maruyama"],
     additionalImages: [
@@ -65,42 +61,39 @@ export const products: Product[] = [
     brandLogo: "/images/brands/Maruyama.png",
     isNew: true,
     description: `
-    Desbrozadora profesional para trabajos de desbroce.
-
-    La Desbrozadora Maruyama 525RX es una herramienta profesional diseñada para trabajos intensivos de desbroce y mantenimiento de áreas verdes. Con su motor de 2 tiempos de alta eficiencia y su sistema antivibración avanzado, proporciona un rendimiento superior con menor fatiga del operario.
-
-    **Características principales:**
-    - Motor 2 tiempos de alto rendimiento
-    - Sistema antivibración
-    - Arnés ergonómico incluido
-    - Cabezal de hilo automático
-    - Fácil arranque con sistema Easy Start
-
-    **Especificaciones técnicas:**
-    - Cilindrada: 25.4 cc
-    - Diámetro de corte: 42 cm
-    - Tipo de cabezal: Automático
-    - Diámetro del hilo: 2.4 mm
-
-    **Motor:**
-    - 2 tiempos monocilíndrico
-    - Potencia: 1.1 kW
-    - Combustible: Mezcla gasolina/aceite
-    - Consumo: 0.6 L/hora
-
-    **Dimensiones:**
-    - Largo: 175 cm
-    - Ancho: 42 cm
-    - Alto: 35 cm
-    - Peso: 5.2 kg
-
-    **Recomendaciones de uso:**
-    - Ideal para mantenimiento de jardines grandes
-    - Perfecto para desbroce de maleza densa
-    - Recomendado para uso profesional diario
-    - Excelente para áreas de difícil acceso
-
-    Garantía: 2 años del fabricante.
+      <h2>Desbrozadora Maruyama 525RX</h2>
+      <p>La <strong>Desbrozadora Maruyama 525RX</strong> es una herramienta profesional diseñada para trabajos intensivos de <em>desbroce y mantenimiento</em> de áreas verdes. Con su motor de 2 tiempos de alta eficiencia y su sistema antivibración avanzado, proporciona un <strong>rendimiento superior</strong> con menor fatiga del operario.</p>
+      
+      <h3>Características principales</h3>
+      <ul>
+        <li>Motor 2 tiempos de alto rendimiento</li>
+        <li>Sistema antivibración avanzado</li>
+        <li>Arnés ergonómico incluido</li>
+        <li>Cabezal de hilo automático</li>
+        <li>Fácil arranque con sistema Easy Start</li>
+        <li>Filtro de aire de alta capacidad</li>
+      </ul>
+      
+      <h3>Beneficios</h3>
+      <ul>
+        <li>Ideal para mantenimiento de jardines grandes</li>
+        <li>Perfecto para desbroce de maleza densa</li>
+        <li>Recomendado para uso profesional diario</li>
+        <li>Excelente para áreas de difícil acceso</li>
+      </ul>
+      
+      <h3>Especificaciones técnicas</h3>
+      <table>
+        <tr><td><strong>Motor</strong></td><td>2 tiempos monocilíndrico</td></tr>
+        <tr><td><strong>Cilindrada</strong></td><td>25.4 cc</td></tr>
+        <tr><td><strong>Potencia</strong></td><td>1.1 kW</td></tr>
+        <tr><td><strong>Diámetro de corte</strong></td><td>42 cm</td></tr>
+        <tr><td><strong>Diámetro del hilo</strong></td><td>2.4 mm</td></tr>
+        <tr><td><strong>Peso</strong></td><td>5.2 kg</td></tr>
+        <tr><td><strong>Consumo</strong></td><td>0.6 L/hora</td></tr>
+      </table>
+      
+      <p>Con la <strong>Desbrozadora Maruyama 525RX</strong>, obtendrás una herramienta profesional que combina potencia, comodidad y durabilidad para todos tus trabajos de desbroce. <em>Garantía de 2 años del fabricante.</em></p>
     `,
     tags: ["motoguadaña", "Maruyama", "desbroce", "profesional", "maruyama"],
     additionalImages: [
@@ -109,96 +102,46 @@ export const products: Product[] = [
     ]
   },
   {
-    id: "3",
-    name: "Bomba de Fumigar 20L",
-    image: "/images/prod-home/bombaf.jpg",
-    category: "Bombas",
-    brand: "Echo",
-    brandLogo: "/images/brands/echo.svg",
-    isOnSale: true,
-    discount: 20,
-    description: `
-    Bomba de fumigación manual de 20 litros.
-
-    Esta bomba es ideal para aplicaciones de pesticidas, herbicidas y fertilizantes líquidos en jardines, cultivos y áreas verdes. Su diseño ergonómico y materiales resistentes a químicos garantizan durabilidad y facilidad de uso.
-
-    **Características principales:**
-    - Tanque de 20 litros de capacidad
-    - Bomba manual de presión
-    - Manguera de 1.5 metros
-    - Lanza con regulador de caudal
-    - Correa para transporte
-    - Materiales resistentes a químicos
-
-    **Especificaciones técnicas:**
-    - Capacidad: 20 L
-    - Presión máxima: 3 bar
-    - Longitud manguera: 1.5 m
-    - Material tanque: Polietileno
-
-    **Dimensiones:**
-    - Largo: 40 cm
-    - Ancho: 25 cm
-    - Alto: 55 cm
-    - Peso: 3.2 kg
-
-    **Recomendaciones de uso:**
-    - Ideal para jardines y huertos familiares
-    - Perfecto para aplicación de pesticidas orgánicos
-    - Recomendado para áreas de hasta 1000 m²
-
-    Garantía: 1 año del fabricante.
-    `,
-    tags: ["bomba", "fumigación", "manual", "20l", "echo","Echo"],
-    additionalImages: [
-      "/images/prod-home/bombaf.jpg"
-    ]
-  },
-  {
     id: "4",
     name: "Motosierra STIHL 240",
     image: "/images/prod-home/motosierra.jpg",
     category: "Motosierras",
     brand: "Stihl",
-    brandLogo: "/images/brands/STIHL.jpg",
+    brandLogo: "/images/brands/stihl.png",
     description: `
-    Motosierra ligera para uso doméstico y profesional.
-
-    La Motosierra STIHL 240 es una herramienta versátil y potente, ideal para trabajos de poda, corte de leña y mantenimiento forestal. Su diseño ergonómico y tecnología avanzada la convierten en la elección perfecta tanto para usuarios domésticos como profesionales.
-
-    **Características principales:**
-    - Motor 2 tiempos de alta potencia
-    - Sistema antivibración STIHL
-    - Bomba de aceite automática
-    - Freno de cadena de seguridad
-    - Filtro de aire lavable
-    - Arranque fácil ErgoStart
-
-    **Especificaciones técnicas:**
-    - Cilindrada: 38.2 cc
-    - Longitud espada: 35 cm
-    - Paso cadena: 3/8 pulg
-    - Grosor eslabón: 1.3 mm
-
-    **Motor:**
-    - 2 tiempos monocilíndrico
-    - Potencia: 2.0 kW
-    - Combustible: Mezcla gasolina/aceite
-    - Consumo: 0.8 L/hora
-
-    **Dimensiones:**
-    - Largo: 70 cm
-    - Ancho: 24 cm
-    - Alto: 28 cm
-    - Peso: 4.7 kg
-
-    **Recomendaciones de uso:**
-    - Ideal para poda de árboles frutales
-    - Perfecto para corte de leña doméstica
-    - Recomendado para trabajos forestales ligeros
-    - Excelente para mantenimiento de jardines
-
-    Garantía: 2 años del fabricante.
+      <h2>Motosierra STIHL 240</h2>
+      <p>La <strong>Motosierra STIHL 240</strong> es una herramienta versátil y potente, ideal para trabajos de poda, corte de leña y mantenimiento forestal. Su <em>diseño ergonómico</em> y tecnología avanzada la convierten en la elección perfecta tanto para <strong>usuarios domésticos como profesionales</strong>.</p>
+      
+      <h3>Características principales</h3>
+      <ul>
+        <li>Motor 2 tiempos de alta potencia</li>
+        <li>Sistema antivibración STIHL</li>
+        <li>Bomba de aceite automática</li>
+        <li>Freno de cadena de seguridad</li>
+        <li>Filtro de aire lavable</li>
+        <li>Arranque fácil ErgoStart</li>
+      </ul>
+      
+      <h3>Beneficios</h3>
+      <ul>
+        <li>Ideal para poda de árboles frutales</li>
+        <li>Perfecto para corte de leña doméstica</li>
+        <li>Recomendado para trabajos forestales ligeros</li>
+        <li>Excelente para mantenimiento de jardines</li>
+      </ul>
+      
+      <h3>Especificaciones técnicas</h3>
+      <table>
+        <tr><td><strong>Motor</strong></td><td>2 tiempos monocilíndrico</td></tr>
+        <tr><td><strong>Cilindrada</strong></td><td>38.2 cc</td></tr>
+        <tr><td><strong>Potencia</strong></td><td>2.0 kW</td></tr>
+        <tr><td><strong>Longitud espada</strong></td><td>35 cm</td></tr>
+        <tr><td><strong>Paso cadena</strong></td><td>3/8 pulg</td></tr>
+        <tr><td><strong>Peso</strong></td><td>4.7 kg</td></tr>
+        <tr><td><strong>Consumo</strong></td><td>0.8 L/hora</td></tr>
+      </table>
+      
+      <p>Con la <strong>Motosierra STIHL 240</strong>, tendrás una herramienta de calidad alemana que combina potencia, seguridad y durabilidad para todos tus trabajos de corte. <em>Garantía de 2 años del fabricante.</em></p>
     `,
     tags: ["motosierra", "STIHL", "madera", "corte", "profesional", "stihl"],
     additionalImages: [
@@ -213,83 +156,46 @@ export const products: Product[] = [
     image: "/images/prod-home/desbrozadora.png",
     category: "Desbrozadoras",
     brand: "Echo",
-    brandLogo: "/images/brands/echo.svg",
+    brandLogo: "/images/brands/echo.png",
     isOnSale: true,
     discount: 15,
+    isNew: true,
     description: `
-    Desbrozadora de hilo para jardines y terrenos.
-
-    La Desbrozadora Echo SRM-225 combina potencia y versatilidad para el mantenimiento profesional de áreas verdes. Su motor confiable y diseño ergonómico la hacen ideal para trabajos prolongados con máxima comodidad.
-
-    **Características principales:**
-    - Motor 2 tiempos eficiente
-    - Cabezal de hilo semiautomático
-    - Mango ergonómico
-    - Sistema de arranque ES Start
-    - Filtro de aire de alta capacidad
-
-    **Especificaciones técnicas:**
-    - Cilindrada: 21.2 cc
-    - Diámetro de corte: 40 cm
-    - Diámetro hilo: 2.0 mm
-
-    **Motor:**
-    - 2 tiempos
-    - Potencia: 0.8 kW
-    - Combustible: Mezcla gasolina/aceite
-
-    **Peso:** 4.4 kg
-
-    Garantía: 2 años del fabricante.
+      <h2>Desbrozadora Echo SRM-225</h2>
+      <p>La <strong>Desbrozadora Echo SRM-225</strong> combina <em>potencia y versatilidad</em> para el mantenimiento profesional de áreas verdes. Su motor confiable y <strong>diseño ergonómico</strong> la hacen ideal para trabajos prolongados con máxima comodidad.</p>
+      
+      <h3>Características principales</h3>
+      <ul>
+        <li>Motor 2 tiempos eficiente</li>
+        <li>Cabezal de hilo semiautomático</li>
+        <li>Mango ergonómico</li>
+        <li>Sistema de arranque ES Start</li>
+        <li>Filtro de aire de alta capacidad</li>
+      </ul>
+      
+      <h3>Beneficios</h3>
+      <ul>
+        <li>Ideal para mantenimiento de jardines medianos</li>
+        <li>Perfecto para desbroce regular</li>
+        <li>Recomendado para uso doméstico intensivo</li>
+        <li>Excelente relación calidad-precio</li>
+      </ul>
+      
+      <h3>Especificaciones técnicas</h3>
+      <table>
+        <tr><td><strong>Motor</strong></td><td>2 tiempos</td></tr>
+        <tr><td><strong>Cilindrada</strong></td><td>21.2 cc</td></tr>
+        <tr><td><strong>Potencia</strong></td><td>0.8 kW</td></tr>
+        <tr><td><strong>Diámetro de corte</strong></td><td>40 cm</td></tr>
+        <tr><td><strong>Diámetro hilo</strong></td><td>2.0 mm</td></tr>
+        <tr><td><strong>Peso</strong></td><td>4.4 kg</td></tr>
+      </table>
+      
+      <p>Con la <strong>Desbrozadora Echo SRM-225</strong>, obtendrás una herramienta confiable y eficiente para el mantenimiento de tus espacios verdes. <em>Garantía de 2 años del fabricante.</em></p>
     `,
     tags: ["desbrozadora", "echo", "hilo", "jardín", "Echo"],
     additionalImages: [
       "/images/prod-home/desbrozadora.png"
-    ]
-  },
-  {
-    id: "6",
-    name: "Generador Subaru 3000W",
-    image: "/images/prod-home/generador-subaru.jpeg",
-    category: "Generadores",
-    brand: "Subaru",
-    brandLogo: "/images/brands/subaru.jpeg",
-    isNew: true,
-    description: `
-    Generador portátil de 3000W para emergencias.
-
-    El Generador Subaru de 3000W es la solución perfecta para tener energía confiable en cualquier momento. Con tecnología japonesa de primer nivel, ofrece energía limpia y estable para sus equipos más sensibles.
-
-    **Características principales:**
-    - Motor Subaru confiable
-    - Salida de 3000W
-    - Arranque eléctrico y manual
-    - Panel de control digital
-    - Protección contra sobrecarga
-    - Muy silencioso
-
-    **Especificaciones técnicas:**
-    - Potencia máxima: 3000 W
-    - Potencia continua: 2600 W
-    - Combustible: Gasolina
-    - Autonomía: 8 horas
-
-    **Motor:**
-    - 4 tiempos OHV
-    - Potencia: 6.5 HP
-    - Combustible: Gasolina
-    - Consumo: 1.8 L/hora
-
-    **Recomendaciones de uso:**
-    - Ideal para emergencias domésticas
-    - Perfecto para eventos al aire libre
-    - Recomendado para herramientas eléctricas
-
-    Garantía: 3 años del fabricante.
-    `,
-    tags: ["generador", "subaru", "3000w", "emergencia","Subaru"],
-    additionalImages: [
-      "/images/prod-home/generador-subaru.jpeg"
     ]
   },
   {
@@ -298,13 +204,27 @@ export const products: Product[] = [
     image: "/images/prod-home/husqvarna-podadora_de_setos.jpg",
     category: "Podadoras",
     brand: "Husqvarna",
-    brandLogo: "/images/brands/Husqvarna.jpg",
+    brandLogo: "/images/brands/husqvarna.png",
     description: `
-    Podadora de setos eléctrica profesional.
-
-    La Podadora de Setos Husqvarna 122HD60 es perfecta para trabajos de jardinería exigentes gracias a su diseño robusto y eficiente.
-
-    Garantía: 2 años del fabricante.
+      <h2>Podadora de Setos Husqvarna 122HD60</h2>
+      <p>La <strong>Podadora de Setos Husqvarna 122HD60</strong> es perfecta para trabajos de jardinería exigentes gracias a su <em>diseño robusto y eficiente</em>.</p>
+      
+      <h3>Características principales</h3>
+      <ul>
+        <li>Motor eléctrico confiable</li>
+        <li>Cuchillas de doble filo</li>
+        <li>Mango ergonómico antideslizante</li>
+        <li>Sistema de seguridad integrado</li>
+      </ul>
+      
+      <h3>Beneficios</h3>
+      <ul>
+        <li>Ideal para setos medianos y grandes</li>
+        <li>Perfecto para uso profesional</li>
+        <li>Mantenimiento mínimo requerido</li>
+      </ul>
+      
+      <p><em>Garantía de 2 años del fabricante.</em></p>
     `,
     tags: ["podadora", "Husqvarna", "setos", "eléctrica", "profesional", "husqvarna"]
   },
@@ -314,15 +234,29 @@ export const products: Product[] = [
     image: "/images/prod-home/echo-sopladora.jpeg",
     category: "Sopladoras",
     brand: "Echo",
-    brandLogo: "/images/brands/echo.svg",
+    brandLogo: "/images/brands/echo.png",
     isOnSale: true,
     discount: 16,
     description: `
-    Sopladora de hojas portátil.
-
-    Diseñada para ofrecer gran potencia y portabilidad en limpieza de jardines y patios.
-
-    Garantía: 2 años del fabricante.
+      <h2>Sopladora Echo PB-250</h2>
+      <p>La <strong>Sopladora Echo PB-250</strong> está diseñada para ofrecer <em>gran potencia y portabilidad</em> en limpieza de jardines y patios.</p>
+      
+      <h3>Características principales</h3>
+      <ul>
+        <li>Motor 2 tiempos potente</li>
+        <li>Diseño ergonómico y liviano</li>
+        <li>Fácil arranque</li>
+        <li>Bajo nivel de ruido</li>
+      </ul>
+      
+      <h3>Beneficios</h3>
+      <ul>
+        <li>Ideal para limpieza de hojas</li>
+        <li>Perfecto para uso doméstico</li>
+        <li>Fácil manejo y transporte</li>
+      </ul>
+      
+      <p><em>Garantía de 2 años del fabricante.</em></p>
     `,
     tags: ["sopladora", "echo", "hojas", "portátil", "Echo"]
   },
@@ -332,13 +266,27 @@ export const products: Product[] = [
     image: "/images/prod-home/motoazada.jpg",
     category: "Motoazadas",
     brand: "Husqvarna",
-    brandLogo: "/images/brands/Husqvarna.jpg",
+    brandLogo: "/images/brands/husqvarna.png",
     description: `
-    Motoazada profesional para terrenos duros.
-
-    Diseñada para trabajos agrícolas exigentes, con gran durabilidad y eficiencia.
-
-    Garantía: 2 años del fabricante.
+      <h2>Motoazada Husqvarna FJ500</h2>
+      <p>La <strong>Motoazada Husqvarna FJ500</strong> está diseñada para trabajos agrícolas exigentes, con <em>gran durabilidad y eficiencia</em> en terrenos duros.</p>
+      
+      <h3>Características principales</h3>
+      <ul>
+        <li>Motor robusto de alto rendimiento</li>
+        <li>Cuchillas reforzadas</li>
+        <li>Transmisión resistente</li>
+        <li>Manillar ajustable</li>
+      </ul>
+      
+      <h3>Beneficios</h3>
+      <ul>
+        <li>Ideal para terrenos duros</li>
+        <li>Perfecto para uso profesional</li>
+        <li>Gran durabilidad y resistencia</li>
+      </ul>
+      
+      <p><em>Garantía de 2 años del fabricante.</em></p>
     `,
     tags: ["motoazada", "husqvarna", "terreno", "profesional", "Husqvarna"]
   },
@@ -348,13 +296,27 @@ export const products: Product[] = [
     image: "/images/prod-home/cuchillas.jpg",
     category: "Repuestos",
     brand: "Husqvarna",
-    brandLogo: "/images/brands/Husqvarna.jpg",
+    brandLogo: "/images/brands/husqvarna.png",
     description: `
-    Set de cuchillas para motoazada.
-
-    Fabricadas en acero de alta resistencia para garantizar un corte duradero.
-
-    Garantía: 1 año del fabricante.
+      <h2>Cuchillas para Motoazada Husqvarna</h2>
+      <p>Set de <strong>cuchillas de repuesto</strong> fabricadas en <em>acero de alta resistencia</em> para garantizar un corte duradero y eficiente.</p>
+      
+      <h3>Características principales</h3>
+      <ul>
+        <li>Acero de alta resistencia</li>
+        <li>Diseño optimizado para corte</li>
+        <li>Compatible con múltiples modelos</li>
+        <li>Fácil instalación</li>
+      </ul>
+      
+      <h3>Beneficios</h3>
+      <ul>
+        <li>Mantiene el rendimiento óptimo</li>
+        <li>Larga vida útil</li>
+        <li>Corte limpio y preciso</li>
+      </ul>
+      
+      <p><em>Garantía de 1 año del fabricante.</em></p>
     `,
     tags: ["cuchillas", "motoazada", "repuestos", "set", "husqvarna", "motocultor","Husqvarna"]
   },
@@ -364,11 +326,27 @@ export const products: Product[] = [
     image: "/images/prod-home/stihl-aceite_2t.jpg",
     category: "Lubricantes",
     brand: "Stihl",
-    brandLogo: "/images/brands/STIHL.jpg",
+    brandLogo: "/images/brands/stihl.png",
     description: `
-    Aceite 2T de alta calidad para motores.
-
-    Garantía: del fabricante.
+      <h2>Aceite 2T STIHL</h2>
+      <p><strong>Aceite 2T de alta calidad</strong> especialmente formulado para motores de <em>dos tiempos</em>, garantizando un rendimiento óptimo y protección superior.</p>
+      
+      <h3>Características principales</h3>
+      <ul>
+        <li>Formulación especial para motores 2T</li>
+        <li>Protección contra el desgaste</li>
+        <li>Combustión limpia</li>
+        <li>Reduce emisiones</li>
+      </ul>
+      
+      <h3>Beneficios</h3>
+      <ul>
+        <li>Prolonga la vida del motor</li>
+        <li>Mantiene el rendimiento óptimo</li>
+        <li>Compatible con todas las marcas</li>
+      </ul>
+      
+      <p><em>Garantía del fabricante.</em></p>
     `,
     tags: ["aceite", "2t", "stihl", "motor", "lubricante", "STIHL"]
   },
@@ -378,11 +356,27 @@ export const products: Product[] = [
     image: "/images/prod-home/manguera.jpg",
     category: "Mangueras",
     brand: "Echo",
-    brandLogo: "/images/brands/echo.svg",
+    brandLogo: "/images/brands/echo.png",
     description: `
-    Manguera para el riego agrícola disponible en diferentes longitudes.
-
-    Garantía: 6 meses.
+      <h2>Manguera de Riego Echo</h2>
+      <p><strong>Manguera para riego agrícola</strong> disponible en diferentes longitudes, fabricada con materiales resistentes para <em>uso intensivo</em>.</p>
+      
+      <h3>Características principales</h3>
+      <ul>
+        <li>Material resistente a la intemperie</li>
+        <li>Flexible y fácil de manejar</li>
+        <li>Conexiones estándar</li>
+        <li>Resistente a la presión</li>
+      </ul>
+      
+      <h3>Beneficios</h3>
+      <ul>
+        <li>Ideal para riego extensivo</li>
+        <li>Larga durabilidad</li>
+        <li>Fácil almacenamiento</li>
+      </ul>
+      
+      <p><em>Garantía de 6 meses.</em></p>
     `,
     tags: ["manguera","riego", "100m", "echo", "Echo"]
   }
@@ -390,17 +384,17 @@ export const products: Product[] = [
 
 // Productos populares (más vendidos)
 export const popularProducts = products.filter(p => 
-  ["1", "2", "4", "6", "8", "10"].includes(p.id)
+  ["1", "2", "4", "8", "10"].includes(p.id)
 );
 
 // Productos en tendencia
 export const trendingProducts = products.filter(p => 
-  ["3", "5", "7", "9", "11", "12"].includes(p.id)
+  ["5", "7", "9", "11", "12"].includes(p.id)
 );
 
 // Productos de oferta semanal
 export const weeklyOfferProducts = products.filter(p => 
-  p.isOnSale && ["1", "3", "5", "8"].includes(p.id)
+  p.isOnSale && ["1", "5", "8"].includes(p.id)
 );
 
 // Función para buscar productos

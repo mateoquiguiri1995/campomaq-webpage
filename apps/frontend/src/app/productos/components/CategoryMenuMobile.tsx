@@ -42,8 +42,8 @@ export default function CategoryMenuMobile() {
               className="fixed left-0 top-0 bottom-0 w-3/4 max-w-xs bg-white shadow-lg z-50 flex flex-col"
             >
               {/* Encabezado */}
-              <div className="flex justify-between items-center px-4 py-3 pt-23 border-b">
-                <h2 className="font-bold text-lg text-gray-800">Categorías</h2>
+              <div className="flex justify-between items-center px-4 py-3 pt-33">
+                <h2 className="font-bold text-lg text-gray-800">Catálogo</h2>
                 <button
                   onClick={() => setOpen(false)}
                   className="p-1 rounded-full hover:bg-gray-100 transition-colors"
