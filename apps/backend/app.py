@@ -109,16 +109,18 @@ def build_text_pipeline(query, limit=RESULT_LIMIT, index_name=TEXT_INDEX, popula
                 "_id": 0,
                 "product_name": 1,
                 "brand_name": 1,
+                "brand_logo": 1,
                 "description": 1,
                 "category_name": 1,
                 "link": 1,
                 "show_in_app": 1,
+                "new_product": 1,
+                "discount": { "$ifNull": ["$discount", 0] },
                 "main_boost": 1,
                 "low_value_flag": 1,
                 "popularity": {"$ifNull": ["$popularity", 1]},
                 "score": {"$meta": "searchScore"},
                 "final_score": 1
-
             }
         },
                 {

@@ -7,7 +7,6 @@ export interface Product {
   brand?: string;
   brandLogo?: string;
   isNew?: boolean;
-  isOnSale?: boolean;
   discount?: number;
 
   /** Descripción completa proveniente de la API (puede contener detalles, especificaciones, recomendaciones, etc.) */
@@ -86,6 +85,6 @@ export interface CardProductoProps {
   brand?: string;
   brandLogo?: string;
   isNew?: boolean;
-  isOnSale?: boolean;
   onClick?: () => void;
+  discount?: number;
 }

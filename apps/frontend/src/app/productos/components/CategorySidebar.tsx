@@ -74,7 +74,7 @@ export default function CategorySidebar() {
     { name: "Maruyama", logo: "/images/brands/Maruyama.png", slug: "Maruyama" },
     { name: "Stihl", logo: "/images/brands/stihl.png", slug: "stihl" },
     { name: "Whale Best", logo: "/images/brands/whalebest.png", slug: "whale-best" },
-    { name: "Shindaiwa", logo: "/images/brands/Shindaiwa.png", slug: "shindaiwa" },
+    { name: "Shindaiwa", logo: "/images/brands/shindaiwa.png", slug: "shindaiwa" },
     { name: "Oleo-Mac", logo: "/images/brands/oleo-mac.png", slug: "oleo-mac" },
   ];
 
@@ -159,7 +159,7 @@ export default function CategorySidebar() {
                               transition={{ delay: index * 0.05 }}
                             >
                               <Link
-                                href={`/productos?search=${sub.toLowerCase()}`}
+                                href={`/productos?brand=${sub.toLowerCase()}`}
                                 className="block px-4 py-2 text-sm text-gray-600 hover:text-black hover:font-bold hover:bg-blue-50 rounded-md transition-all duration-150 hover:translate-x-1"
                               >
                                 <span className="flex items-center gap-2">

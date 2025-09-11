@@ -10,7 +10,6 @@ interface ProductCardProps {
   brand?: string;
   brandLogo?: string;
   isNew?: boolean;
-  isOnSale?: boolean;
   discount?: number;
   description?: string;
 }
@@ -23,7 +22,6 @@ export default function CardProducto({
   brand,
   brandLogo,
   isNew = false,
-  isOnSale = false,
   discount = 0,
   description,
 }: ProductCardProps) {
@@ -78,7 +76,7 @@ export default function CardProducto({
             Nuevo
           </span>
         )}
-        {isOnSale && (
+        {(discount ?? 0) > 0 && (
           <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium shadow-sm">
             -{discount}%
           </span>

@@ -35,14 +35,15 @@ const features = [
     youtubeId: "j1wLY4I1QP8"
   }
 ]
-//
+
 export default function Marcas() {
   const router = useRouter()
 
   const handleBrandClick = (brandName: string) => {
+    // Cambio: usar parámetro 'brand' en lugar de 'search'
     router.push(`/productos?brand=${encodeURIComponent(brandName)}`)
   }
-//
+
   return (
     <section className="py-8 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto">
