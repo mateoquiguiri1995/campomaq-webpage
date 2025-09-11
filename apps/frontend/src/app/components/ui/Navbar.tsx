@@ -162,6 +162,12 @@ export default function Navbar() {
     return 0
   }
 
+  // Calcular la posición top del panel de categorías (debajo del navbar de escritorio h-24 = 96px)
+  const getCategoriesPanelTop = () => {
+    const DESKTOP_NAV_HEIGHT = 96 // 6rem
+    return getNavbarTop() + DESKTOP_NAV_HEIGHT
+  }
+
   return (
     <>
       {/* Barra superior */}
