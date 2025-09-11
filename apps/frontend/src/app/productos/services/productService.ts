@@ -114,13 +114,22 @@ export class ProductService {
     return {
       id: String(safeId),
       name: apiProduct?.product_name?.trim() || 'Producto sin nombre',
-      image: links.length > 0 ? links[0] : '/images/placeholder.jpg',
+      image: links.length > 0 ? links[0] : '/images/brands/placeholder.png',
       category: apiProduct?.category_name?.trim() || 'Sin categoría',
       brand: apiProduct?.brand_name?.trim() || 'Sin marca',
       brandLogo: apiProduct?.brand_logo || '/images/brands/placeholder.png',
-      isNew: Boolean(apiProduct?.is_new) || false,
-      isOnSale: Boolean(apiProduct?.is_on_sale) || false,
-      discount: Number(apiProduct?.discount) || 0,
+      isNew: Boolean(apiProduct?.new_product) || false,
+      discount: (() => {
+        const raw = apiProduct?.discount ?? apiProduct?.discount_percent ?? apiProduct?.discount_percentage;
+        let d = 0;
+        if (typeof raw === 'number') {
+          d = raw > 0 && raw < 1 ? Math.round(raw * 100) : Math.round(raw);
+        } else if (typeof raw === 'string') {
+          const parsed = parseInt(String(raw).replace(/[^\d.-]/g, ''), 10);
+          d = Number.isFinite(parsed) ? parsed : 0;
+        }
+        return Math.max(0, Math.min(100, d));
+      })(),
       description: apiProduct?.description || 'Sin descripción',
       tags: Array.isArray(apiProduct?.tags) ? apiProduct.tags : [],
       additionalImages: links,

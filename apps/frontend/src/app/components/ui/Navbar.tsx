@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, KeyboardEvent } from 'react'
 import { Menu, X, Search, ChevronRight } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -103,7 +103,7 @@ export default function Navbar() {
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') handleSearch()
   }
 
@@ -160,6 +160,13 @@ export default function Navbar() {
       return topBarHeight
     }
     return 0
+  }
+
+  // Calcular la posición top del panel de categorías (debajo del navbar)
+  const getCategoriesPanelTop = () => {
+    // h-24 en Tailwind = 6rem = 96px
+    const navbarHeight = 96
+    return getNavbarTop() + navbarHeight
   }
 
   return (

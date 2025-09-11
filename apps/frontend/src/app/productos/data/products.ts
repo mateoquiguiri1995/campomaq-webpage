@@ -8,7 +8,7 @@ export const products: Product[] = [
     category: "Motocultores",
     brand: "Maruyama",
     brandLogo: "/images/brands/Maruyama.png",
-    isOnSale: true,
+    
     discount: 10,
     description: `
       <h2>Motocultor Maruyama</h2>
@@ -157,7 +157,7 @@ export const products: Product[] = [
     category: "Desbrozadoras",
     brand: "Echo",
     brandLogo: "/images/brands/echo.png",
-    isOnSale: true,
+    
     discount: 15,
     isNew: true,
     description: `
@@ -235,7 +235,7 @@ export const products: Product[] = [
     category: "Sopladoras",
     brand: "Echo",
     brandLogo: "/images/brands/echo.png",
-    isOnSale: true,
+    
     discount: 16,
     description: `
       <h2>Sopladora Echo PB-250</h2>
@@ -393,8 +393,8 @@ export const trendingProducts = products.filter(p =>
 );
 
 // Productos de oferta semanal
-export const weeklyOfferProducts = products.filter(p => 
-  p.isOnSale && ["1", "5", "8"].includes(p.id)
+export const weeklyOfferProducts = products.filter(p =>
+  (p.discount ?? 0) > 0 && ["1", "5", "8"].includes(p.id)
 );
 
 // Función para buscar productos

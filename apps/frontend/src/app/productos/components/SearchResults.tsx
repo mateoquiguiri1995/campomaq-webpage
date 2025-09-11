@@ -14,7 +14,6 @@ interface SearchResultsProps {
 
 export default function SearchResults({ searchQuery, onBack }: SearchResultsProps) {
   const [searchResults, setSearchResults] = useState<Product[]>([]);
-  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +25,6 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
       const q = searchQuery.trim();
       if (!q) {
         setSearchResults([]);
-        setRelatedProducts([]);
         setSelectedProduct(null);
         setIsLoading(false);
         return;
@@ -37,14 +35,12 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
         const results = await ProductService.searchProducts(q);
         if (!cancelled) {
           setSearchResults(results);
-          setRelatedProducts([]);
           setSelectedProduct(null);
         }
       } catch (error) {
         console.error('Error searching products:', error);
         if (!cancelled) {
           setSearchResults([]);
-          setRelatedProducts([]);
           setSelectedProduct(null);
         }
       } finally {
@@ -60,14 +56,6 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
   const handleProductClick = async (product: Product) => {
     setSelectedProduct(product);
     setIsModalOpen(true);
-    
-    try {
-      const related = await ProductService.getRelatedProducts(product);
-      setRelatedProducts(related);
-    } catch (error) {
-      console.error("Error fetching related products:", error);
-      setRelatedProducts([]);
-    }
   };
 
   // Función para cerrar el modal
@@ -127,7 +115,6 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
                     brand={product.brand}
                     brandLogo={product.brandLogo}
                     isNew={product.isNew}
-                    isOnSale={product.isOnSale}
                     discount={product.discount}
                     description={product.description}
                   />
@@ -135,42 +122,6 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
               ))}
             </div>
           </section>
-
-          {/* Productos relacionados */}
-          {relatedProducts.length > 0 && (
-            <section>
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
-                Productos Relacionados
-                {selectedProduct && (
-                  <span className="text-lg font-normal text-gray-600 ml-2">
-                    con &quot;{selectedProduct.name}&quot;
-                  </span>
-                )}
-              </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6">
-                {relatedProducts.map((product) => (
-                  <div
-                    key={product.id}
-                    onClick={() => handleProductClick(product)}
-                    className="cursor-pointer"
-                  >
-                    <CardProducto
-                      id={product.id}
-                      name={product.name}
-                      image={product.image}
-                      category={product.category}
-                      brand={product.brand}
-                      brandLogo={product.brandLogo}
-                      isNew={product.isNew}
-                      isOnSale={product.isOnSale}
-                      discount={product.discount}
-                      description={product.description}
-                    />
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
         </div>
       ) : (
         /* No se encontraron resultados */
@@ -195,7 +146,7 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
         </div>
       )}
 
-      {/* Modal de producto - Posicionado al final del componente */}
+      {/* Modal de producto */}
       <ProductModal
         product={selectedProduct}
         isOpen={isModalOpen}

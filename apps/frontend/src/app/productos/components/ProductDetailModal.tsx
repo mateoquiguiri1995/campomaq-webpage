@@ -21,7 +21,6 @@ interface Product {
   brand?: string;
   brandLogo?: string;
   isNew?: boolean;
-  isOnSale?: boolean;
   discount?: number;
   description?: string;
   tags?: string[];
@@ -184,7 +183,7 @@ const ProductBadges = ({ product, className = "" }: { product: Product; classNam
         Nuevo
       </span>
     )}
-    {product.isOnSale && (
+    {(product.discount ?? 0) > 0 && (
       <span className="rounded-full bg-red-600 text-white px-3 py-1 text-xs font-semibold">
         -{product.discount}% OFF
       </span>
