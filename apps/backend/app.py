@@ -13,18 +13,24 @@ import openai
 from openai import OpenAI
 from dotenv import load_dotenv, find_dotenv
 
-# Load environment variables from .env
-load_dotenv(find_dotenv())
-openai.api_key = os.environ['OPENAI_API_KEY']
+# Load environment variables from .env if development
+os.environ.setdefault('FLASK_ENV', 'development')
+if os.getenv('FLASK_ENV') == 'development':
+    load_dotenv(find_dotenv())
+openai_api_key = os.getenv('OPENAI_API_KEY')
+if not openai_api_key:
+    raise ValueError("OPENAI_API_KEY environment variable is required")
 
 
 # Create Flask app
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins="*")
 
 # OpenAI client and MongoDB client
-openai_client = OpenAI()
+openai_client = OpenAI(api_key=openai_api_key)
 mongo_uri = os.getenv("MONGO_URI")
+if not mongo_uri:
+    raise ValueError("MONGO_URI environment variable is required")
 client_mongo = MongoClient(mongo_uri)
 db = client_mongo["campomaq"]
 collection = db["cm_catalog"]
@@ -112,7 +118,7 @@ def build_text_pipeline(query, limit=RESULT_LIMIT, index_name=TEXT_INDEX, popula
                 "discount": { "$ifNull": ["$discount", 0] },
                 "main_boost": 1,
                 "low_value_flag": 1,
-                "popularity": {"$ifNull": ["$popularity", 0]},
+                "popularity": {"$ifNull": ["$popularity", 1]},
                 "score": {"$meta": "searchScore"},
                 "final_score": 1
             }
@@ -122,7 +128,7 @@ def build_text_pipeline(query, limit=RESULT_LIMIT, index_name=TEXT_INDEX, popula
                 "final_score": {
                     "$multiply": [
                         "$score",
-                        { "$ifNull": ["$popularity", 0] },
+                        { "$ifNull": ["$popularity", 1] },
                         popularity_scale
                     ]
                 }
@@ -140,20 +146,58 @@ def search():
     q = (request.args.get("q") or "").strip()
     # mode = (request.args.get("mode") or "hybrid").lower()   # "text", "semantic", "hybrid"
     # limit = int(request.args.get("limit", RESULT_LIMIT))
-
+    print(f"Search query: '{q}'")
     if not q:
         return jsonify([])
 
-    # TEXT mode: Atlas $search with function boosting popularity
     pipeline = build_text_pipeline(q)
     docs = list(collection.aggregate(pipeline))
     # print(f"Text search pipeline: {docs}")
     serialized_products = [serialize_product(product) for product in docs]
 
-    for x in serialized_products:
-        x["product_name"] = x["product_name"].strip()
     return jsonify(serialized_products)
     
+@app.route("/products", methods=["GET"])
+def get_products():
+    """
+    List products sorted by popularity (descending).
+    - Only includes documents with show_in_app=True
+    - Supports optional pagination via ?page=1&amp;limit=20
+    """
+    # # Parse optional pagination parameters
+    # limit_default = RESULT_LIMIT
+    # try:
+    #     limit_param = (request.args.get("limit") or "").strip()
+    #     page_param = (request.args.get("page") or "").strip()
+
+    #     limit = int(limit_param) if limit_param.isdigit() else limit_default
+    #     # Clamp to a reasonable range
+    #     limit = max(1, min(limit, 100))
+    #     page = int(page_param) if page_param.isdigit() else 1
+    #     page = max(1, page)
+    # except Exception:
+    #     limit = limit_default
+    #     page = 1
+
+    # skip = (page - 1) * limit
+
+    # Build aggregation pipeline to sort by popularity (default to 1 if missing)
+    pipeline = [
+        {"$match": {"show_in_app": True}},
+        {"$addFields": {"effective_popularity": {"$ifNull": ["$popularity", 1]}}},
+        {"$sort": {"effective_popularity": -1}},
+        {"$project": {"effective_popularity": 0}}
+    ]
+
+    # if skip:
+    #     pipeline.append({"$skip": skip})
+    # pipeline.append({"$limit": limit})
+
+    docs = list(collection.aggregate(pipeline))
+    serialized_products = [serialize_product(p) for p in docs]
+
+    return jsonify(serialized_products)
+
 @app.route('/chat', methods=['POST'])
 def chat():
     user_message = request.json.get('message', '')
@@ -176,6 +220,12 @@ def chat():
         return jsonify({'reply': reply})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({'status': 'healthy'})
 
 
 

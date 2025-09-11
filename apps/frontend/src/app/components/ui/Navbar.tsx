@@ -167,7 +167,7 @@ export default function Navbar() {
     // h-24 en Tailwind = 6rem = 96px
     const navbarHeight = 96
     return getNavbarTop() + navbarHeight
-  }
+
 
   return (
     <>
