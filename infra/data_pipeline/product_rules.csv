@@ -3,6 +3,6 @@ word,disco,low_value
 word,nylon,low_value
 word,motocultor,boost
 word,bomba,boost
-code,ABC123,low_value
-code,XYZ999,boost
 word,cuchilla,low_value
+code,408-0009SI,boost
+code,408-0011SI,new_product
