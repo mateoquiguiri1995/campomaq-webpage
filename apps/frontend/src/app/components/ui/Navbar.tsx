@@ -146,7 +146,7 @@ export default function Navbar() {
     'Annovi Reberberi': '/images/brands/annovi-reberberi.png',
     'Casamoto': '/images/brands/casamoto.png',
     'Ducati': '/images/brands/ducati.png',
-    'Whale Best': '/images/brands/whalebest.png',
+    'Whale Best': '/images/brands/whale-best.png',
     'Stihl': '/images/brands/stihl.png',
     'Maruyama': '/images/brands/Maruyama.png',
     'Oleo-Mac': '/images/brands/oleo-mac.png',
@@ -167,6 +167,7 @@ export default function Navbar() {
     // h-24 en Tailwind = 6rem = 96px
     const navbarHeight = 96
     return getNavbarTop() + navbarHeight
+  }
 
 
   return (
