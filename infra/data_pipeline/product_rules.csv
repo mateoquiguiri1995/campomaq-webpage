@@ -1,7 +1,6 @@
 rule_type,rule_value,category
 word,disco,low_value
 word,nylon,low_value
-word,motocultor,boost
 word,bomba,boost
 word,cuchilla,low_value
 code,408-0009SI,boost
