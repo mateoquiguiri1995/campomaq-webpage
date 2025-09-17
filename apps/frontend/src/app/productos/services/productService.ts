@@ -7,6 +7,27 @@ import {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5001';
 
+// API response interfaces
+interface ApiProduct {
+  id?: string | number;
+  product_name?: string;
+  category_name?: string;
+  brand_name?: string;
+  brand_logo?: string;
+  new_product?: boolean;
+  discount?: number;
+  discount_percent?: number;
+  discount_percentage?: number;
+  description?: string;
+  tags?: string[];
+  link?: string | string[];
+}
+
+interface ApiError {
+  message?: string;
+  [key: string]: unknown;
+}
+
 class ApiClient {
   private baseURL: string;
 
@@ -33,9 +54,11 @@ class ApiClient {
       const json = await response.json();
       console.log("[ApiClient] Success:", json);
       return json as T;
-    } catch (err: any) {
-      console.error("[ApiClient] Network/Fetch error:", err); // 👈 log network error
-      const msg = (err && err.message) ? err.message : String(err);
+    } catch (err: unknown) {
+      console.error("[ApiClient] Network/Fetch error:", err);
+      const msg = (err && typeof err === 'object' && err !== null && 'message' in err)
+        ? (err as ApiError).message || String(err)
+        : String(err);
       throw new Error(
         msg.includes('Failed to fetch') || msg.includes('fetch failed')
           ? 'Network error: Could not connect to the server. Please check if the backend is running.'
@@ -63,7 +86,7 @@ export class ProductService {
     const endpoint = `/search?${params.toString()}`;
 
     try {
-      const apiProducts = await apiClient.get<any[]>(endpoint);
+      const apiProducts = await apiClient.get<ApiProduct[]>(endpoint);
       const mapped = Array.isArray(apiProducts)
         ? apiProducts.map(p => this.mapApiProductToProduct(p))
         : [];
@@ -100,8 +123,28 @@ export class ProductService {
     }
   }
 
+  static async getAllProducts(limit?: number): Promise<Product[]> {
+    const endpoint = `/products`;
+
+    try {
+      const apiProducts = await apiClient.get<ApiProduct[]>(endpoint);
+      const mappedProducts = Array.isArray(apiProducts)
+        ? apiProducts.map(p => this.mapApiProductToProduct(p))
+        : [];
+      
+      // Apply limit if specified
+      return limit ? mappedProducts.slice(0, limit) : mappedProducts;
+    } catch (error) {
+      console.error("[ProductService.getAllProducts] API failed, falling back:", error);
+      const fallbackProducts = localProducts;
+      return limit ? fallbackProducts.slice(0, limit) : fallbackProducts;
+    }
+  }
+
+
+
   // Map API product to local Product shape
-  private static mapApiProductToProduct(apiProduct: any): Product {
+  private static mapApiProductToProduct(apiProduct: ApiProduct): Product {
     const links: string[] =
       Array.isArray(apiProduct?.link)
         ? apiProduct.link

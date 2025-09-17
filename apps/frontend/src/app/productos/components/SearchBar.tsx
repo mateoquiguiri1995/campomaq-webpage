@@ -6,6 +6,16 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams, useRouter } from "next/navigation";
 
+const QUICK_OPTIONS = [
+  "Motocultor",
+  "Motoguadaña",
+  "Bombas de Fumigar",
+  "Generadores",
+  "Motosierra",
+  "Desbrozadora",
+  "Herramientas de Jardín"
+];
+
 interface SearchBarProps {
   onSearch?: (query: string) => void;
 }
@@ -21,22 +31,13 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const quickOptions = [
-    "Motocultor", 
-    "Motoguadaña", 
-    "Bombas de Fumigar", 
-    "Generadores", 
-    "Motosierra", 
-    "Desbrozadora", 
-    "Herramientas de Jardín"
-  ];
 
   // Efecto para cargar la búsqueda desde URL al montar el componente
   useEffect(() => {
     const searchFromUrl = searchParams.get('search');
     if (searchFromUrl && searchFromUrl !== searchInput) {
       // Verificar si la búsqueda es una de las etiquetas rápidas
-      if (quickOptions.includes(searchFromUrl)) {
+      if (QUICK_OPTIONS.includes(searchFromUrl)) {
         setSelectedTag(searchFromUrl);
         setSearchInput("");
       } else {
@@ -48,7 +49,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
         onSearch(searchFromUrl);
       }
     }
-  }, [searchParams]);
+  }, [searchParams, onSearch, searchInput]);
 
   const addTag = (tag: string) => {
     if (!selectedTag) {
@@ -343,7 +344,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
             <div className="absolute inset-0 bg-gradient-to-br from-yellow-50/50 to-transparent pointer-events-none" />
             
             <div className="relative flex flex-wrap gap-2">
-              {quickOptions.map((option, index) => (
+              {QUICK_OPTIONS.map((option, index) => (
                 <motion.button
                   key={option}
                   onClick={() => addTag(option)}

@@ -107,33 +107,62 @@ def build_text_pipeline(query, limit=RESULT_LIMIT, index_name=TEXT_INDEX, popula
         {
             "$project": {
                 "_id": 0,
+                "product_id": 1,
+                "product_code": 1,
                 "product_name": 1,
                 "brand_name": 1,
                 "brand_logo": 1,
+                "price_cash": 1,
                 "description": 1,
                 "category_name": 1,
                 "link": 1,
                 "show_in_app": 1,
+                "is_spare_part": 1,
                 "new_product": 1,
                 "discount": { "$ifNull": ["$discount", 0] },
                 "main_boost": 1,
                 "low_value_flag": 1,
                 "popularity": {"$ifNull": ["$popularity", 1]},
                 "score": {"$meta": "searchScore"},
-                "final_score": 1
+                "final_score": 1,
             }
         },
                 {
             "$addFields": {
                 "final_score": {
-                    "$multiply": [
-                        "$score",
-                        { "$ifNull": ["$popularity", 1] },
-                        popularity_scale
+                "$multiply": [
+                    "$score",
+                    { "$ifNull": ["$popularity", 1] },
+                    popularity_scale,
+                    # spare part factor
+                    {
+                    "$cond": [
+                        { "$eq": ["$is_spare_part", False] },
+                        1.9,   # boost if NOT spare part
+                        1.0
                     ]
+                    },
+                    # discount factor
+                    {
+                    "$cond": [
+                        { "$gt": ["$discount", 0] },
+                        1.15,  # boost if discount > 0
+                        1.0
+                    ]
+                    },
+                    # new product factor
+                    {
+                    "$cond": [
+                        { "$eq": ["$new_product", True] },
+                        1.1,   # boost if new product
+                        1.0
+                    ]
+                    }
+                ]
                 }
             }
         },
+
         {
         "$sort": { "final_score": -1 }
         },
@@ -183,11 +212,50 @@ def get_products():
 
     # Build aggregation pipeline to sort by popularity (default to 1 if missing)
     pipeline = [
-        {"$match": {"show_in_app": True}},
-        {"$addFields": {"effective_popularity": {"$ifNull": ["$popularity", 1]}}},
-        {"$sort": {"effective_popularity": -1}},
-        {"$project": {"effective_popularity": 0}}
-    ]
+    {"$match": {"show_in_app": True}},
+    {
+        "$addFields": {
+            "effective_popularity": {"$ifNull": ["$popularity", 1]},
+            "final_score": {
+                "$multiply": [
+                    {"$ifNull": ["$popularity", 1]},
+                    # spare part factor
+                    {
+                        "$cond": [
+                            {"$eq": ["$is_spare_part", False]},
+                            9,  # boost if NOT spare part
+                            1.0
+                        ]
+                    },
+                    # discount factor
+                    {
+                        "$cond": [
+                            {"$gt": ["$discount", 0]},
+                            1.2,  # boost if discount > 0
+                            1.0
+                        ]
+                    },
+                    # new product factor
+                    {
+                        "$cond": [
+                            {"$eq": ["$new_product", True]},
+                            1.2,  # boost if new product
+                            1.0
+                        ]
+                    }
+                ]
+            }
+        }
+    },
+    {"$sort": {"final_score": -1}},
+    {
+        "$project": {
+            "effective_popularity": 0,
+            "final_score": 0  # hide scoring fields from response
+        }
+    }
+]
+
 
     # if skip:
     #     pipeline.append({"$skip": skip})

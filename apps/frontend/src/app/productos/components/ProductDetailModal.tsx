@@ -1,16 +1,15 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   X,
   ChevronLeft,
   ChevronRight,
   Star,
-  Shield,
   Truck,
-  MessageCircle,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
+import Image from "next/image";
 
 /* ---------------------------------- Types --------------------------------- */
 interface Product {
@@ -42,41 +41,13 @@ const sanitizeHtml = (html?: string) => {
     .replace(/\s(href|src)\s*=\s*("|\')\s*javascript:[^"']*\2/gi, ' $1="#"');
 };
 
-const useImageGallery = (images: string[]) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const next = () => {
-    setCurrentIndex((prev) => (prev + 1) % images.length);
-    setIsLoading(true);
-  };
-
-  const prev = () => {
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
-    setIsLoading(true);
-  };
-
-  const goTo = (index: number) => {
-    setCurrentIndex(index);
-    setIsLoading(true);
-  };
-
-  return {
-    currentIndex,
-    isLoading,
-    setIsLoading,
-    next,
-    prev,
-    goTo,
-    reset: () => {
-      setCurrentIndex(0);
-      setIsLoading(true);
-    }
-  };
-};
-
 const useModalEffects = (isOpen: boolean, onClose: () => void) => {
   const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = useCallback(() => {
+    setIsClosing(true);
+    setTimeout(onClose, 180);
+  }, [onClose]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -92,12 +63,7 @@ const useModalEffects = (isOpen: boolean, onClose: () => void) => {
       document.removeEventListener("keydown", handleEscape);
       document.body.style.overflow = "";
     };
-  }, [isOpen]);
-
-  const handleClose = () => {
-    setIsClosing(true);
-    setTimeout(onClose, 180);
-  };
+  }, [isOpen, handleClose]);
 
   return { isClosing, handleClose, setIsClosing };
 };
@@ -135,10 +101,10 @@ const useMobileOverlay = (isMobile: boolean) => {
     }
   };
 
-  const resetScroll = () => {
+  const resetScroll = useCallback(() => {
     setProgress(0);
     if (scrollerRef.current) scrollerRef.current.scrollTop = 0;
-  };
+  }, []);
 
   return { scrollerRef, heroRef, overlayRef, progress, onScroll, resetScroll };
 };
@@ -226,12 +192,80 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
   const { isClosing, handleClose, setIsClosing } = useModalEffects(isOpen, onClose);
   const { scrollerRef, heroRef, overlayRef, progress, onScroll, resetScroll } = useMobileOverlay(isMobile);
 
-  const images = useMemo(() => 
-    product?.additionalImages?.length ? product.additionalImages : [product?.image || ""], 
-    [product]
-  );
-  
-  const gallery = useImageGallery(images);
+  // Reset closing state when modal opens with new product
+  useEffect(() => {
+    if (isOpen && product) {
+      setIsClosing(false);
+    }
+  }, [isOpen, product?.id, setIsClosing]);
+
+  // Simple state management - no complex hooks
+  const [imageIndex, setImageIndex] = useState(0);
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
+
+  // Get images array - prioritize additionalImages, fallback to main image
+  const imageList = useMemo(() => {
+    if (!product) return [];
+    if (product.additionalImages && product.additionalImages.length > 0) {
+      return product.additionalImages;
+    }
+    return product.image ? [product.image] : [];
+  }, [product]);
+
+  // Debug state changes
+  useEffect(() => {
+    console.log('imageIndex changed to:', imageIndex, 'currentImageSrc:', imageList[imageIndex]);
+  }, [imageIndex, imageList]);
+
+  // Reset when product changes
+  useEffect(() => {
+    if (product) {
+      console.log('RESETTING imageIndex to 0 due to product change:', product.id);
+      setImageIndex(0);
+      setImageLoading(true);
+      setImageError(false);
+      resetScroll();
+    }
+  }, [product?.id, resetScroll]);
+
+
+  // Image handlers
+  const handleImageLoad = () => {
+    setImageLoading(false);
+    setImageError(false);
+  };
+
+  const handleImageError = () => {
+    setImageLoading(false);
+    setImageError(true);
+  };
+
+  // Navigation handlers
+  const goToNext = () => {
+    const nextIndex = (imageIndex + 1) % imageList.length;
+    console.log('goToNext:', imageIndex, '->', nextIndex, 'imageList:', imageList);
+    setImageIndex(nextIndex);
+    setImageLoading(true);
+    setImageError(false);
+  };
+
+  const goToPrev = () => {
+    const prevIndex = (imageIndex - 1 + imageList.length) % imageList.length;
+    console.log('goToPrev:', imageIndex, '->', prevIndex, 'imageList:', imageList);
+    setImageIndex(prevIndex);
+    setImageLoading(true);
+    setImageError(false);
+  };
+
+  const goToIndex = (index: number) => {
+    console.log('goToIndex called:', imageIndex, '->', index, 'imageList:', imageList);
+    console.log('About to call setImageIndex with:', index);
+    setImageIndex(index);
+    setImageLoading(true);
+    setImageError(false);
+    console.log('setImageIndex called with:', index);
+  };
 
   const htmlDesc = useMemo(() => 
     sanitizeHtml(
@@ -241,14 +275,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
     [product?.description]
   );
 
-  useEffect(() => {
-    if (product) {
-      gallery.reset();
-      setIsClosing(false);
-      resetScroll();
-    }
-  }, [product]);
-
   const handleWhatsApp = () => {
     if (!product) return;
     const message = `Hola, me interesa obtener más información sobre: ${product.name}`;
@@ -257,6 +283,8 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
   };
 
   if (!isOpen || !product) return null;
+
+  const currentImageSrc = imageList[imageIndex] || "";
 
   return (
     <>
@@ -279,10 +307,12 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
           <header className="flex items-center gap-3 border-b border-gray-100 px-4 sm:px-6 py-3 bg-white/90 backdrop-blur">
             {product.brandLogo && (
               <span className="inline-flex size-11 items-center justify-center rounded-xl bg-white p-1">
-                <img
+                <Image
                   src={product.brandLogo}
                   alt={product.brand || "brand"}
                   className="h-full w-full object-contain"
+                  width={44}
+                  height={44}
                 />
               </span>
             )}
@@ -314,52 +344,72 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
               {/* Gallery */}
               <section className="relative bg-gray-50">
                 <div className="relative h-[64%] flex items-center justify-center">
-                  {gallery.isLoading && (
-                    <div className="absolute inset-0 flex items-center justify-center">
+                  {imageLoading && !imageError && (
+                    <div className="absolute inset-0 flex items-center justify-center z-10">
                       <div className="h-8 w-8 rounded-full border-2 border-gray-300 border-t-blue-600 animate-spin" />
                     </div>
                   )}
-                  <img
-                    key={gallery.currentIndex}
-                    src={images[gallery.currentIndex]}
-                    alt={`${product.name} - ${gallery.currentIndex + 1}`}
-                    className={`max-h-full max-w-full object-contain p-4 transition-all duration-300 ${
-                      gallery.isLoading ? "opacity-0 scale-95" : "opacity-100"
-                    }`}
-                    onLoad={() => gallery.setIsLoading(false)}
-                    onError={() => gallery.setIsLoading(false)}
-                  />
                   
-                  <ProductBadges product={product} className="absolute left-4 top-4" />
+                  {imageError && (
+                    <div className="absolute inset-0 flex items-center justify-center z-10">
+                      <div className="text-center text-gray-500">
+                        <div className="text-2xl mb-2">📷</div>
+                        <p className="text-sm">Error al cargar la imagen</p>
+                      </div>
+                    </div>
+                  )}
                   
-                  {images.length > 1 && (
+                  {currentImageSrc && (
+                    <Image
+                      key={`desktop-${imageIndex}-${currentImageSrc}`}
+                      src={currentImageSrc}
+                      alt={`${product.name} - ${imageIndex + 1}`}
+                      className={`max-h-full max-w-full object-contain p-4 transition-all duration-300 ${
+                        imageLoading || imageError ? "opacity-0 scale-95" : "opacity-100 scale-100"
+                      }`}
+                      width={600}
+                      height={400}
+                      priority={imageIndex === 0}
+                      onLoad={handleImageLoad}
+                      onError={handleImageError}
+                      unoptimized
+                    />
+                  )}
+                  
+                  <ProductBadges product={product} className="absolute left-4 top-4 z-20" />
+                  
+                  {imageList.length > 1 && (
                     <ImageNavigation
-                      onPrev={gallery.prev}
-                      onNext={gallery.next}
-                      currentIndex={gallery.currentIndex}
-                      totalImages={images.length}
+                      onPrev={goToPrev}
+                      onNext={goToNext}
+                      currentIndex={imageIndex}
+                      totalImages={imageList.length}
+                      className="z-20"
                     />
                   )}
                 </div>
 
                 {/* Thumbnails */}
-                {images.length > 1 && (
+                {imageList.length > 1 && (
                   <div className="h-[26%] bg-white/60 backdrop-blur px-4">
                     <div className="flex gap-3 py-3 overflow-x-auto">
-                      {images.map((img, i) => (
+                      {imageList.map((img, i) => (
                         <button
-                          key={i}
-                          onClick={() => gallery.goTo(i)}
-                          className={`size-20 shrink-0 rounded-lg overflow-hidden border-2 transition ${
-                            i === gallery.currentIndex
-                              ? "border-campomaq"
+                          key={`thumb-${i}`}
+                          onClick={() => goToIndex(i)}
+                          className={`size-20 shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
+                            i === imageIndex
+                              ? "border-campomaq ring-2 ring-campomaq/30"
                               : "border-gray-200 hover:border-gray-400"
                           }`}
                         >
-                          <img
+                          <Image
                             src={img}
-                            alt={`thumb ${i + 1}`}
+                            alt={`thumbnail ${i + 1}`}
                             className="h-full w-full object-cover"
+                            width={80}
+                            height={80}
+                            loading="lazy"
                           />
                         </button>
                       ))}
@@ -404,35 +454,52 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                 className="sticky top-0 z-0 h-[54vh] bg-gray-50 border-b"
               >
                 <div className="relative flex h-full items-center justify-center">
-                  {gallery.isLoading && (
-                    <div className="absolute inset-0 flex items-center justify-center">
+                  {imageLoading && !imageError && (
+                    <div className="absolute inset-0 flex items-center justify-center z-10">
                       <div className="h-8 w-8 rounded-full border-2 border-gray-300 border-t-blue-600 animate-spin" />
                     </div>
                   )}
-                  <img
-                    key={gallery.currentIndex}
-                    src={images[gallery.currentIndex]}
-                    alt={`${product.name} - ${gallery.currentIndex + 1}`}
-                    className={`max-h-full max-w-full object-contain p-3 transition-all duration-300 ${
-                      gallery.isLoading ? "opacity-0 scale-95" : "opacity-100"
-                    }`}
-                    onLoad={() => gallery.setIsLoading(false)}
-                    onError={() => gallery.setIsLoading(false)}
-                  />
+                  
+                  {imageError && (
+                    <div className="absolute inset-0 flex items-center justify-center z-10">
+                      <div className="text-center text-gray-500">
+                        <div className="text-2xl mb-2">📷</div>
+                        <p className="text-sm">Error al cargar la imagen</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {currentImageSrc && (
+                    <Image
+                      key={`mobile-${imageIndex}-${currentImageSrc}`}
+                      src={currentImageSrc}
+                      alt={`${product.name} - ${imageIndex + 1}`}
+                      className={`max-h-full max-w-full object-contain p-3 transition-all duration-300 ${
+                        imageLoading || imageError ? "opacity-0 scale-95" : "opacity-100 scale-100"
+                      }`}
+                      width={400}
+                      height={300}
+                      priority={imageIndex === 0}
+                      onLoad={handleImageLoad}
+                      onError={handleImageError}
+                      unoptimized
+                    />
+                  )}
 
-                  {images.length > 1 && (
+                  {imageList.length > 1 && (
                     <ImageNavigation
-                      onPrev={gallery.prev}
-                      onNext={gallery.next}
-                      currentIndex={gallery.currentIndex}
-                      totalImages={images.length}
+                      onPrev={goToPrev}
+                      onNext={goToNext}
+                      currentIndex={imageIndex}
+                      totalImages={imageList.length}
+                      className="z-20"
                     />
                   )}
 
                   {/* WhatsApp Button */}
                   <button
                     onClick={handleWhatsApp}
-                    className="absolute right-3 top-3 rounded-xl bg-green-600 px-3 py-2 text-xs font-semibold text-white shadow hover:bg-green-700 transition-colors"
+                    className="absolute right-3 top-3 rounded-xl bg-green-600 px-3 py-2 text-xs font-semibold text-white shadow hover:bg-green-700 transition-colors z-20"
                   >
                     Cotizar
                     <FaWhatsapp className="inline-block size-4 ml-1" />

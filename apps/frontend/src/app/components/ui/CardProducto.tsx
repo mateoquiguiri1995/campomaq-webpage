@@ -1,6 +1,5 @@
 "use client";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 
 interface ProductCardProps {
   id: string;
@@ -15,7 +14,6 @@ interface ProductCardProps {
 }
 
 export default function CardProducto({
-  id,
   name,
   image,
   category,
@@ -25,7 +23,6 @@ export default function CardProducto({
   discount = 0,
   description,
 }: ProductCardProps) {
-  const router = useRouter();
 
   const handleQuote = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -89,6 +86,7 @@ export default function CardProducto({
           src={image}
           alt={name}
           fill
+          sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
@@ -101,11 +99,13 @@ export default function CardProducto({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2 min-w-0">
               {brandLogo && (
-                <div className="w-6 h-6 rounded-full bg-white border border-gray-200 p-0.5 flex items-center justify-center shrink-0">
-                  <img
+                <div className="w-6 h-6 rounded-full bg-white border border-gray-200 p-0.5 flex items-center justify-center shrink-0 relative">
+                  <Image
                     src={brandLogo}
-                    alt={brand}
-                    className="w-full h-full object-contain"
+                    alt={brand ?? "brand"}
+                    fill
+                    sizes="24px"
+                    className="object-contain"
                   />
                 </div>
               )}

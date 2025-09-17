@@ -8,10 +8,9 @@ import SearchResults from "./components/SearchResults";
 import Breadcrumb from "./components/Breadcrumb";
 import CardProducto from "@/app/components/ui/CardProducto";
 import ProductModal from "./components/ProductDetailModal";
-import { products } from "./data/products";
 import { ChevronDown } from "lucide-react";
 import { Product, FilterState } from "./types";
-import { ProductService, getFallbackProducts } from "./services/productService";
+import { ProductService } from "./services/productService";
 import { useSearchParams, useRouter } from "next/navigation";
 
 // Definir los tipos de modo de navegación
@@ -45,7 +44,7 @@ function ProductosPageContent() {
   });
 
   // Estado para manejo de datos y carga
-  const [allProducts, setAllProducts] = useState<Product[]>(products);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -89,6 +88,25 @@ function ProductosPageContent() {
       setApiLoading(false);
     }
   };
+
+  // Efecto para cargar todos los productos al montar el componente
+  useEffect(() => {
+    const loadAllProducts = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const products = await ProductService.getAllProducts(20);
+        setAllProducts(products);
+      } catch (error) {
+        console.error('Error loading products:', error);
+        setError('Error al cargar los productos');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadAllProducts();
+  }, []);
 
   // Efecto para determinar el modo de navegación y cargar datos de API cuando sea necesario
   useEffect(() => {
@@ -190,6 +208,24 @@ function ProductosPageContent() {
     setFilters(prev => ({ ...prev, ...updates }));
   }, []);
 
+  // Nueva función para resetear a "Todos los productos" - definida primero
+  const handleResetToAll = useCallback(() => {
+    updateFilters({
+      showSearchResults: false,
+      searchQuery: "",
+      selectedCategory: "",
+      selectedBrand: "",
+      activeTab: "all",
+      navigationMode: "tab"
+    });
+    
+    // Limpiar productos de API
+    setApiProducts([]);
+    
+    // Limpiar URL
+    router.replace('/productos', { scroll: false });
+  }, [updateFilters, router]);
+
   // Manejadores de eventos
   const handleSearch = useCallback((query: string) => {
     if (query.trim()) {
@@ -209,29 +245,11 @@ function ProductosPageContent() {
     } else {
       handleResetToAll();
     }
-  }, [updateFilters, router]);
+  }, [updateFilters, router, handleResetToAll]);
 
   const handleBackFromSearch = useCallback(() => {
     handleResetToAll();
-  }, []);
-
-  // Nueva función para resetear a "Todos los productos"
-  const handleResetToAll = useCallback(() => {
-    updateFilters({
-      showSearchResults: false,
-      searchQuery: "",
-      selectedCategory: "",
-      selectedBrand: "",
-      activeTab: "all",
-      navigationMode: "tab"
-    });
-    
-    // Limpiar productos de API
-    setApiProducts([]);
-    
-    // Limpiar URL
-    router.replace('/productos', { scroll: false });
-  }, [updateFilters, router]);
+  }, [handleResetToAll]);
 
   const handleTabChange = useCallback((tab: string) => {
     updateFilters({

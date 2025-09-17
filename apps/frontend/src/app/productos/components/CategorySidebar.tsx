@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Tractor,
@@ -10,9 +11,7 @@ import {
   SprayCan,
   Wrench,
   ChevronDown,
-  ChevronRight,
   Tag,
-  Grid3x3,
   Building2
 } from "lucide-react";
 
@@ -73,7 +72,7 @@ export default function CategorySidebar() {
     { name: "Husqvarna", logo: "/images/brands/husqvarna.png", slug: "husqvarna" },
     { name: "Maruyama", logo: "/images/brands/Maruyama.png", slug: "Maruyama" },
     { name: "Stihl", logo: "/images/brands/stihl.png", slug: "stihl" },
-    { name: "Whale Best", logo: "/images/brands/whalebest.png", slug: "whale-best" },
+    { name: "Whale Best", logo: "/images/brands/whale-best.png", slug: "whale-best" },
     { name: "Shindaiwa", logo: "/images/brands/shindaiwa.png", slug: "shindaiwa" },
     { name: "Oleo-Mac", logo: "/images/brands/oleo-mac.png", slug: "oleo-mac" },
   ];
@@ -233,32 +232,20 @@ export default function CategorySidebar() {
                           href={`/productos?brand=${brand.slug}`}
                           className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-150 group hover:translate-x-1"
                         >
-                          <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow overflow-hidden">
-                            {brand.logo.startsWith('/') || brand.logo.startsWith('http') ? (
-                              <img 
-                                src={brand.logo} 
+                          <div className="w-8 h-8 rounded-lg relative flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow overflow-hidden">
+                            {brand.logo.startsWith("/") || brand.logo.startsWith("http") ? (
+                              <Image
+                                src={brand.logo}
                                 alt={`${brand.name} logo`}
-                                className="w-full h-full object-contain rounded-lg"
-                                onError={(e) => {
-                                  // Fallback si la imagen no carga
-                                  const target = e.target as HTMLImageElement;
-                                  target.style.display = 'none';
-                                  const fallback = target.nextElementSibling as HTMLElement;
-                                  if (fallback) fallback.style.display = 'flex';
-                                }}
+                                fill
+                                sizes="32px"
+                                className="object-contain rounded-lg"
                               />
                             ) : (
                               <div className={`w-full h-full ${generateBrandColors(brand.name)} rounded-lg flex items-center justify-center text-white text-xs font-bold`}>
                                 {brand.logo}
                               </div>
                             )}
-                            {/* Fallback hidden by default */}
-                            <div 
-                              className={`w-full h-full ${generateBrandColors(brand.name)} rounded-lg items-center justify-center text-white text-xs font-bold`}
-                              style={{ display: 'none' }}
-                            >
-                              {brand.name.charAt(0)}{brand.name.split(' ')[1]?.charAt(0) || ''}
-                            </div>
                           </div>
                           <span className="font-medium group-hover:font-semibold transition-all">
                             {brand.name}

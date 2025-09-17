@@ -2,7 +2,7 @@
 
 import { memo, useMemo, useRef, useState, useEffect } from "react";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
-import { Wrench, Truck, Headphones, Shield, Clock, Users, ChevronDown, ChevronUp, Check, Star } from "lucide-react";
+import { Wrench, Truck, Headphones, Shield, Clock, Users, Check, Star } from "lucide-react";
 
 /****************************
  * 1) Utilidades de rendimiento

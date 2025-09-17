@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 
 interface Image {
   src: string
@@ -55,12 +56,15 @@ export default function Ubicacion() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 1.2, ease: 'easeInOut' }}
-              className="absolute top-2 left-2 right-2 h-[calc(50%-1rem)]"
+              className="absolute top-2 left-2 right-2 h-[calc(50%-1rem)] relative"
             >
-              <img
+              <Image
                 src={images[topImageIndex].src}
                 alt={images[topImageIndex].alt}
-                className="w-full h-full rounded-xl object-contain"
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-contain rounded-xl"
+                priority
               />
             </motion.div>
 
@@ -72,12 +76,14 @@ export default function Ubicacion() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
               transition={{ duration: 1.2, ease: 'easeInOut' }}
-              className="absolute bottom-2 left-2 right-2 h-[calc(50%-1rem)]"
+              className="absolute bottom-2 left-2 right-2 h-[calc(50%-1rem)] relative"
             >
-              <img
+              <Image
                 src={images[bottomImageIndex].src}
                 alt={images[bottomImageIndex].alt}
-                className="w-full h-full rounded-xl object-contain"
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-contain rounded-xl"
               />
             </motion.div>
           </AnimatePresence>

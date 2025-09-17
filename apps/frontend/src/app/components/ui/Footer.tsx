@@ -37,7 +37,7 @@ export default function Footer() {
               src="/campo_maq.svg"
               alt="Campomaq Logo"
               fill
-              sizes='w-150px h-150px'
+              sizes="200px"
               style={{ objectFit: "contain" }}
             />
           </div>
