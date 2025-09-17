@@ -76,11 +76,11 @@ jobs:
             NEXT_PUBLIC_API_URL=${{ env.NEXT_PUBLIC_API_URL_DEV }}
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/campomaq-app:local
+            ${{ secrets.DOCKER_USERNAME }}/campomaq-app:latest
             ${{ secrets.DOCKER_USERNAME }}/campomaq-app:${{ github.sha }}
 
       - name: Post-build summary
         run: |
           echo "Pushed tags:"
-          echo "${{ secrets.DOCKER_USERNAME }}/campomaq-app:local"
+          echo "${{ secrets.DOCKER_USERNAME }}/campomaq-app:latest"
           echo "${{ secrets.DOCKER_USERNAME }}/campomaq-app:${{ github.sha }}"
