@@ -82,8 +82,17 @@ def build_text_pipeline(query, limit=RESULT_LIMIT, index_name=TEXT_INDEX, popula
                             "text": {
                                 "query": query,
                                 "path": "product_name",
+                                "synonyms": "synonym_mapping",   # <-- MUST be a string
+                                "matchCriteria": "any",
+                                "score": {"boost": {"value": 2}}
+                            }
+                        },
+                        {
+                            "text": {
+                                "query": query,
+                                "path": "product_name",
                                 "fuzzy": {"maxEdits": 1},
-                                "score": { "boost": { "value": 2 } }
+                                "score": { "boost": { "value": 2 } },
                             }
                         },
                         # brand_name (less boost)
@@ -91,7 +100,7 @@ def build_text_pipeline(query, limit=RESULT_LIMIT, index_name=TEXT_INDEX, popula
                             "text": {
                                 "query": query,
                                 "path": "brand_name",
-                                "fuzzy": {"maxEdits": 1},
+                                "fuzzy": {"maxEdits": 2},
                                 "score": { "boost": { "value": 1.25 } }
                             }
                         },
