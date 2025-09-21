@@ -197,7 +197,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
     if (isOpen && product) {
       setIsClosing(false);
     }
-  }, [isOpen, product?.id, setIsClosing]);
+  }, [isOpen, product, setIsClosing]);
 
   // Simple state management - no complex hooks
   const [imageIndex, setImageIndex] = useState(0);
@@ -227,7 +227,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
       setImageError(false);
       resetScroll();
     }
-  }, [product?.id, resetScroll]);
+  }, [product, resetScroll]);
 
 
   // Image handlers
@@ -299,7 +299,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
 
         {/* Modal Container */}
         <div
-          className={`relative mx-auto w-full max-w-4xl h-[87vh] bg-white rounded-2xl shadow-2xl overflow-hidden transition-all duration-200 ${
+          className={`relative mx-auto w-full max-w-full md:max-w-2xl lg:max-w-5xl h-[87vh] bg-white rounded-2xl shadow-2xl overflow-hidden transition-all duration-200 ${
             isClosing ? "opacity-0 scale-[0.98] translate-y-2" : "opacity-100 scale-100"
           }`}
         >
@@ -342,8 +342,8 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
             {/* Desktop Layout */}
             <div className="hidden lg:grid grid-cols-2 h-full">
               {/* Gallery */}
-              <section className="relative bg-gray-50">
-                <div className="relative h-[64%] flex items-center justify-center">
+              <section className="relative bg-gray-50 flex flex-col h-full">
+                <div className="relative flex items-center justify-center flex-1 min-h-[420px] lg:h-[520px]">
                   {imageLoading && !imageError && (
                     <div className="absolute inset-0 flex items-center justify-center z-10">
                       <div className="h-8 w-8 rounded-full border-2 border-gray-300 border-t-blue-600 animate-spin" />
@@ -360,20 +360,22 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                   )}
                   
                   {currentImageSrc && (
-                    <Image
-                      key={`desktop-${imageIndex}-${currentImageSrc}`}
-                      src={currentImageSrc}
-                      alt={`${product.name} - ${imageIndex + 1}`}
-                      className={`max-h-full max-w-full object-contain p-4 transition-all duration-300 ${
-                        imageLoading || imageError ? "opacity-0 scale-95" : "opacity-100 scale-100"
-                      }`}
-                      width={600}
-                      height={400}
-                      priority={imageIndex === 0}
-                      onLoad={handleImageLoad}
-                      onError={handleImageError}
-                      unoptimized
-                    />
+                    <div className="relative h-full w-full">
+                      <Image
+                        key={`desktop-${imageIndex}-${currentImageSrc}`}
+                        src={currentImageSrc}
+                        alt={`${product.name} - ${imageIndex + 1}`}
+                        className={`object-contain p-4 transition-all duration-300 ${
+                          imageLoading || imageError ? "opacity-0 scale-95" : "opacity-100 scale-100"
+                        }`}
+                        fill
+                        sizes="(min-width: 1024px) 50vw, 100vw"
+                        priority={imageIndex === 0}
+                        onLoad={handleImageLoad}
+                        onError={handleImageError}
+                        unoptimized
+                      />
+                    </div>
                   )}
                   
                   <ProductBadges product={product} className="absolute left-4 top-4 z-20" />
@@ -391,7 +393,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
 
                 {/* Thumbnails */}
                 {imageList.length > 1 && (
-                  <div className="h-[26%] bg-white/60 backdrop-blur px-4">
+                  <div className="h-28 bg-white/60 backdrop-blur px-4">
                     <div className="flex gap-3 py-3 overflow-x-auto">
                       {imageList.map((img, i) => (
                         <button
@@ -470,20 +472,22 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                   )}
                   
                   {currentImageSrc && (
-                    <Image
-                      key={`mobile-${imageIndex}-${currentImageSrc}`}
-                      src={currentImageSrc}
-                      alt={`${product.name} - ${imageIndex + 1}`}
-                      className={`max-h-full max-w-full object-contain p-3 transition-all duration-300 ${
-                        imageLoading || imageError ? "opacity-0 scale-95" : "opacity-100 scale-100"
-                      }`}
-                      width={400}
-                      height={300}
-                      priority={imageIndex === 0}
-                      onLoad={handleImageLoad}
-                      onError={handleImageError}
-                      unoptimized
-                    />
+                    <div className="relative h-full w-full">
+                      <Image
+                        key={`mobile-${imageIndex}-${currentImageSrc}`}
+                        src={currentImageSrc}
+                        alt={`${product.name} - ${imageIndex + 1}`}
+                        className={`object-contain p-3 transition-all duration-300 ${
+                          imageLoading || imageError ? "opacity-0 scale-95" : "opacity-100 scale-100"
+                        }`}
+                        fill
+                        sizes="100vw"
+                        priority={imageIndex === 0}
+                        onLoad={handleImageLoad}
+                        onError={handleImageError}
+                        unoptimized
+                      />
+                    </div>
                   )}
 
                   {imageList.length > 1 && (

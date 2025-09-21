@@ -1,8 +1,8 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Tractor,
@@ -18,7 +18,7 @@ import {
 interface Category {
   name: string;
   icon: React.ReactNode;
-  sub: string[];
+  sub: { display: string; apiName: string }[];
 }
 
 interface Brand {
@@ -27,40 +27,74 @@ interface Brand {
   slug: string;
 }
 
-export default function CategorySidebar() {
+interface CategorySidebarProps {
+  variant?: "desktop" | "mobile";
+}
+
+export default function CategorySidebar({ variant = "desktop" }: CategorySidebarProps) {
   const [activeCategories, setActiveCategories] = useState<string[]>([]);
-  const [activeBrands, setActiveBrands] = useState<boolean>(false);
+  const [activeBrands, setActiveBrands] = useState<boolean>(true);
 
   const categories: Category[] = [
     { 
-      name: "Agrícola", 
+      name: "Motocultores", 
       icon: <Tractor size={18} />, 
-      sub: ["Motocultores", "Mini Tractores Cortacésped", "Motoazadas", "Accesorios"] 
+      sub: [
+        { display: "Motocultores", apiName: "Motocultores" },
+        { display: "Mini Tractores Cortacésped", apiName: "Mini Tractores Cortacésped" },
+        { display: "Motoazadas", apiName: "Motoazadas" },
+        { display: "Accesorios", apiName: "Accesorios Motocultores" }
+      ]
     },
     { 
       name: "Bosque y Jardín", 
       icon: <Trees size={18} />, 
-      sub: ["Cortacésped", "Cortacetos", "Desbrozadoras", "Motosierras", "Sopladoras", "Accesorios"] 
+      sub: [
+        { display: "Cortacésped", apiName: "Cortacésped" },
+        { display: "Cortacetos", apiName: "Cortacetos" },
+        { display: "Desbrozadoras", apiName: "Desbrozadoras" },
+        { display: "Motosierras", apiName: "Motosierras" },
+        { display: "Sopladoras", apiName: "Sopladoras" },
+        { display: "Accesorios", apiName: "Accesorios Desbrozadoras y Motosierras" }
+      ]
     },
     { 
       name: "Fumigación", 
       icon: <SprayCan size={18} />, 
-      sub: ["Discos fumigación", "Fumigadoras motorizadas", "Fumigadoras manuales", "Espolvoreadores", "Accesorios"] 
+      sub: [
+        { display: "Discos fumigación", apiName: "Discos fumigación" },
+        { display: "Fumigadoras motorizadas", apiName: "Fumigadoras motorizadas" },
+        { display: "Fumigadoras manuales", apiName: "Fumigadoras manuales" },
+        { display: "Espolvoreadores", apiName: "Espolvoreadores" },
+        { display: "Accesorios", apiName: "Accesorios Bombas de fumigar" }
+      ]
     },
     { 
       name: "Lubricantes", 
       icon: <Droplets size={18} />, 
-      sub: ["Aceites 2 Tiempos", "Aceites 4 Tiempos", "Grasas"] 
+      sub: [
+        { display: "Aceites 2 Tiempos", apiName: "Aceites 2 Tiempos" },
+        { display: "Aceites 4 Tiempos", apiName: "Aceites 4 Tiempos" },
+        { display: "Grasas", apiName: "Grasas" }
+      ]
     },
     { 
       name: "Riego", 
       icon: <Droplets size={18} />, 
-      sub: ["Bombas de caudal", "Bombas de presión", "Accesorios"] 
+      sub: [
+        { display: "Bombas de caudal", apiName: "Bombas de caudal" },
+        { display: "Bombas de presión", apiName: "Bombas de presión" },
+        { display: "Accesorios", apiName: "Accesorios bombas de caudal" }
+      ]
     },
     { 
       name: "Otros", 
       icon: <Wrench size={18} />, 
-      sub: ["Motores", "Generadores", "Tijeras"] 
+      sub: [
+        { display: "Motores", apiName: "Motores" },
+        { display: "Generadores", apiName: "Generadores" },
+        { display: "Tijeras", apiName: "Tijeras" }
+      ]
     },
   ];
 
@@ -103,11 +137,11 @@ export default function CategorySidebar() {
   };
 
   return (
-    <nav className="bg-white rounded-xl shadow-lg border border-gray-100 min-h-screen flex flex-col overflow-hidden">
- 
-      <div className="flex-1 overflow-y-auto">
+    <nav className={`bg-white rounded-xl shadow-lg border border-gray-100 flex flex-col ${variant === "mobile" ? "min-h-0" : "h-full max-h-screen min-h-0"}`}>
+      {/* Contenido scrolleable */}
+      <div className={`flex-1 min-h-0 ${variant === "mobile" ? "" : "overflow-y-auto"} scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400 pr-2`}>
         {/* Categories Section */}
-        <div className="p-6 border-b border-gray-100">
+        <div className="p-6 pr-4 border-b border-gray-100">
           <div className="flex items-center gap-2 mb-4">
             <Building2 className="w-4 h-4 text-gray-600" />
             <h3 className="font-semibold text-sm uppercase tracking-wide text-gray-600">Categorías</h3>
@@ -152,18 +186,18 @@ export default function CategorySidebar() {
                         <ul className="ml-10 mt-2 space-y-1 pb-2">
                           {cat.sub.map((sub, index) => (
                             <motion.li
-                              key={sub}
+                              key={sub.display}
                               initial={{ opacity: 0, x: -10 }}
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ delay: index * 0.05 }}
                             >
                               <Link
-                                href={`/productos?brand=${sub.toLowerCase()}`}
+                                href={`/productos?category=${encodeURIComponent(sub.apiName.toLowerCase())}`}
                                 className="block px-4 py-2 text-sm text-gray-600 hover:text-black hover:font-bold hover:bg-blue-50 rounded-md transition-all duration-150 hover:translate-x-1"
                               >
                                 <span className="flex items-center gap-2">
                                   <span className="w-1.5 h-1.5 bg-gray-300 rounded-full"></span>
-                                  {sub}
+                                  {sub.display}
                                 </span>
                               </Link>
                             </motion.li>
@@ -179,7 +213,7 @@ export default function CategorySidebar() {
         </div>
 
         {/* Brands Section */}
-        <div className="p-6">
+        <div className="p-6 pr-4">
           <div className="flex items-center gap-2 mb-4">
             <Tag className="w-4 h-4 text-gray-600" />
             <h3 className="font-semibold text-sm uppercase tracking-wide text-gray-600">Marcas</h3>
@@ -232,20 +266,32 @@ export default function CategorySidebar() {
                           href={`/productos?brand=${brand.slug}`}
                           className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-150 group hover:translate-x-1"
                         >
-                          <div className="w-8 h-8 rounded-lg relative flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow overflow-hidden">
-                            {brand.logo.startsWith("/") || brand.logo.startsWith("http") ? (
-                              <Image
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow overflow-hidden">
+                            {brand.logo.startsWith('/') || brand.logo.startsWith('http') ? (
+                              <img
                                 src={brand.logo}
                                 alt={`${brand.name} logo`}
-                                fill
-                                sizes="32px"
-                                className="object-contain rounded-lg"
+                                className="w-full h-full object-contain rounded-lg"
+                                onError={(e) => {
+                                  // Fallback si la imagen no carga
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  const fallback = target.nextElementSibling as HTMLElement;
+                                  if (fallback) fallback.style.display = 'flex';
+                                }}
                               />
                             ) : (
                               <div className={`w-full h-full ${generateBrandColors(brand.name)} rounded-lg flex items-center justify-center text-white text-xs font-bold`}>
                                 {brand.logo}
                               </div>
                             )}
+                            {/* Fallback hidden by default */}
+                            <div
+                              className={`w-full h-full ${generateBrandColors(brand.name)} rounded-lg items-center justify-center text-white text-xs font-bold`}
+                              style={{ display: 'none' }}
+                            >
+                              {brand.name.charAt(0)}{brand.name.split(' ')[1]?.charAt(0) || ''}
+                            </div>
                           </div>
                           <span className="font-medium group-hover:font-semibold transition-all">
                             {brand.name}
@@ -259,14 +305,19 @@ export default function CategorySidebar() {
             </AnimatePresence>
           </motion.div>
         </div>
+
+        {/* Spacer para garantizar scroll siempre visible */}
+        <div className="h-4"></div>
       </div>
 
-      {/* Footer */}
-      <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
-        <p className="text-xs text-gray-500 text-center">
-          Explora nuestro catálogo completo
-        </p>
-      </div>
+      {/* Footer fijo (oculto en móvil para evitar scroll anidado) */}
+      {variant !== "mobile" && (
+        <div className="flex-shrink-0 px-6 py-4 bg-gray-50 border-t border-gray-100">
+          <p className="text-xs text-gray-500 text-center">
+            Explora nuestro catálogo completo
+          </p>
+        </div>
+      )}
     </nav>
   );
 }

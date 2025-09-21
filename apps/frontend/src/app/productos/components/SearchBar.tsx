@@ -8,12 +8,10 @@ import { useSearchParams, useRouter } from "next/navigation";
 
 const QUICK_OPTIONS = [
   "Motocultor",
-  "Motoguadaña",
-  "Bombas de Fumigar",
-  "Generadores",
-  "Motosierra",
   "Desbrozadora",
-  "Herramientas de Jardín"
+  "Bombas de Fumigar",
+  "Motoazada",
+  "Motosierra"
 ];
 
 interface SearchBarProps {
@@ -27,15 +25,19 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const lastAppliedUrlSearchRef = useRef<string | null>(null);
   
   const searchParams = useSearchParams();
   const router = useRouter();
 
-
-  // Efecto para cargar la búsqueda desde URL al montar el componente
+  // Efecto para cargar la búsqueda desde URL al montar el componente y cuando cambia
   useEffect(() => {
     const searchFromUrl = searchParams.get('search');
-    if (searchFromUrl && searchFromUrl !== searchInput) {
+
+    // Evitar trabajo repetido si ya aplicamos este valor desde la URL
+    if (searchFromUrl === lastAppliedUrlSearchRef.current) return;
+
+    if (searchFromUrl) {
       // Verificar si la búsqueda es una de las etiquetas rápidas
       if (QUICK_OPTIONS.includes(searchFromUrl)) {
         setSelectedTag(searchFromUrl);
@@ -44,12 +46,13 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
         setSearchInput(searchFromUrl);
         setSelectedTag("");
       }
-      
-      if (onSearch) {
-        onSearch(searchFromUrl);
-      }
+
+      onSearch?.(searchFromUrl);
     }
-  }, [searchParams, onSearch, searchInput]);
+
+    // Registrar el último valor aplicado desde la URL (incluye null)
+    lastAppliedUrlSearchRef.current = searchFromUrl;
+  }, [searchParams, onSearch]);
 
   const addTag = (tag: string) => {
     if (!selectedTag) {
@@ -170,12 +173,12 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
   return (
     <div
       ref={containerRef}
-      className="relative w-full max-w-2xl mx-auto"
+      className="relative w-full max-w-2xl mx-auto px-4 sm:px-0"
     >
       {/* Barra de búsqueda */}
       <motion.div
         className={`
-          relative flex items-center gap-2 border-2 rounded-2xl px-4 py-3 w-full bg-white 
+          relative flex items-center gap-2 border-2 rounded-2xl px-3 sm:px-4 py-2 sm:py-3 w-full bg-white 
           transition-all duration-300 ease-out cursor-text
           ${isInputFocused || showQuickOptions 
             ? 'border-black shadow-lg shadow-black/10 scale-[1.02]' 
@@ -200,7 +203,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
               animate={{ opacity: 1, scale: 1, x: 0 }}
               exit={{ opacity: 0, scale: 0.8, x: -10 }}
               transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-              className="flex items-center gap-2 bg-gradient-to-r from-campomaq via-yellow-300 to-gray-600 text-black px-4 py-2 rounded-xl text-sm font-semibold shadow-lg border border-yellow-300 flex-shrink-0 hover:shadow-xl transition-all duration-300 group animate-pulse"
+              className="flex items-center gap-2 bg-gradient-to-r from-campomaq via-yellow-300 to-white-50 text-black px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-lg border border-yellow-300 flex-shrink-0 hover:shadow-xl transition-all duration-300 group"
               style={{
                 backgroundSize: '200% 100%',
                 animation: 'none'
@@ -211,7 +214,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                 transition: { duration: 0.3 }
               }}
             >
-              <span className="truncate max-w-[120px] sm:max-w-[200px]">
+              <span className="truncate max-w-[80px] xs:max-w-[100px] sm:max-w-[140px]">
                 {selectedTag}
               </span>
               <button
@@ -219,10 +222,10 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                   e.stopPropagation();
                   removeTag();
                 }}
-                className="hover:bg-black/20 rounded-full p-1 transition-all duration-200 hover:scale-125 hover:rotate-90"
+                className="hover:bg-black/20 rounded-full p-0.5 sm:p-1 transition-all duration-200 hover:scale-125 hover:rotate-90"
                 aria-label="Remover etiqueta"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
             </motion.span>
           )}
@@ -258,7 +261,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
               }}
               onBlur={() => setIsInputFocused(false)}
               className={`
-                w-full outline-none text-sm text-black placeholder-gray-400 bg-transparent
+                w-full outline-none text-sm sm:text-base text-black placeholder-gray-400 bg-transparent
                 transition-all duration-200
                 ${selectedTag 
                   ? 'cursor-not-allowed opacity-50' 
@@ -283,10 +286,10 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                   e.stopPropagation();
                   clearSearch();
                 }}
-                className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200 group"
+                className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition-colors duration-200 group"
                 aria-label="Limpiar búsqueda"
               >
-                <X className="w-4 h-4 text-gray-400 group-hover:text-red-500 transition-colors duration-200" />
+                <X className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 group-hover:text-red-500 transition-colors duration-200" />
               </motion.button>
             )}
           </AnimatePresence>
@@ -298,12 +301,12 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                 e.stopPropagation();
                 setShowQuickOptions(!showQuickOptions);
               }}
-              className="p-2 rounded-full hover:bg-gray-100 transition-all duration-200 group"
+              className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition-all duration-200 group"
               aria-label="Mostrar opciones rápidas"
               animate={{ rotate: showQuickOptions ? 180 : 0 }}
               transition={{ duration: 0.3 }}
             >
-              <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-black transition-colors duration-200" />
+              <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 group-hover:text-black transition-colors duration-200" />
             </motion.button>
           )}
 
@@ -312,7 +315,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
             onClick={handleSearch}
             disabled={!hasContent}
             className={`
-              p-2 rounded-full transition-all duration-200
+              p-1.5 sm:p-2 rounded-full transition-all duration-200
               ${hasContent
                 ? 'bg-black hover:bg-gray-800 text-yellow-400 hover:text-yellow-300 shadow-md hover:shadow-lg'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -322,7 +325,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
             whileTap={hasContent ? { scale: 0.95 } : {}}
             aria-label="Buscar"
           >
-            <Search className="w-5 h-5" />
+            <Search className="w-4 h-4 sm:w-5 sm:h-5" />
           </motion.button>
         </div>
       </motion.div>
@@ -335,7 +338,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-            className="absolute top-full left-0 mt-3 w-full bg-white border-2 border-gray-100 rounded-2xl shadow-2xl p-4 z-20 backdrop-blur-sm overflow-hidden"
+            className="absolute top-full left-0 mt-3 w-full bg-white border-2 border-gray-100 rounded-2xl shadow-2xl p-3 sm:p-4 z-20 backdrop-blur-sm overflow-hidden"
             style={{
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)'
             }}
@@ -361,21 +364,13 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                     transition: { duration: 0.2 }
                   }}
                   whileTap={{ scale: 0.95 }}
-                  className="relative px-4 py-2.5 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 hover:from-campomaq hover:to-gray-500 hover:text-black text-gray-700 text-sm font-medium transition-all duration-300 group border border-gray-200 hover:border-yellow-300 hover:shadow-lg overflow-hidden"
+                  className="relative px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 hover:from-campomaq hover:to-white-50 hover:text-black text-gray-700 text-xs sm:text-sm font-medium transition-all duration-300 group border border-gray-200 hover:border-yellow-300 hover:shadow-lg overflow-hidden"
                 >
                   {/* Efecto de shimmer en hover */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
                   
-                  <span className="relative z-10 flex items-center gap-2">
+                  <span className="relative z-10 flex items-center gap-2 cursor-pointer truncate max-w-[100px] xs:max-w-[120px] sm:max-w-none">
                     {option}
-                    <motion.div
-                      initial={{ opacity: 0, x: -5 }}
-                      whileHover={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="opacity-0 group-hover:opacity-100"
-                    >
-                      <Search className="w-3.5 h-3.5" />
-                    </motion.div>
                   </span>
                 </motion.button>
               ))}

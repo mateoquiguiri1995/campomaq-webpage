@@ -13,6 +13,7 @@ type Brand = {
 const brands: Brand[] = [
   { name: 'Husqvarna', logo: '/images/brands/husqvarna.png'},
   { name: 'Casamoto', logo: '/images/brands/casamoto.png'},
+  { name: 'Mitubishi', logo: '/images/brands/mitsubishi-2.png'},
   { name: 'Annovi', logo: '/images/brands/annovi-reberberi.png'},
   { name: 'Ducati', logo: '/images/brands/ducati.png'},
   { name: 'Whalebest', logo: '/images/brands/whale-best.png', width: 100, height: 50 },
