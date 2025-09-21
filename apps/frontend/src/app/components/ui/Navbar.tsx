@@ -7,6 +7,17 @@ import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaWhatsapp, FaInstagram, FaFacebookF, FaYoutube, FaMapMarker, FaPhone, FaClock } from "react-icons/fa";
 
+interface CategorySub {
+  display: string;
+  apiName: string;
+}
+
+interface Category {
+  name: string;
+  sub: CategorySub[];
+  isBrands?: boolean;
+}
+
 export default function Navbar() {
   const [open, setOpen] = useState(false)
   const [showCategories, setShowCategories] = useState(false)
@@ -97,8 +108,9 @@ export default function Navbar() {
 
   const handleSearch = () => {
     if (searchInput.trim()) {
-      const searchQuery = encodeURIComponent(searchInput.trim())
-      router.push(`/productos?search=${searchQuery}`)
+      const q = searchInput.trim().toLowerCase()
+      const searchQuery = encodeURIComponent(q)
+      router.push(`/productos?brand=${searchQuery}`)
       setSearchInput("")
     }
   }
@@ -109,34 +121,75 @@ export default function Navbar() {
 
   const isProductsPage = pathname.startsWith('/productos')
 
-  const categories = [
+  const categories: Category[] = [
     { 
-      name: 'Agrícola', 
-      sub: ['Motocultores', 'Mini Tractores', 'Motoazadas', 'Accesorios']
+      name: 'Motocultores', 
+      sub: [
+        { display: 'Motocultores', apiName: 'Motocultores' },
+        { display: 'Mini Tractores', apiName: 'Mini Tractores Cortacésped' },
+        { display: 'Motoazadas', apiName: 'Motoazadas' },
+        { display: 'Accesorios', apiName: 'Accesorios Motocultores' }
+      ]
     },
     { 
       name: 'Bosque y Jardín', 
-      sub: ['Cortacesped', 'Cortacetos', 'Desbrozadoras','Motosierras','Sopladoras', 'Accesorios']
+      sub: [
+        { display: 'Cortacesped', apiName: 'Cortacésped' },
+        { display: 'Cortacetos', apiName: 'Cortacetos' },
+        { display: 'Desbrozadoras', apiName: 'Desbrozadoras' },
+        { display: 'Motosierras', apiName: 'Motosierras' },
+        { display: 'Sopladoras', apiName: 'Sopladoras' },
+        { display: 'Accesorios', apiName: 'Accesorios Desbrozadoras y Motosierras' }
+      ]
     },
     { 
       name: 'Fumigación', 
-      sub: ['Discos Fumigación','Fumigadoras manuales', 'Fumigadoras motorizadas','Espolvoreadoras', 'Accesorios']
+      sub: [
+        { display: 'Discos Fumigación', apiName: 'Discos fumigación' },
+        { display: 'Fumigadoras manuales', apiName: 'Fumigadoras manuales' },
+        { display: 'Fumigadoras motorizadas', apiName: 'Fumigadoras motorizadas' },
+        { display: 'Espolvoreadoras', apiName: 'Espolvoreadores' },
+        { display: 'Accesorios', apiName: 'Accesorios Bombas de fumigar' }
+      ]
     },
     { 
       name: 'Lubricantes', 
-      sub: ['Aceites 2 Tiempos', 'Aceites 4 Tiempos', 'Grasas']
+      sub: [
+        { display: 'Aceites 2 Tiempos', apiName: 'Aceites 2 Tiempos' },
+        { display: 'Aceites 4 Tiempos', apiName: 'Aceites 4 Tiempos' },
+        { display: 'Grasas', apiName: 'Grasas' }
+      ]
     },
     { 
       name: 'Riego', 
-      sub: ['Bombas de caudal', 'Bombas de Presión', 'Accesorios']
+      sub: [
+        { display: 'Bombas de caudal', apiName: 'Bombas de caudal' },
+        { display: 'Bombas de Presión', apiName: 'Bombas de presión' },
+        { display: 'Accesorios', apiName: 'Accesorios bombas de caudal' }
+      ]
     },
     { 
       name: 'Otros', 
-      sub: ['Motores', 'Generadores', 'Tijeras']
+      sub: [
+        { display: 'Motores', apiName: 'Motores' },
+        { display: 'Generadores', apiName: 'Generadores' },
+        { display: 'Tijeras', apiName: 'Tijeras' }
+      ]
     },
     { 
       name: 'Marcas', 
-      sub: ['Annovi Reberberi','Casamoto','Ducati','Echo','Husqvarna','Maruyama','Stihl','Whale Best','Shindaiwa','Oleo-Mac'],
+      sub: [
+        { display: 'Annovi Reberberi', apiName: 'annovi-reverberi' },
+        { display: 'Casamoto', apiName: 'casamoto' },
+        { display: 'Ducati', apiName: 'ducati' },
+        { display: 'Echo', apiName: 'echo' },
+        { display: 'Husqvarna', apiName: 'husqvarna' },
+        { display: 'Maruyama', apiName: 'maruyama' },
+        { display: 'Stihl', apiName: 'stihl' },
+        { display: 'Whale Best', apiName: 'whale-best' },
+        { display: 'Shindaiwa', apiName: 'shindaiwa' },
+        { display: 'Oleo-Mac', apiName: 'oleo-mac' }
+      ],
       isBrands: true
     },
   ]
@@ -169,7 +222,6 @@ export default function Navbar() {
     return getNavbarTop() + navbarHeight
   }
 
-
   return (
     <>
       {/* Barra superior */}
@@ -188,8 +240,10 @@ export default function Navbar() {
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
               <span className="flex items-center gap-1 whitespace-nowrap">
                 <FaMapMarker size={16} className='text-red-400 shrink-0' />
+                <a href="https://maps.app.goo.gl/reR4bEpBNER3mwL1A">
                 <span className="hidden sm:inline">Pichincha, Cayambe</span>
                 <span className="sm:hidden text-xs sm:text-[0.7rem]">Cayambe</span>
+                </a>
               </span>
               
               <span className="sm:inline-block md:inline-block h-4 w-px bg-gray-300"></span>
@@ -355,25 +409,29 @@ export default function Navbar() {
                                 <ul className="space-y-1">
                                   {cat.sub.map((subcat, subIndex) => (
                                     <motion.li
-                                      key={subcat}
+                                      key={subcat.display}
                                       initial={{ opacity: 0, x: -10 }}
                                       animate={{ opacity: 1, x: 0 }}
                                       transition={{ delay: (index * 0.03) + (subIndex * 0.01) }}
                                     >
                                       <Link
-                                        href={`/productos?search=${encodeURIComponent(subcat)}`}
-                                        className={`flex items-center justify-between group/item py-1.5 px-2 rounded text-xs transition-all duration-200 ${
+                                        href={
                                           cat.isBrands 
-                                            ? 'hover:bg-gradient-to-r hover:from-campomaq/50 hover:to-yellow-50' 
+                                            ? `/productos?brand=${subcat.apiName}`
+                                            : `/productos?category=${encodeURIComponent(subcat.apiName.toLowerCase())}`
+                                        }
+                                        className={`flex items-center justify-between group/item py-1.5 px-2 rounded text-xs transition-all duration-200 ${
+                                          cat.isBrands
+                                            ? 'hover:bg-gradient-to-r hover:from-campomaq/50 hover:to-yellow-50'
                                             : 'hover:bg-campomaq/50'
                                         }`}
                                       >
                                         <div className="flex items-center gap-2">
-                                          {cat.isBrands && brandLogos[subcat] ? (
+                                          {cat.isBrands && brandLogos[subcat.display] ? (
                                             <div className="w-5 h-5 relative flex-shrink-0">
                                               <Image
-                                                src={brandLogos[subcat]}
-                                                alt={`${subcat} logo`}
+                                                src={brandLogos[subcat.display]}
+                                                alt={`${subcat.display} logo`}
                                                 fill
                                                 sizes="24px"
                                                 className="object-contain"
@@ -387,7 +445,7 @@ export default function Navbar() {
                                               ? 'text-gray-700' 
                                               : 'text-gray-600 group-hover/item:text-gray-800'
                                           }`}>
-                                            {subcat}
+                                            {subcat.display}
                                           </span>
                                         </div>
                                         <ChevronRight className="w-3 h-3 text-gray-400 opacity-0 group-hover/item:opacity-100 transform translate-x-1 group-hover/item:translate-x-0 transition-all duration-200 flex-shrink-0" />

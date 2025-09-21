@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, X, Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaRobot } from 'react-icons/fa';
+import { BsRobot } from "react-icons/bs";
 import clsx from 'clsx';
 
 const CHAT_W = 380;
@@ -55,7 +55,7 @@ export default function Chatbot() {
   ];
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-25 right-3 z-50"> {/* posicion del chatbot ajustada */} 
       <AnimatePresence mode="wait">
         {open && (
           <motion.div
@@ -165,7 +165,7 @@ export default function Chatbot() {
             onClick={toggleOpen}
             className="w-16 h-16 bg-black text-white rounded-full shadow-2xl flex items-center justify-center font-bold hover:bg-campomaq hover:text-black transition-colors duration-400 cursor-pointer"
           >
-            <FaRobot size={24} />
+            <BsRobot size={24} />
           </motion.button>
         )}
       </AnimatePresence>

@@ -12,7 +12,8 @@ import { ChevronDown } from "lucide-react";
 import { Product, FilterState } from "./types";
 import { ProductService } from "./services/productService";
 import { useSearchParams, useRouter } from "next/navigation";
-
+import Image from "next/image";
+import { availableBrands } from "./components/brands";
 // Definir los tipos de modo de navegación
 type NavigationMode = "search" | "brand" | "category" | "tab";
 
@@ -29,12 +30,13 @@ function ProductosPageContent() {
   const brandFromURL = searchParams.get('brand');
   const searchFromURL = searchParams.get('search');
   const categoryFromURL = searchParams.get('category');
+  const tabFromURL = searchParams.get('tab');
 
   // Estado centralizado para filtros con modo de navegación
   const [filters, setFilters] = useState<ExtendedFilterState>({
     searchQuery: searchFromURL || "",
     showSearchResults: !!searchFromURL,
-    activeTab: "all",
+    activeTab: tabFromURL || "all",
     selectedCategory: categoryFromURL || "",
     selectedBrand: brandFromURL || "",
     sortBy: "name",
@@ -44,71 +46,74 @@ function ProductosPageContent() {
   });
 
   // Estado para manejo de datos y carga
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Estado para productos de API cuando filtramos por marca/categoría
-  const [apiProducts, setApiProducts] = useState<Product[]>([]);
+  // Estado para productos de API - TODOS los productos
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [apiLoading, setApiLoading] = useState(false);
 
   // Estado para el modal
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Obtener marcas únicas
-  const brands = useMemo(() => {
-    return [...new Set(allProducts.map(p => p.brand).filter(Boolean))];
-  }, [allProducts]);
+  // Obtener marcas desde la configuración estática
 
-  // Función para cargar productos por marca usando la API
-  const loadProductsByBrand = async (brand: string) => {
+  // Función para cargar TODOS los productos una sola vez
+  const loadAllProducts = useCallback(async () => {
     setApiLoading(true);
+    setError(null);
     try {
-      const results = await ProductService.searchProducts(brand);
-      setApiProducts(results);
+      console.log("[loadAllProducts] Cargando todos los productos...");
+      const results = await ProductService.getAllProducts();
+      console.log("[loadAllProducts] Productos cargados:", results.length);
+      setAllProducts(results);
     } catch (error) {
-      console.error('Error loading products by brand:', error);
-      setApiProducts([]);
+      console.error('Error loading all products:', error);
+      setAllProducts([]);
+      setError('Error al cargar productos');
     } finally {
       setApiLoading(false);
     }
-  };
-
-  // Función para cargar productos por categoría usando la API
-  const loadProductsByCategory = async (category: string) => {
-    setApiLoading(true);
-    try {
-      const results = await ProductService.searchProducts(category);
-      setApiProducts(results);
-    } catch (error) {
-      console.error('Error loading products by category:', error);
-      setApiProducts([]);
-    } finally {
-      setApiLoading(false);
-    }
-  };
-
-  // Efecto para cargar todos los productos al montar el componente
-  useEffect(() => {
-    const loadAllProducts = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const products = await ProductService.getAllProducts(20);
-        setAllProducts(products);
-      } catch (error) {
-        console.error('Error loading products:', error);
-        setError('Error al cargar los productos');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadAllProducts();
   }, []);
 
-  // Efecto para determinar el modo de navegación y cargar datos de API cuando sea necesario
+  // Función para cargar productos por marca usando la API
+  const loadProductsByBrand = useCallback(async (brand: string) => {
+    setApiLoading(true);
+    setError(null);
+    try {
+      console.log("[loadProductsByBrand] Buscando productos de marca:", brand);
+      const results = await ProductService.searchProducts(brand);
+      console.log("[loadProductsByBrand] Productos encontrados:", results.length);
+      setAllProducts(results);
+    } catch (error) {
+      console.error('Error loading products by brand:', error);
+      setAllProducts([]);
+      setError('Error al cargar productos por marca');
+    } finally {
+      setApiLoading(false);
+    }
+  }, []);
+
+  // Función para cargar productos por categoría usando la API
+  const loadProductsByCategory = useCallback(async (category: string) => {
+    setApiLoading(true);
+    setError(null);
+    try {
+      console.log("[loadProductsByCategory] Buscando productos de categoría:", category);
+      const results = await ProductService.searchProducts(category);
+      console.log("[loadProductsByCategory] Productos encontrados:", results.length);
+      setAllProducts(results);
+    } catch (error) {
+      console.error('Error loading products by category:', error);
+      setAllProducts([]);
+      setError('Error al cargar productos por categoría');
+    } finally {
+      setApiLoading(false);
+    }
+  }, []);
+
+  // Efecto inicial para cargar productos
   useEffect(() => {
     let newMode: NavigationMode = "tab";
     
@@ -124,7 +129,6 @@ function ProductosPageContent() {
         navigationMode: newMode
       }));
       
-      // Cargar productos de la marca usando la API
       loadProductsByBrand(brandFromURL);
       
     } else if (searchFromURL) {
@@ -150,47 +154,75 @@ function ProductosPageContent() {
         navigationMode: newMode
       }));
       
-      // Cargar productos de la categoría usando la API
       loadProductsByCategory(categoryFromURL);
+    } else {
+      // Cargar todos los productos para los filtros por tabs
+      const initialTab = tabFromURL || "all";
+      setFilters(prev => ({
+        ...prev,
+        activeTab: initialTab,
+        navigationMode: "tab"
+      }));
+      loadAllProducts();
     }
-  }, [brandFromURL, searchFromURL, categoryFromURL]);
+  }, [brandFromURL, searchFromURL, categoryFromURL, tabFromURL, loadAllProducts, loadProductsByBrand, loadProductsByCategory]);
 
-  // Filtrar productos - ahora considerando productos de API cuando sea necesario
+  // Productos filtrados - APLICAR FILTROS LOCALMENTE
   const filteredProducts = useMemo(() => {
-    // Si estamos en modo brand o category y tenemos productos de API, usar esos
-    if ((filters.navigationMode === "brand" || filters.navigationMode === "category") && apiProducts.length > 0) {
-      return apiProducts;
-    }
-    
-    // De lo contrario, usar la lógica de filtros local
-    let filtered = allProducts;
+    console.log("[filteredProducts] Modo de navegación:", filters.navigationMode);
+    console.log("[filteredProducts] Productos disponibles:", allProducts.length);
+    console.log("[filteredProducts] Tab activo:", filters.activeTab);
 
-    if (filters.selectedCategory) {
-      filtered = filtered.filter(p => p.category === filters.selectedCategory);
+    // Si estamos en modo de navegación por marca, categoría o búsqueda, usar todos los productos cargados
+    if (filters.navigationMode === "brand" || filters.navigationMode === "category") {
+      return allProducts;
     }
 
-    if (filters.selectedBrand) {
-      filtered = filtered.filter(p => p.brand === filters.selectedBrand);
+    // Para el modo tab, aplicar filtros locales
+    if (filters.navigationMode === "tab") {
+      let filtered = [...allProducts];
+
+      switch (filters.activeTab) {
+        case "ofertas":
+          console.log("[filteredProducts] Filtrando ofertas...");
+          filtered = allProducts.filter(product => {
+            const hasDiscount = product.discount && product.discount > 0;
+            console.log(`Producto: ${product.name}, Descuento: ${product.discount}, Tiene descuento: ${hasDiscount}`);
+            return hasDiscount;
+          });
+          console.log("[filteredProducts] Ofertas encontradas:", filtered.length);
+          break;
+          
+        case "tendencia":
+          console.log("[filteredProducts] Filtrando tendencias...");
+          // Para tendencias, podemos usar productos con ciertas características
+          // o simplemente mostrar los primeros productos como ejemplo
+          filtered = allProducts.slice(0, Math.min(20, allProducts.length));
+          console.log("[filteredProducts] Productos en tendencia:", filtered.length);
+          break;
+          
+        case "nuevos":
+          console.log("[filteredProducts] Filtrando nuevos...");
+          filtered = allProducts.filter(product => {
+            const isNew = product.isNew === true;
+            console.log(`Producto: ${product.name}, Es nuevo: ${isNew}`);
+            return isNew;
+          });
+          console.log("[filteredProducts] Productos nuevos encontrados:", filtered.length);
+          break;
+          
+        case "all":
+        default:
+          console.log("[filteredProducts] Mostrando todos los productos (limitado a 30)");
+          filtered = allProducts.slice(0, 30); // Limitar a 30 productos
+          break;
+      }
+
+      return filtered;
     }
 
-    switch (filters.activeTab) {
-      case "ofertas":
-        filtered = filtered.filter(p => (p.discount ?? 0) > 0);
-        break;
-      case "tendencia":
-        const trendingIds = ["3", "5", "7", "9", "11", "12"];
-        filtered = filtered.filter(p => trendingIds.includes(p.id));
-        break;
-      case "nuevos":
-        filtered = filtered.filter(p => p.isNew);
-        break;
-      case "all":
-      default:
-        break;
-    }
-    
-    return filtered;
-  }, [filters.activeTab, filters.selectedCategory, filters.selectedBrand, allProducts, apiProducts, filters.navigationMode]);
+    return allProducts;
+  }, [allProducts, filters.navigationMode, filters.activeTab]);
 
   // Funciones para el modal
   const handleProductClick = (product: Product) => {
@@ -208,7 +240,7 @@ function ProductosPageContent() {
     setFilters(prev => ({ ...prev, ...updates }));
   }, []);
 
-  // Nueva función para resetear a "Todos los productos" - definida primero
+  // Manejadores de eventos
   const handleResetToAll = useCallback(() => {
     updateFilters({
       showSearchResults: false,
@@ -219,14 +251,10 @@ function ProductosPageContent() {
       navigationMode: "tab"
     });
     
-    // Limpiar productos de API
-    setApiProducts([]);
-    
-    // Limpiar URL
     router.replace('/productos', { scroll: false });
-  }, [updateFilters, router]);
+    loadAllProducts();
+  }, [updateFilters, router, loadAllProducts]);
 
-  // Manejadores de eventos
   const handleSearch = useCallback((query: string) => {
     if (query.trim()) {
       updateFilters({
@@ -238,7 +266,6 @@ function ProductosPageContent() {
         navigationMode: "search"
       });
       
-      // Actualizar URL para búsqueda
       const params = new URLSearchParams();
       params.set('search', query.trim());
       router.replace(`/productos?${params.toString()}`, { scroll: false });
@@ -251,7 +278,10 @@ function ProductosPageContent() {
     handleResetToAll();
   }, [handleResetToAll]);
 
+
   const handleTabChange = useCallback((tab: string) => {
+    console.log("[handleTabChange] Cambiando a tab:", tab);
+    
     updateFilters({
       activeTab: tab,
       selectedCategory: "",
@@ -261,10 +291,7 @@ function ProductosPageContent() {
       navigationMode: "tab"
     });
     
-    // Limpiar productos de API al cambiar de tab
-    setApiProducts([]);
-    
-    // Actualizar URL si no es "all"
+    // Actualizar URL
     if (tab !== "all") {
       const params = new URLSearchParams();
       params.set('tab', tab);
@@ -272,7 +299,13 @@ function ProductosPageContent() {
     } else {
       router.replace('/productos', { scroll: false });
     }
-  }, [updateFilters, router]);
+    
+    // Solo cargar productos si no los tenemos o estamos cambiando de modo de navegación
+    if (allProducts.length === 0 || filters.navigationMode !== "tab") {
+      loadAllProducts();
+    }
+    // Si ya tenemos productos y estamos en modo tab, no hacer nada más (filtrado instantáneo)
+  }, [updateFilters, router, allProducts.length, filters.navigationMode, loadAllProducts]);
 
   const handleBrandClick = useCallback((brand: string | undefined) => {
     if (brand) {
@@ -285,17 +318,26 @@ function ProductosPageContent() {
         navigationMode: "brand"
       });
       
-      // Cargar productos de la marca usando la API
-      loadProductsByBrand(brand);
+      // Filtrar productos por marca localmente sin loading
+      const brandProducts = allProducts.filter(product =>
+        product.brand && product.brand.toLowerCase().includes(brand.toLowerCase())
+      );
       
-      // Actualizar URL para marca
+      // Si encontramos productos localmente, usarlos
+      if (brandProducts.length > 0) {
+        setAllProducts(brandProducts);
+      } else {
+        // Solo si no encontramos productos localmente, hacer búsqueda en API
+        loadProductsByBrand(brand);
+      }
+      
       const params = new URLSearchParams();
       params.set('brand', brand);
       router.replace(`/productos?${params.toString()}`, { scroll: false });
     }
-  }, [updateFilters, router]);
+  }, [updateFilters, router, allProducts, loadProductsByBrand]);
 
-  // Función mejorada para breadcrumbs
+  // Función para breadcrumbs
   const getBreadcrumbItems = useCallback(() => {
     const items = [];
 
@@ -377,8 +419,8 @@ function ProductosPageContent() {
             onProductsClick={handleResetToAll}
           />
 
-          {/* Indicador de carga */}
-          {(isLoading || apiLoading) && (
+          {/* Indicador de carga - Solo para búsquedas y categorías */}
+          {(isLoading || (apiLoading && (filters.navigationMode === "search" || filters.navigationMode === "category"))) && (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-campomaq"></div>
               <span className="ml-2 text-gray-600">Cargando productos...</span>
@@ -390,6 +432,10 @@ function ProductosPageContent() {
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
               <p className="text-red-800">Error: {error}</p>
               <button
+                onClick={() => {
+                  setError(null);
+                  handleResetToAll();
+                }}
                 className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
               >
                 Reintentar
@@ -397,7 +443,7 @@ function ProductosPageContent() {
             </div>
           )}
 
-          {!isLoading && !apiLoading && !error && (
+          {!isLoading && !(apiLoading && (filters.navigationMode === "search" || filters.navigationMode === "category")) && !error && (
             <>
               {filters.showSearchResults ? (
                 <SearchResults 
@@ -406,7 +452,7 @@ function ProductosPageContent() {
                 />
               ) : (
                 <>
-                  {/* Filtros debajo del search - Solo mostrar si no estamos en modo búsqueda */}
+                  {/* Filtros debajo del search */}
                   {filters.navigationMode !== "search" && (
                     <div className="mb-6 p-4 bg-gray-50 rounded-lg">
                       <div className="flex flex-wrap items-center gap-4">
@@ -446,7 +492,7 @@ function ProductosPageContent() {
                           Nuevos
                         </button>
 
-                        {/* Botón deslizante para filtros de marcas */}
+                        {/* Filtro de marcas mejorado */}
                         <div className="relative">
                           <button
                             onClick={() => updateFilters({ showBrandFilters: !filters.showBrandFilters })}
@@ -457,18 +503,27 @@ function ProductosPageContent() {
                           </button>
                           
                           {filters.showBrandFilters && (
-                            <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-10 max-h-60 overflow-y-auto">
+                            <div className="absolute top-full left-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-50 max-h-60 overflow-y-auto">
                               <div className="space-y-2">
-                                {brands.map((brand) => (
+                                {availableBrands.map((brand) => (
                                   <button
-                                    key={brand}
+                                    key={brand.id}
                                     onClick={() => {
-                                      handleBrandClick(brand);
+                                      handleBrandClick(brand.name);
                                       updateFilters({ showBrandFilters: false });
                                     }}
-                                    className="w-full text-left px-2 py-1 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors duration-200"
+                                    className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors duration-200"
                                   >
-                                    {brand}
+                                    {brand.logo && (
+                                      <Image
+                                        src={brand.logo}
+                                        alt={brand.name}
+                                        width={24}
+                                        height={24}
+                                        className="object-contain"
+                                      />
+                                    )}
+                                    <span>{brand.name}</span>
                                   </button>
                                 ))}
                               </div>
@@ -495,6 +550,13 @@ function ProductosPageContent() {
                   <div className="mb-4">
                     <p className="text-gray-600">
                       Mostrando {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''}
+                      {filters.navigationMode === "tab" && filters.activeTab !== "all" && (
+                        <span className="text-gray-600 font-medium"> - {
+                          filters.activeTab === "ofertas" ? "Ofertas" :
+                          filters.activeTab === "tendencia" ? "En Tendencia" :
+                          filters.activeTab === "nuevos" ? "Productos Nuevos" : ""
+                        }</span>
+                      )}
                     </p>
                   </div>
 
@@ -523,7 +585,10 @@ function ProductosPageContent() {
                     <div className="text-center py-12">
                       <p className="text-gray-500 text-lg">No se encontraron productos</p>
                       <p className="text-gray-400 text-sm mt-2">
-                        Intenta ajustar los filtros seleccionados
+                        {filters.activeTab === "ofertas" ? "No hay productos con ofertas disponibles" :
+                         filters.activeTab === "nuevos" ? "No hay productos nuevos disponibles" :
+                         filters.activeTab === "tendencia" ? "No hay productos en tendencia disponibles" :
+                         "Intenta ajustar los filtros seleccionados"}
                       </p>
                     </div>
                   )}
