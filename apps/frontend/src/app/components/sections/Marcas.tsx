@@ -26,13 +26,13 @@ const brands: Brand[] = [
 
 const features = [
   {
-    title: <>Tu cultivo merece lo mejor y nosotros te lo ofrecemos</>,
-    content: "Con más de 20 años de experiencia trabajando con Floricolas y agricultores, somos tu aliado confiable en maquinaria y equipos de alta calidad",
+    title: <>Tu cultivo merece lo mejor y nosotros te lo damos</>,
+    content: "Tu cultivo merece lo mejor, y en Campo Maq lo hacemos posible. Con más de 20 años de experiencia junto a florícolas y agricultores del país, somos tu aliado de confianza en maquinaria y equipos de alto rendimiento. Te acompañamos con asesoría técnica especializada y un servicio postventa que llega hasta tu campo, cuando y donde lo necesites.",
     youtubeId: "pkHpA-Nvb-U"
   },
   {
     title: <>Servicio Técnico Garantizado</>,
-    content: "Nuestro equipo certificado está siempre listo para ayudarte, desde que instalas tu maquinaria hasta que la usas día a día.",
+    content: "En Campo Maq no solo vendemos maquinaria, también la cuidamos. Contamos con un equipo técnico certificado que realiza reparaciones especializadas en todas las marcas y modelos. Disponemos de repuestos originales y ofrecemos servicio de mantenimiento y reparación en sitio, para que tu equipo nunca se detenga y tu trabajo en el campo siga siempre adelante",
     youtubeId: "j1wLY4I1QP8"
   }
 ]

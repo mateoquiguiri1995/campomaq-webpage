@@ -28,12 +28,13 @@ const team = [
   }
 ];
 
+
 const milestones = [
-  { year: "2000", title: "Fundación", description: "Inicio de operaciones en Cayambe", icon: <Leaf className="w-6 h-6 text-black" /> },
-  { year: "2013", title: "Certificaciones", description: "Obtuvimos certificaciones oficiales de las principales marcas", icon: <Award className="w-6 h-6 text-black" /> },
-  { year: "2015", title: "Preparación", description: "Operaciones de Servicio Asistido a Nivel Nacional", icon: <Globe className="w-6 h-6 text-black" /> },
-  { year: "2021", title: "Primera Importación", description: "Llegamos a todo el país con maquinaria Extranjera de la mejor calidad", icon: <Tractor className="w-6 h-6 text-black" /> },
-  { year: "2025", title: "25 Años", description: "Celebramos 25 años de brindar servicio al sector agrícola, motivandonos siempre a mejorar", icon: <Users className="w-6 h-6 text-black" /> }
+  { year: "2003", title: "Fundación", description: "Inicio de operaciones en Cayambe", icon: <Leaf className="w-6 h-6 text-black" /> },
+  { year: "2008", title: "Certificación de Distribución", description: "Obtuvimos certificaciones oficiales de Husqvarna, Maruyama y Briggs Stratton", icon: <Award className="w-6 h-6 text-black" /> },
+  { year: "2012", title: "Representación regional exclusiva", description: "Obtuvimos la representación exclusiva de las principales marcas del país", icon: <Globe className="w-6 h-6 text-black" /> },
+  { year: "2021", title: "Primera Importación", description: "Llegamos a todo el sector florícola con maquinaria importada de calidad mundial", icon: <Tractor className="w-6 h-6 text-black" /> },
+  { year: "2025", title: "23 Años", description: "Celebramos 23 años de acompañar al sector florícola y agrícola, motivandonos siempre a mejorar", icon: <Users className="w-6 h-6 text-black" /> }
 ];
 
 const values = [
@@ -94,9 +95,9 @@ export default function NosotrosPage() {
             transition={{ duration: 1, ease: "easeOut" }}
             className="mb-8"
           >
-            <h1 className="text-6xl md:text-8xl font-black text-white mb-6 leading-tight">
+            <h1 className="text-6xl md:text-8xl font-black text-black mb-6 leading-tight">
               <span className="block">SOBRE</span>
-              <span className="block bg-gradient-to-r from-white to-yellow-200 bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-black to-black-300 bg-clip-text text-transparent">
                 NOSOTROS
               </span>
             </h1>
@@ -109,9 +110,9 @@ export default function NosotrosPage() {
             className="backdrop-blur-md bg-black/20 rounded-3xl p-8 border border-white/20"
           >
             <p className="text-xl md:text-2xl text-white font-light leading-relaxed">
-              20 años siendo líderes en la distribución de 
+              Más de 20 años de experiencia apoyando a 
               <br className="hidden md:block" />
-              <span className="font-semibold"> maquinaria agrícola y de jardinería</span> en Ecuador
+              <span className="font-semibold"> florícolas y agricultores</span> en Ecuador
             </p>
           </motion.div>
 
@@ -197,9 +198,9 @@ export default function NosotrosPage() {
             className="text-center mb-20"
           >
             <h2 className="text-6xl md:text-7xl font-black text-gray-900 mb-6">
-              NUESTRA
+              NUESTROS
               <span className="block bg-gradient-to-r from-campomaq to-yellow-500 bg-clip-text text-transparent">
-                EMPRESA
+                VALORES
               </span>
             </h2>
           </motion.div>
@@ -313,7 +314,7 @@ export default function NosotrosPage() {
               </span>
             </h2>
             <p className="text-xl text-gray-300">
-              Dos décadas de crecimiento y compromiso con el sector agrícola
+              Más de 20 años de experiencia apoyando a florícolas y agricultores en Ecuador
             </p>
           </motion.div>
 

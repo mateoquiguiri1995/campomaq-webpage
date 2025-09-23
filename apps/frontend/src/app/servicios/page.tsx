@@ -143,7 +143,7 @@ const useData = () => {
     () => [
       { number: "20+", label: "Años de Experiencia", icon: Clock },
       { number: "1000+", label: "Clientes Satisfechos", icon: Users },
-      { number: "24/", label: "Soporte Técnico", icon: Headphones },
+      { number: "24/", label: "Atención en línea", icon: Headphones }, 
       { number: "100%", label: "Garantía", icon: Shield },
     ],
     []
@@ -153,9 +153,9 @@ const useData = () => {
     () => [
       {
         icon: Wrench,
-        title: "Servicio Técnico Especializado",
+        title: "Servicio Técnico en Campo",
         description:
-          "Contamos con técnicos certificados por las principales marcas para brindarte el mejor servicio post-venta y mantenimiento preventivo con tecnología de punta.",
+          "Nuestros técnicos certificados se trasladan hasta tu cultivo para realizar mantenimiento y reparaciones en el lugar, evitando que tu trabajo se detenga. Especialmente pensado para florícolas y agricultores que no pueden interrumpir sus jornadas de fumigación y producción.",
         features: [
           "Diagnóstico especializado",
           "Reparación garantizada",
@@ -168,33 +168,25 @@ const useData = () => {
         icon: Truck,
         title: "Entrega y Logística",
         description:
-          "Servicio de entrega a domicilio en todo el país con seguimiento en tiempo real, flota propia y garantía de entrega segura y puntual.",
-        features: ["Entrega a domicilio", "Seguimiento en tiempo real", "Embalaje seguro", "Cobertura nacional"],
+          "Enviamos tus equipos y repuestos a cualquier parte del país. Para la zona florícola ofrecemos transporte e instalación sin costo en equipos seleccionados, garantizando una entrega segura, puntual y con el respaldo que tu cultivo necesita.",
+        features: ["Envíos a todo el país", "Transporte e instalacion sin costo. (Aplica restricciones)", "Instalación en el sitio", "Cobertura nacional"],
         videoId: "F4wYJjBu-7Y",
       },
       {
         icon: Headphones,
-        title: "Asesoría Técnica",
+        title: "Asesoría y Capacitación Técnica",
         description:
-          "Asesoramiento especializado personalizado para ayudarte a elegir la mejor maquinaria según tus necesidades específicas y presupuesto.",
+          "Ofrecemos asesoramiento especializado para capacitar al personal técnico de tu florícola o cultivo. Acompañamos a tus mecánicos con comparativas, recomendaciones y formación práctica para que tus equipos trabajen siempre al máximo rendimiento.",
         features: ["Asesoría personalizada", "Análisis de necesidades", "Comparativas técnicas", "Recomendaciones expertas"],
         videoId: "Bgg3ynClrsk",
       },
       {
         icon: Shield,
-        title: "Garantía Extendida",
+        title: "Servicio de Torno y Soldadura",
         description:
-          "Garantías extendidas en todos nuestros productos con cobertura completa, soporte técnico incluido y repuestos originales garantizados.",
-        features: ["Garantía extendida", "Cobertura completa", "Soporte técnico", "Repuestos originales"],
+          "Contamos con torno y soldadura especializada para fabricar y reparar las piezas que necesite. Proveemos bocines, reparamos componentes y elaboramos lanzas de fumigación en acero inoxidable, asegurando que tu equipo siempre tenga solución.",
+        features: ["Torno", "Sueldas especiales", "Fabricación de piezas"],
         videoId: "Jm0WtfD5Gek",
-      },
-      {
-        icon: Clock,
-        title: "Servicio 24/7",
-        description:
-          "Atención al cliente disponible las 24 horas del día, 7 días a la semana para emergencias técnicas con respuesta inmediata garantizada.",
-        features: ["Atención 24/7", "Emergencias técnicas", "Respuesta rápida", "Soporte continuo"],
-        videoId: "n_D4gYO7f3I",
       },
       {
         icon: Users,
@@ -211,40 +203,22 @@ const useData = () => {
   const testimonials = useMemo(
     () => [
       {
-        name: "Juan Pérez",
-        role: "Agricultor - Hacienda San José",
+        name: "José Vicente Panoluisa Proaño",
+        role: "Agricultor",
         content:
-          "El servicio técnico es excepcional. Solucionaron mi problema en menos de 24 horas y el técnico era muy profesional. Mi producción no se detuvo gracias a su rapidez.",
+          "El servicio es exelente la atención están pendiente sobre los productos que distribuyen",
         rating: 5,
         location: "Cayambe, Ecuador",
         avatar: "JP",
       },
       {
-        name: "María Gómez",
-        role: "Dueña de vivero - Jardines del Valle",
+        name: "Jhonny David Aguilar Tabango",
+        role: "Agricultor",
         content:
-          "La asesoría que recibí fue fundamental para elegir la maquinaria adecuada. Me ahorraron mucho dinero al recomendarme exactamente lo que necesitaba.",
+          "Buena atención",
         rating: 5,
-        location: "Quito, Ecuador",
-        avatar: "MG",
-      },
-      {
-        name: "Carlos Rodríguez",
-        role: "Ingeniero Agrónomo - AgroTech Solutions",
-        content:
-          "Las capacitaciones son muy completas y los instructores tienen un gran conocimiento técnico. Recomiendo sus cursos a todos mis colegas del sector.",
-        rating: 5,
-        location: "Ibarra, Ecuador",
-        avatar: "CR",
-      },
-      {
-        name: "Ana Martínez",
-        role: "Productora Orgánica - EcoFarms",
-        content:
-          "Su servicio de garantía extendida me ha dado mucha tranquilidad. Cuando tuve un problema, lo resolvieron sin costo adicional y muy rápido.",
-        rating: 5,
-        location: "Latacunga, Ecuador",
-        avatar: "AM",
+        location: "Cayambe, Ecuador",
+        avatar: "JA",
       },
     ],
     []
