@@ -1,33 +1,60 @@
 'use client';
 
-import { motion, useScroll, useTransform} from 'framer-motion';
-import { Users, Target, Eye, Award, Tractor, Wrench, Globe, Leaf} from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Users, Target, Eye, Award, Tractor, Globe, Leaf, Star, Quote } from 'lucide-react';
 import Image from 'next/image';
 
-const team = [
+// Imágenes del equipo corporativo (reemplaza con tus imágenes reales)
+const teamGallery = [
   {
-    name: "Manuel Quiguiri",
-    position: "Director General",
-    image: "/images/campomaq/user.webp",
-    description: "Más de 25 años de experiencia en el sector agrícola",
-    specialties: ["Liderazgo", "Estrategia", "Desarrollo de Negocio"]
+    id: 1,
+    image: "/images/campomaq/cmaq1.jpeg",
+    category: "Dirección",
+    aspect: "vertical"
   },
   {
-    name: "Alexandra Quiguiri",
-    position: "Gerente Comercial",
-    image: "/images/campomaq/user.webp",
-    description: "Especialista en relaciones comerciales y atención al cliente",
-    specialties: ["Ventas", "Relaciones Públicas", "Servicio al Cliente"]
+    id: 2,
+    image: "/images/campomaq/cmaq2.jpeg",
+    category: "Equipo Técnico",
+    aspect: "horizontal"
   },
   {
-    name: "Mateo Quiguiri",
-    position: "Jefe Tecnológico",
-    image: "/images/campomaq/user.webp",
-    description: "Técnico certificado con amplia experiencia en Tecnologías e Inventariado",
-    specialties: ["Tecnología", "Inventarios", "Innovación"]
+    id: 3,
+    image: "/images/campomaq/cmaq3.jpeg",
+    category: "Reunión Ejecutiva",
+    aspect: "vertical"
+  },
+  {
+    id: 4,
+    image: "/images/campomaq/cmaq4.jpeg",
+    category: "Trabajo en Campo",
+    aspect: "horizontal"
+  },
+  {
+    id: 5,
+    image: "/images/campomaq/cmaq5.jpeg",
+    category: "Capacitación",
+    aspect: "vertical"
+  },
+  {
+    id: 6,
+    image: "/images/campomaq/cmaq6.jpg",
+    category: "Innovación",
+    aspect: "horizontal"
+  },
+  {
+    id: 7,
+    image: "/images/campomaq/cmaq7.jpg",
+    category: "Calidad",
+    aspect: "vertical"
+  },
+  {
+    id: 8,
+    image: "/images/campomaq/cmaq1.jpeg",
+    category: "Tecnología",
+    aspect: "horizontal"
   }
 ];
-
 
 const milestones = [
   { year: "2003", title: "Fundación", description: "Inicio de operaciones en Cayambe", icon: <Leaf className="w-6 h-6 text-black" /> },
@@ -42,256 +69,55 @@ const values = [
     icon: <Target className="w-10 h-10" />, 
     title: "Excelencia", 
     description: "Buscamos la excelencia en cada aspecto de nuestro servicio",
-    color: "from-yellow-500 to-gray-500"
+    color: "from-campomaq to-campomaq/80"
   },
   { 
     icon: <Users className="w-10 h-10" />, 
     title: "Confianza", 
     description: "Construimos relaciones duraderas basadas en la confianza",
-    color: "from-yellow-500 to-gray-500"
+    color: "from-campomaq to-campomaq/80"
   },
   { 
     icon: <Award className="w-10 h-10" />, 
     title: "Calidad", 
     description: "Ofrecemos solo productos de la más alta calidad",
-    color: "from-yellow-500 to-gray-500"
+    color: "from-campomaq to-campomaq/80"
   },
   { 
     icon: <Eye className="w-10 h-10" />, 
     title: "Innovación", 
     description: "Siempre buscamos las mejores soluciones tecnológicas",
-    color: "from-yellow-500 to-gray-500"
+    color: "from-campomaq to-campomaq/80"
   }
 ];
 
-const services = [
-  { icon: <Tractor className="w-8 h-8 text-gray-600" />, title: "Maquinaria Agrícola", description: "Comercialización de equipos de última generación" },
-  { icon: <Wrench className="w-8 h-8 text-gray-600" />, title: "Servicio Técnico", description: "Soporte técnico especializado y mantenimiento" },
-  { icon: <Target className="w-8 h-8 text-gray-600" />, title: "Partes y Accesorios", description: "Repuestos originales para todas las marcas" },
+const testimonials = [
+  {
+    name: "José Vicente Panoluisa Proaño",
+    profession: "Agricultor",
+    city: "Cayambe, Ecuador",
+    rating: 5,
+    comment: "El servicio es excelente la atención están pendiente sobre los productos que distribuyen.",
+    image: "/images/testimonials/user1.jpg"
+  },
+  {
+    name: "Jhonny David Aguilar Tabango",
+    profession: "Agricultor",
+    city: "Cayambe, Ecuador",
+    rating: 5,
+    comment: "Buena Atención",
+    image: "/images/testimonials/user2.jpg"
+  }
 ];
 
-
 export default function NosotrosPage() {
-  const { scrollYProgress } = useScroll();
-  const yBg = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
+  // Removed unused scroll animation variables
 
   return (
-    <main className="min-h-screen pt-20 overflow-hidden">
-      {/* Hero Section with Parallax */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        <motion.div 
-          className="absolute inset-0 z-0"
-          style={{ y: yBg }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-campomaq via-yellow-400/40 to-yellow-500/20" />
-          <div className="absolute inset-0 bg-black/20" />
-          
-        </motion.div>
-        
-        <div className="relative z-10 text-center px-6 max-w-6xl">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-            className="mb-8"
-          >
-            <h1 className="text-6xl md:text-8xl font-black text-black mb-6 leading-tight">
-              <span className="block">SOBRE</span>
-              <span className="block bg-gradient-to-r from-black to-black-300 bg-clip-text text-transparent">
-                NOSOTROS
-              </span>
-            </h1>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="backdrop-blur-md bg-black/20 rounded-3xl p-8 border border-white/20"
-          >
-            <p className="text-xl md:text-2xl text-white font-light leading-relaxed">
-              Más de 20 años de experiencia apoyando a 
-              <br className="hidden md:block" />
-              <span className="font-semibold"> florícolas y agricultores</span> en Ecuador
-            </p>
-          </motion.div>
+    <main className="min-h-screen pt-5 overflow-hidden">
 
-        </div>
-      </section>
-
-      {/* Mission & Vision*/}
-      <section className="py-32 px-6 bg-white relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-gray-50 to-white" />
-        <div className="relative z-10 max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-20"
-          >
-            <h2 className="text-5xl md:text-6xl font-black text-gray-900 mb-6">
-              NUESTRA ESENCIA
-            </h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-campomaq to-yellow-500 mx-auto" />
-          </motion.div>
-
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -100 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="relative"
-            >
-              <div className="absolute -inset-4 bg-gradient-to-r from-campomaq to-yellow-400 rounded-3xl blur-lg opacity-20" />
-              <div className="relative bg-white rounded-3xl p-10 shadow-2xl border border-gray-100">
-                <div className="flex items-center mb-6">
-                  <div className="w-16 h-16 bg-gradient-to-r from-campomaq to-yellow-400 rounded-2xl flex items-center justify-center mr-4">
-                    <Target className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-4xl font-bold text-gray-900">Misión</h3>
-                </div>
-                <p className="text-lg text-gray-700 leading-relaxed">
-                  Empresa comercial y de servicio dedicada a proveer equipos de calidad a los sectores 
-                  agrícola y forestal a nivel nacional, brindando soluciones efectivas a las necesidades 
-                  de nuestros clientes.
-                </p>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 100 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative"
-            >
-              <div className="absolute -inset-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-3xl blur-lg opacity-20" />
-              <div className="relative bg-white rounded-3xl p-10 shadow-2xl border border-gray-100">
-                <div className="flex items-center mb-6">
-                  <div className="w-16 h-16 bg-gradient-to-r from-black to-black/30 rounded-2xl flex items-center justify-center mr-4">
-                    <Eye className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-4xl font-bold text-gray-900">Visión</h3>
-                </div>
-                <p className="text-lg text-gray-700 leading-relaxed">
-                  Consolidarnos como empresa líder en la comercialización de nuestros productos y 
-                  servicio especializado con personal técnico competente que propone y ejecuta políticas 
-                  de estandarización de procesos para la entrega de un servicio de calidad.
-                </p>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Company Story */}
-      <section className="py-32 bg-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-campomaq/5 to-yellow-50" />
-        
-        <div className="relative z-10 max-w-7xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-20"
-          >
-            <h2 className="text-6xl md:text-7xl font-black text-gray-900 mb-6">
-              NUESTROS
-              <span className="block bg-gradient-to-r from-campomaq to-yellow-500 bg-clip-text text-transparent">
-                VALORES
-              </span>
-            </h2>
-          </motion.div>
-
-          <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
-            <motion.div
-              initial={{ opacity: 0, x: -100 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-            >
-
-             {/* Contenedor del video */}
-              <div className="flex items-center justify-center">
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.8, delay: 0.3 }}
-                  whileHover={{ scale: 1.02 }}
-                  className="relative w-full max-w-3xl aspect-video shadow-lg rounded-lg overflow-hidden cursor-pointer"
-                  onClick={() =>
-                    window.open(`https://www.youtube.com/watch?v=2x8fautz2HA`, "_blank")
-                  }
-                >
-                  <iframe
-                    className="w-full h-full"
-                    src="https://www.youtube.com/embed/2x8fautz2HA?autoplay=1&mute=1&loop=1&playlist=2x8fautz2HA&modestbranding=1&rel=0&showinfo=0"
-                    title="Video de YouTube"
-                    allow="autoplay; encrypted-media; picture-in-picture"
-                    allowFullScreen
-                  />
-                </motion.div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 100 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="space-y-6"
-            >
-              <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
-                <p className="text-lg text-gray-700 leading-relaxed">
-                  <span className="font-bold text-black">CAMPOMAQ</span> nace con la finalidad de comercializar 
-                  Maquinaria Agrícola, dar un Servicio Técnico y ofrecer Partes y Accesorios en todas las marcas, 
-                  previamente seleccionadas bajo las premisas de <span className="font-semibold">calidad, productividad</span> y 
-                  capacidad de satisfacer las necesidades del agricultor moderno.
-                </p>
-              </div>
-              
-              <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
-                <p className="text-lg text-gray-700 leading-relaxed">
-                  Somos una empresa <span className="font-semibold text-black">dinámica</span>, habituada a cambiar 
-                  constantemente nuestra gama de productos en función de los nuevos desarrollos tecnológicos y 
-                  las cada vez más exigentes demandas de nuestros clientes.
-                </p>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Services Grid */}
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="grid md:grid-cols-3 gap-8 mb-16"
-          >
-            {services.map((service, index) => (
-              <motion.div
-                key={index}
-                whileHover={{ y: -10, scale: 1.02 }}
-                className="bg-black/5 rounded-3xl p-8 shadow-lg border border-gray-100 text-center"
-              >
-                <div className="w-16 h-16 bg-gradient-to-r from-campomaq to-yellow-400 rounded-2xl flex items-center justify-center mx-auto mb-6 text-white">
-                  {service.icon}
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">{service.title}</h3>
-                <p className="text-gray-600">{service.description}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          
-        </div>
-      </section>
-
-      {/* Timeline */}
-      <section className="py-32 bg-gray-900 relative overflow-hidden">
+      {/* Timeline - Mejorado con más espacio superior */}
+      <section className="py-40 bg-gray-900 relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{
@@ -305,6 +131,7 @@ export default function NosotrosPage() {
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
             className="text-center mb-20"
           >
             <h2 className="text-6xl md:text-7xl font-black text-white mb-6">
@@ -373,9 +200,11 @@ export default function NosotrosPage() {
         </div>
       </section>
 
-      {/* Values */}
-      <section className="py-32 px-6 bg-gradient-to-br from-gray-50 to-white">
-        <div className="max-w-7xl mx-auto">
+      {/* Valores Combinados con Video */}
+      <section className="py-32 bg-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-campomaq/5 to-yellow-50" />
+        
+        <div className="relative z-10 max-w-7xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -384,49 +213,150 @@ export default function NosotrosPage() {
           >
             <h2 className="text-6xl md:text-7xl font-black text-gray-900 mb-6">
               NUESTROS
-              <span className="block bg-gradient-to-r from-campomaq to-yellow-500 bg-clip-text text-transparent">
+              <span className="block bg-campomaq  bg-clip-text text-transparent">
                 VALORES
               </span>
             </h2>
-            <p className="text-xl text-gray-600">Los principios que guían nuestro trabajo diario</p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {values.map((value, index) => (
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
+            {/* Video Section */}
+            <motion.div
+              initial={{ opacity: 0, x: -100 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="flex items-center justify-center"
+            >
               <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ y: -20, scale: 1.05 }}
-                className="group relative"
+                whileHover={{ scale: 1.02 }}
+                className="relative w-full aspect-video shadow-2xl rounded-2xl overflow-hidden cursor-pointer"
+                onClick={() => window.open(`https://www.youtube.com/watch?v=2x8fautz2HA`, "_blank")}
               >
-                <div className="absolute -inset-2 bg-gradient bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl blur-lg"
-                     style={{ background: `linear-gradient(45deg, ${value.color.split(' ')[1]}, ${value.color.split(' ')[3]})` }} />
-                
-                <div className="relative bg-gray-200 rounded-3xl p-8 shadow-lg border border-gray-100 h-full">
-                  <div className={`w-20 h-20 bg-gradient-to-r ${value.color} rounded-2xl flex items-center justify-center mb-6 mx-auto text-white shadow-xl`}>
-                    {value.icon}
-                  </div>
-                  
-                  <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">
-                    {value.title}
-                  </h3>
-                  
-                  <p className="text-gray-600 text-center leading-relaxed">
-                    {value.description}
-                  </p>
-                </div>
+                <iframe
+                  className="w-full h-full"
+                  src="https://www.youtube.com/embed/2x8fautz2HA?autoplay=1&mute=1&loop=1&playlist=2x8fautz2HA&modestbranding=1&rel=0&showinfo=0"
+                  title="Video de YouTube"
+                  allow="autoplay; encrypted-media; picture-in-picture"
+                  allowFullScreen
+                />
               </motion.div>
-            ))}
+            </motion.div>
+
+            {/* Values Cards - Alineadas con el video */}
+            <div className="grid md:grid-cols-2 gap-6">
+              {values.map((value, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  whileHover={{ y: -10, scale: 1.02 }}
+                  className="group relative"
+                >
+                  <div className="absolute -inset-1 bg-campomaq opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl blur-sm" />
+                  
+                  <div className="relative bg-white rounded-2xl p-6 shadow-lg border border-gray-100 h-full group-hover:shadow-xl transition-all duration-300">
+                    <div className={`w-16 h-16 bg-gradient-to-r ${value.color} rounded-xl flex items-center justify-center mb-4 text-black shadow-md`}>
+                      {value.icon}
+                    </div>
+                    
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">
+                      {value.title}
+                    </h3>
+                    
+                    <p className="text-gray-600 text-sm leading-relaxed">
+                      {value.description}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Team */}
-      <section className="py-32 bg-gray-900 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900" />
+      {/* Mission & Vision*/}
+      <section className="py-32 px-6 bg-white relative pt-0">
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-50 to-white" />
+        <div className="relative z-10 max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <h2 className="text-6xl md:text-7xl font-black text-black mb-6">
+              NUESTRA
+              <span className="block bg-campomaq bg-clip-text text-transparent">
+                ESCENCIA
+              </span>
+            </h2>
+            <p className="text-xl text-gray-600">Profesionales comprometidos con tu éxito</p>
+          </motion.div>
+
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -100 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="relative"
+            >
+              <div className="absolute -inset-4 bg-campomaq rounded-3xl blur-lg opacity-20" />
+              <div className="relative bg-white rounded-3xl p-10 shadow-2xl border border-gray-100">
+                <div className="flex items-center mb-6">
+                  <div className="w-16 h-16 bg-campomaq rounded-2xl flex items-center justify-center mr-4">
+                    <Target className="w-8 h-8 text-black" />
+                  </div>
+                  <h3 className="text-4xl font-bold text-gray-900">Misión</h3>
+                </div>
+                <p className="text-lg text-gray-700 leading-relaxed">
+                  Empresa comercial y de servicio dedicada a proveer equipos de calidad a los sectores 
+                  agrícola y forestal a nivel nacional, brindando soluciones efectivas a las necesidades 
+                  de nuestros clientes.
+                </p>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 100 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="relative"
+            >
+              <div className="absolute -inset-4 bg-black rounded-3xl blur-lg opacity-20" />
+              <div className="relative bg-white rounded-3xl p-10 shadow-2xl border border-gray-100">
+                <div className="flex items-center mb-6">
+                  <div className="w-16 h-16 bg-black rounded-2xl flex items-center justify-center mr-4">
+                    <Eye className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-4xl font-bold text-gray-900">Visión</h3>
+                </div>
+                <p className="text-lg text-gray-700 leading-relaxed">
+                  Consolidarnos como empresa líder en la comercialización de nuestros productos y 
+                  servicio especializado con personal técnico competente que propone y ejecuta políticas 
+                  de estandarización de procesos para la entrega de un servicio de calidad.
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Galería Corporativa del Equipo */}
+      <section className="py-32 bg-gray-900 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black" />
+        
+        {/* Efecto de partículas sutiles */}
+        <div className="absolute inset-0 opacity-[0.02]">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `radial-gradient(circle at 20% 50%, white 1px, transparent 0)`,
+            backgroundSize: '50px 50px'
+          }} />
+        </div>
         
         <div className="relative z-10 max-w-7xl mx-auto px-6">
           <motion.div
@@ -441,52 +371,155 @@ export default function NosotrosPage() {
                 EQUIPO
               </span>
             </h2>
-            <p className="text-xl text-gray-300">Profesionales comprometidos con tu éxito</p>
+            <p className="text-xl text-gray-300">Excelencia corporativa en cada acción</p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-10">
-            {team.map((member, index) => (
+          {/* Galería Masonry con efectos profesionales */}
+          <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+            {teamGallery.map((item, index) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 100, scale: 0.9 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ 
+                  duration: 0.8, 
+                  delay: index * 0.1,
+                  ease: "easeOut"
+                }}
+                whileHover={{ 
+                  scale: 1.02,
+                  y: -5,
+                  transition: { duration: 0.3 }
+                }}
+                className="break-inside-avoid relative group cursor-pointer"
+              >
+                {/* Overlay de gradiente */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 z-10 rounded-2xl" />
+                
+                {/* Etiqueta de categoría */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileHover={{ opacity: 1, y: 0 }}
+                  className="absolute bottom-4 left-4 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300"
+                >
+                  <span className="bg-gradient-to-r from-campomaq to-yellow-400 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
+                    {item.category}
+                  </span>
+                </motion.div>
+
+                {/* Efecto de borde luminoso */}
+                <div className="absolute -inset-1 bg-gradient-to-r from-campomaq to-yellow-400 rounded-2xl blur-lg opacity-0 group-hover:opacity-50 transition-opacity duration-500" />
+                
+                {/* Contenedor de imagen */}
+                <div className="relative overflow-hidden rounded-2xl shadow-2xl">
+                  <Image
+                    src={item.image}
+                    alt={`Equipo corporativo - ${item.category}`}
+                    width={600}
+                    height={item.aspect === "vertical" ? 800 : 400}
+                    className={`w-full object-cover transition-transform duration-700 group-hover:scale-110 ${
+                      item.aspect === "vertical" ? "aspect-[3/4]" : "aspect-[4/3]"
+                    }`}
+                  />
+                  
+                  {/* Efecto de brillo al hover */}
+                  <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Texto descriptivo debajo de la galería */}
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="text-center mt-16"
+          >
+            <p className="text-lg text-gray-400 max-w-3xl mx-auto leading-relaxed">
+              Un equipo comprometido con la excelencia, innovación y calidad en cada proyecto. 
+              Profesionales altamente capacitados trabajando en conjunto para superar las expectativas 
+              de nuestros clientes.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-32 bg-gradient-to-br from-gray-50 to-white relative overflow-hidden">
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `radial-gradient(circle at 2px 2px, #000 1px, transparent 0)`,
+            backgroundSize: '30px 30px'
+          }} />
+        </div>
+        
+        <div className="relative z-10 max-w-7xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <h2 className="text-6xl md:text-7xl font-black text-gray-900 mb-6">
+              NUESTROS
+              <span className="block bg-gradient-to-r from-campomaq to-yellow-500 bg-clip-text text-transparent">
+                CLIENTES
+              </span>
+            </h2>
+            <p className="text-xl text-gray-600">Clientes que confían en nosotros</p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {testimonials.map((testimonial, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 100 }}
+                initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.2 }}
-                whileHover={{ y: -10 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                whileHover={{ y: -5, scale: 1.02 }}
                 className="group relative"
               >
-                <div className="relative bg-white rounded-3xl overflow-hidden shadow-2xl">
-                  {/* Image container with overlay */}
-                  <div className="relative h-90 overflow-hidden">
-                    <Image
-                      src={member.image}
-                      alt={member.name}
-                      fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      className="object-cover group-hover:scale-110 transition-transform duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    
-                    {/* Floating specialties */}
-                    <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                      <div className="flex flex-wrap gap-2">
-                        {member.specialties.map((specialty, i) => (
-                          <span 
-                            key={i}
-                            className="px-3 py-1 bg-campomaq/90 text-black text-xs rounded-full backdrop-blur-sm"
-                          >
-                            {specialty}
-                          </span>
-                        ))}
-                      </div>
+                <div className="absolute -inset-1 bg-gradient-to-r from-campomaq to-yellow-400 rounded-2xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                
+                <div className="relative bg-white rounded-2xl p-6 shadow-lg border border-gray-100 group-hover:shadow-xl transition-all duration-300 h-full">
+                  <div className="flex items-center mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-campomaq to-yellow-400 rounded-full flex items-center justify-center mr-4">
+                      <Quote className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900">{testimonial.name}</h4>
+                      <h5 className="text-gray-900">{testimonial.profession}</h5>
+                      <p className="text-sm text-gray-600">{testimonial.city}</p>
                     </div>
                   </div>
                   
-                  {/* Content */}
-                  <div className="p-8">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{member.name}</h3>
-                    <p className="text-gray-500 font-semibold mb-4 text-lg">{member.position}</p>
-                    <p className="text-gray-600 leading-relaxed">{member.description}</p>
+                  <div className="flex mb-4">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-4 h-4 ${
+                          i < testimonial.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  
+                  <p className="text-gray-700 text-sm leading-relaxed italic">
+                    &ldquo;{testimonial.comment}&rdquo;
+                  </p>
+                  
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <div className="flex items-center text-xs text-gray-500">
+                      <span>Google Reviews</span>
+                      <div className="ml-2 flex items-center">
+                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                        <span className="ml-1 font-semibold">5.0</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -494,29 +527,6 @@ export default function NosotrosPage() {
           </div>
         </div>
       </section>
-      
-      <section className='py-32 bg-white relative overflow-hidden'>
-        <div className="relative z-10 max-w-7xl mx-auto px-6">
-          {/* Final Statement */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="text-center"
-          >
-            <div className="bg-gradient-to-r from-campomaq/20 to-yellow-300 rounded-3xl p-12 text-white shadow-2xl">
-              <h3 className="text-3xl font-bold mb-6 text-black">Nuestro Compromiso</h3>
-              <p className="text-xl leading-relaxed max-w-4xl mx-auto text-gray-600">
-                Facilitar a nuestros clientes soluciones <span className="font-bold">viables económicamente</span>, 
-                adaptadas a las distintas actualizaciones de maquinaria agrícola y un 
-                <span className="font-bold"> soporte técnico calificado</span> durante toda la vida útil de nuestros productos.
-              </p>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
     </main>
   );
 }

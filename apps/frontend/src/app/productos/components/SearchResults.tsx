@@ -140,7 +140,7 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
             <ul className="text-sm text-gray-500 space-y-1">
               <li>• Verifica que las palabras estén escritas correctamente</li>
               <li>• Intenta con términos más generales</li>
-              <li>• Usa sinónimos o términos relacionados</li>
+              
             </ul>
           </div>
         </div>

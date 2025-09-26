@@ -156,7 +156,7 @@ const ProductBadges = ({ product, className = "" }: { product: Product; classNam
     )}
   </div>
 );
-
+/*
 const ProductRating = ({ size = "default" }: { size?: "default" | "small" }) => {
   const starSize = size === "small" ? "size-4" : "size-4";
   const textSize = size === "small" ? "text-xs" : "text-sm";
@@ -171,7 +171,7 @@ const ProductRating = ({ size = "default" }: { size?: "default" | "small" }) => 
       </span>
     </div>
   );
-};
+}; */
 
 const ProductFeatures = ({ size = "default" }: { size?: "default" | "small" }) => {
   const badgeSize = size === "small" ? "px-2 py-0.5 text-[11px]" : "px-3 py-1 text-sm";
@@ -186,6 +186,164 @@ const ProductFeatures = ({ size = "default" }: { size?: "default" | "small" }) =
     </div>
   );
 };
+
+// Tipos de media
+type MediaType = 'image' | 'video' | 'youtube' | 'unknown';
+
+// Función mejorada para detectar tipo de media
+const getMediaType = (url: string): MediaType => {
+  if (!url) return 'unknown';
+  
+  const urlLower = url.toLowerCase();
+  
+  // Detectar YouTube URLs
+  if (urlLower.includes('youtube.com/watch') || 
+      urlLower.includes('youtu.be/') || 
+      urlLower.includes('youtube.com/embed/')) {
+    return 'youtube';
+  }
+  
+  // Detectar videos directos
+  const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv', '.m4v'];
+  if (videoExtensions.some(ext => urlLower.includes(ext))) {
+    return 'video';
+  }
+  
+  // Detectar imágenes
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp'];
+  if (imageExtensions.some(ext => urlLower.includes(ext))) {
+    return 'image';
+  }
+  
+  // Si no tiene extensión pero no es YouTube, asumir que es imagen
+  return 'image';
+};
+
+// Función para convertir URL de YouTube a embed
+const getYouTubeEmbedUrl = (url: string): string => {
+  try {
+    let videoId = '';
+    
+    if (url.includes('youtube.com/watch')) {
+      const urlParams = new URLSearchParams(url.split('?')[1]);
+      videoId = urlParams.get('v') || '';
+    } else if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1]?.split('?')[0] || '';
+    } else if (url.includes('youtube.com/embed/')) {
+      return url; // Ya es una URL de embed
+    }
+    
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}`;
+    }
+  } catch (error) {
+    console.error('Error parsing YouTube URL:', error);
+  }
+  
+  return url;
+};
+
+// Función utilitaria para detectar si una URL es un video
+const isVideoUrl = (url: string): boolean => {
+  const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv'];
+  const urlLower = url.toLowerCase();
+  return videoExtensions.some(ext => urlLower.includes(ext));
+};
+
+// Componente mejorado para renderizar diferentes tipos de media
+const MediaRenderer = ({ 
+  src, 
+  alt, 
+  className = "",
+  onLoad,
+  onError,
+  priority = false,
+  autoplay = false,
+  fill = true
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+  onLoad?: () => void;
+  onError?: () => void;
+  priority?: boolean;
+  autoplay?: boolean;
+  fill?: boolean;
+}) => {
+  const mediaType = getMediaType(src);
+
+  const handleLoad = () => {
+    onLoad?.();
+  };
+
+  const handleError = () => {
+    console.error(`Error loading media: ${src}`);
+    onError?.();
+  };
+
+  switch (mediaType) {
+    case 'youtube':
+      const embedUrl = autoplay ? getYouTubeEmbedUrl(src) : src.replace('/watch?v=', '/embed/');
+      return (
+        <iframe
+          src={embedUrl}
+          title={alt}
+          className={className}
+          allowFullScreen
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          onLoad={handleLoad}
+          onError={handleError}
+          style={fill ? { width: '100%', height: '100%' } : undefined}
+        />
+      );
+
+    case 'video':
+      return (
+        <video
+          src={src}
+          className={className}
+          autoPlay={autoplay}
+          loop={autoplay}
+          muted
+          controls={!autoplay}
+          playsInline
+          onLoadedData={handleLoad}
+          onError={handleError}
+          preload={priority ? "auto" : "metadata"}
+          style={fill ? { width: '100%', height: '100%', objectFit: 'contain' } : undefined}
+        />
+      );
+
+    case 'image':
+    default:
+      return fill ? (
+        <Image
+          src={src}
+          alt={alt}
+          className={className}
+          fill
+          sizes="100vw"
+          onLoadingComplete={handleLoad}
+          onError={handleError}
+          unoptimized
+          style={{ objectFit: 'contain' }}
+        />
+      ) : (
+        <Image
+          src={src}
+          alt={alt}
+          className={className}
+          width={800}
+          height={600}
+          onLoadingComplete={handleLoad}
+          onError={handleError}
+          unoptimized
+        />
+      );
+  }
+};
+
+/* Removed unused MediaThumbnail component to satisfy eslint: no-unused-vars */
 
 const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose }) => {
   const isMobile = useResponsive();
@@ -354,26 +512,24 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                     <div className="absolute inset-0 flex items-center justify-center z-10">
                       <div className="text-center text-gray-500">
                         <div className="text-2xl mb-2">📷</div>
-                        <p className="text-sm">Error al cargar la imagen</p>
+                        <p className="text-sm">Error al cargar el contenido</p>
                       </div>
                     </div>
                   )}
                   
                   {currentImageSrc && (
                     <div className="relative h-full w-full">
-                      <Image
+                      <MediaRenderer
                         key={`desktop-${imageIndex}-${currentImageSrc}`}
                         src={currentImageSrc}
                         alt={`${product.name} - ${imageIndex + 1}`}
                         className={`object-contain p-4 transition-all duration-300 ${
                           imageLoading || imageError ? "opacity-0 scale-95" : "opacity-100 scale-100"
                         }`}
-                        fill
-                        sizes="(min-width: 1024px) 50vw, 100vw"
                         priority={imageIndex === 0}
                         onLoad={handleImageLoad}
                         onError={handleImageError}
-                        unoptimized
+                        autoplay={true} // Videos tendrán autoplay
                       />
                     </div>
                   )}
@@ -391,30 +547,50 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                   )}
                 </div>
 
-                {/* Thumbnails */}
+                {/* Thumbnails con indicador de video */}
                 {imageList.length > 1 && (
                   <div className="h-28 bg-white/60 backdrop-blur px-4">
                     <div className="flex gap-3 py-3 overflow-x-auto">
-                      {imageList.map((img, i) => (
-                        <button
-                          key={`thumb-${i}`}
-                          onClick={() => goToIndex(i)}
-                          className={`size-20 shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
-                            i === imageIndex
-                              ? "border-campomaq ring-2 ring-campomaq/30"
-                              : "border-gray-200 hover:border-gray-400"
-                          }`}
-                        >
-                          <Image
-                            src={img}
-                            alt={`thumbnail ${i + 1}`}
-                            className="h-full w-full object-cover"
-                            width={80}
-                            height={80}
-                            loading="lazy"
-                          />
-                        </button>
-                      ))}
+                      {imageList.map((media, i) => {
+                        const isVideo = isVideoUrl(media);
+                        return (
+                          <button
+                            key={`thumb-${i}`}
+                            onClick={() => goToIndex(i)}
+                            className={`size-20 shrink-0 rounded-lg overflow-hidden border-2 transition-all relative ${
+                              i === imageIndex
+                                ? "border-campomaq ring-2 ring-campomaq/30"
+                                : "border-gray-200 hover:border-gray-400"
+                            }`}
+                          >
+                            {isVideo ? (
+                              <>
+                                <video
+                                  src={media}
+                                  className="h-full w-full object-cover"
+                                  muted
+                                  preload="metadata"
+                                />
+                                {/* Indicador de video */}
+                                <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                  <div className="w-6 h-6 bg-white/90 rounded-full flex items-center justify-center">
+                                    <div className="w-0 h-0 border-l-[6px] border-l-gray-800 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent ml-0.5" />
+                                  </div>
+                                </div>
+                              </>
+                            ) : (
+                              <Image
+                                src={media}
+                                alt={`thumbnail ${i + 1}`}
+                                className="h-full w-full object-cover"
+                                width={80}
+                                height={80}
+                                loading="lazy"
+                              />
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -424,7 +600,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
               <section className="relative flex flex-col min-h-0">
                 <div className="px-6 py-5">
                   <div className="flex items-center justify-between gap-4 flex-wrap">
-                    <ProductRating />
+                   {/** <ProductRating />*/} 
                     <ProductFeatures />
                   </div>
                 </div>
@@ -466,26 +642,24 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                     <div className="absolute inset-0 flex items-center justify-center z-10">
                       <div className="text-center text-gray-500">
                         <div className="text-2xl mb-2">📷</div>
-                        <p className="text-sm">Error al cargar la imagen</p>
+                        <p className="text-sm">Error al cargar el contenido</p>
                       </div>
                     </div>
                   )}
                   
                   {currentImageSrc && (
                     <div className="relative h-full w-full">
-                      <Image
+                      <MediaRenderer
                         key={`mobile-${imageIndex}-${currentImageSrc}`}
                         src={currentImageSrc}
                         alt={`${product.name} - ${imageIndex + 1}`}
                         className={`object-contain p-3 transition-all duration-300 ${
                           imageLoading || imageError ? "opacity-0 scale-95" : "opacity-100 scale-100"
                         }`}
-                        fill
-                        sizes="100vw"
                         priority={imageIndex === 0}
                         onLoad={handleImageLoad}
                         onError={handleImageError}
-                        unoptimized
+                        autoplay={true} // Videos tendrán autoplay
                       />
                     </div>
                   )}
@@ -522,7 +696,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                 }}
               >
                 <div className="mb-4 flex items-center justify-between">
-                  <ProductRating size="small" />
+                  {/** <ProductRating size="small" />*/} 
                   <ProductFeatures size="small" />
                 </div>
 

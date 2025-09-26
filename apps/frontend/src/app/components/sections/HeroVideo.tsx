@@ -89,10 +89,10 @@ export default function HeroVideo() {
           transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
           className="
             mb-8 drop-shadow-md text-white
-            text-[clamp(1rem,3vw,2rem)]
+            text-[clamp(1rem,3vw,1.5rem)]
           "
         >
-          Distribuidores líderes de maquinaria agrícola y de jardinería
+          Más de 20 años junto a florícolas y agricultores de Ecuador, brindando maquinaria y servicio técnico de la mejor calidad
         </motion.p>
 
         {/* Contenedor de botones mejorado */}

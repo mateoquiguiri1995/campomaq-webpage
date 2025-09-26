@@ -41,7 +41,6 @@ export default function Marcas() {
   const router = useRouter()
 
   const handleBrandClick = (brandName: string) => {
-    // Cambio: usar parámetro 'brand' en lugar de 'search'
     router.push(`/productos?brand=${encodeURIComponent(brandName)}`)
   }
 
@@ -100,54 +99,68 @@ export default function Marcas() {
           <div className="pointer-events-none absolute inset-y-0 right-0 w-20 sm:w-24 bg-gradient-to-l from-white via-white/80 to-transparent z-10" />
         </motion.div>
 
-        {/* 🔹 Secciones */}
-        {features.map((feature, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: index * 0.2 }}
-            className="mb-16 md:mb-24 grid grid-cols-1 md:grid-cols-2 gap-8 items-center pt-10"
-          >
-            {/* Texto */}
+        {/* 🔹 Secciones con alineación perfecta */}
+        <div className="space-y-20 md:space-y-32 pt-10">
+          {features.map((feature, index) => (
             <motion.div
-              initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              key={index}
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              className={`space-y-6 ${
-                index % 2 === 0 ? 'md:order-1 md:pr-8' : 'md:order-2 md:pl-8'
-              }`}
+              transition={{ duration: 0.8, delay: index * 0.2 }}
+              className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center"
             >
-              <h3 className="text-2xl md:text-3xl font-bold text-gray-900">
-                {feature.title}
-              </h3>
-              <p className="text-lg text-gray-600">{feature.content}</p>
-            </motion.div>
+              {/* Contenedor de texto con altura fija para mantener proporción */}
+              <motion.div
+                initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                className={`flex flex-col justify-center h-full min-h-[240px] lg:min-h-[400px] ${
+                  index % 2 === 0 ? 'lg:order-1' : 'lg:order-2'
+                }`}
+              >
+                <div className="space-y-4 lg:space-y-6">
+                  <h3 className="text-xl md:text-2xl lg:text-4xl font-bold text-gray-900 leading-tight">
+                    {feature.title}
+                  </h3>
+                  <p className="text-base md:text-lg lg:text-xl text-gray-600 leading-relaxed">
+                    {feature.content}
+                  </p>
+                </div>
+              </motion.div>
 
-            {/* Video YouTube */}
-            <motion.div
-              initial={{ opacity: 0, x: index % 2 === 0 ? 30 : -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              whileHover={{ scale: 1.02 }}
-              className={`relative h-50 w-88 md:h-50 xl:h-80 xl:w-140 overflow-hidden shadow-lg cursor-pointer ${
-                index % 2 === 0 ? 'md:order-2' : 'md:order-1'
-              }`}
-              onClick={() => window.open(`https://www.youtube.com/watch?v=${feature.youtubeId}`, "_blank")}
-            >
-              <iframe
-                className="absolute inset-0 w-full h-full"
-                src={`https://www.youtube.com/embed/${feature.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${feature.youtubeId}&modestbranding=1&rel=0&showinfo=0`}
-                title={typeof feature.title === 'string' ? feature.title : "Video"}
-                allow="autoplay; encrypted-media; picture-in-picture"
-              />
-              
+              {/* Video YouTube con proporción fija */}
+              <motion.div
+                initial={{ opacity: 0, x: index % 2 === 0 ? 30 : -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                whileHover={{ scale: 1.02 }}
+                className={`${
+                  index % 2 === 0 ? 'lg:order-2' : 'lg:order-1'
+                }`}
+              >
+                {/* Contenedor con aspect-ratio fijo para mantener proporción 16:9 */}
+                <div 
+                  className="relative w-full md:w-[60%] md:mx-auto lg:w-full lg:mx-0 aspect-video rounded-lg overflow-hidden shadow-xl cursor-pointer bg-gray-100"
+                  onClick={() => window.open(`https://www.youtube.com/watch?v=${feature.youtubeId}`, "_blank")}
+                >
+                  <iframe
+                    className="absolute inset-0 w-full h-full"
+                    src={`https://www.youtube.com/embed/${feature.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${feature.youtubeId}&modestbranding=1&rel=0&showinfo=0`}
+                    title={typeof feature.title === 'string' ? feature.title : "Video"}
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    loading="lazy"
+                  />
+                  
+                  {/* Overlay sutil para mejorar la interacción */}
+                  <div className="absolute inset-0 bg-black/0 hover:bg-black/5 transition-colors duration-300" />
+                </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   )
