@@ -5,6 +5,7 @@ import { Search, X, ChevronDown } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams, useRouter } from "next/navigation";
+import { trackSearch } from "@/lib/analytics";
 
 const QUICK_OPTIONS = [
   "Motocultor",
@@ -60,6 +61,12 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
       setSearchInput(""); // Limpiar el input cuando se selecciona una etiqueta
       setShowQuickOptions(false);
       
+      // Track quick search tag selection
+      trackSearch({
+        search_term: tag,
+        search_source: 'productos_page'
+      });
+      
       // Ejecutar búsqueda automáticamente
       if (onSearch) {
         onSearch(tag);
@@ -95,6 +102,12 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
   const handleSearch = () => {
     const searchQuery = selectedTag || searchInput.trim();
     if (searchQuery && onSearch) {
+      // Track search analytics
+      trackSearch({
+        search_term: searchQuery,
+        search_source: 'productos_page'
+      });
+      
       onSearch(searchQuery);
       updateURL(searchQuery);
     }

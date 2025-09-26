@@ -1,0 +1,90 @@
+#
+# CI: Build and push Docker image for the Next.js frontend to Docker Hub (tags: prod and commit SHA).
+# CD: Azure App Service pulls the image from Docker Hub via Deployment Center Continuous Deployment.
+#
+# ------------------
+#  REQUIRED SECRETS / VARIABLES
+# ------------------
+# - DOCKER_USERNAME: Docker Hub username
+# - DOCKER_PASSWORD: Docker Hub Access Token (not your password)
+# - NEXT_PUBLIC_API_URL_PROD: Public API base URL used at build-time for Next.js PROD environment
+#   (store as a GitHub Secret or Repository Variable; referenced during Docker build)
+# - GA_TRACKING_ID: Google Analytics tracking ID
+#
+# ------------------
+#  AZURE SETUP
+# ------------------
+# Deployment Center (Container):
+# - Container type: Single container
+# - Image source: Other container registries
+# - Image type: Private (if your repo is private) or Public
+# - Registry login server: index.docker.io
+# - Image and tag: [YOUR_DOCKER_USERNAME]/campomaq-app:prod
+# - Continuous deployment: Enabled
+# App settings:
+# - WEBSITES_PORT = 3000
+# - NEXT_PUBLIC_API_URL = [your prod API URL value] (this is the runtime variable name for Azure)
+#
+---
+name: Build and Push Frontend Docker Image to Docker Hub (PROD)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      NEXT_PUBLIC_API_URL_PROD: ${{ secrets.NEXT_PUBLIC_API_URL_PROD }}
+      NEXT_PUBLIC_GA_TRACKING_ID_PROD: ${{ secrets.NEXT_PUBLIC_GA_TRACKING_ID }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set up QEMU (multi-arch)
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64,amd64
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Validate NEXT_PUBLIC_API_URL_PROD
+        run: |
+          if [ -z "${NEXT_PUBLIC_API_URL_PROD}" ]; then
+            echo "::error::NEXT_PUBLIC_API_URL_PROD is not set. Define it as a GitHub Secret or Repository Variable.";
+            exit 1
+          fi
+
+      - name: Build and push Docker image
+        id: build-and-push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/frontend
+          file: ./apps/frontend/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ env.NEXT_PUBLIC_API_URL_PROD }}
+            NEXT_PUBLIC_GA_TRACKING_ID=${{ env.NEXT_PUBLIC_GA_TRACKING_ID }}
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/campomaq-app:latest
+            ${{ secrets.DOCKER_USERNAME }}/campomaq-app:${{ github.sha }}
+
+      - name: Post-build summary
+        run: |
+          echo "Pushed tags:"
+          echo "${{ secrets.DOCKER_USERNAME }}/campomaq-app:latest"
+          echo "${{ secrets.DOCKER_USERNAME }}/campomaq-app:${{ github.sha }}"

@@ -34,22 +34,6 @@ const nextConfig: import('next').NextConfig = {
         hostname: '*.googleapis.com',
         pathname: '/**',
       },
-      // Otros servicios comunes que podrías usar
-      {
-        protocol: 'https',
-        hostname: '*.vimeo.com',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.cloudinary.com',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.amazonaws.com',
-        pathname: '/**',
-      },
       // URLs locales para desarrollo
       {
         protocol: 'http',

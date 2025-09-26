@@ -5,11 +5,15 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Star,
   Truck,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import Image from "next/image";
+import {
+  trackProductView,
+  trackWhatsAppClick,
+  trackImageNavigation
+} from "@/lib/analytics";
 
 /* ---------------------------------- Types --------------------------------- */
 interface Product {
@@ -376,16 +380,25 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
     console.log('imageIndex changed to:', imageIndex, 'currentImageSrc:', imageList[imageIndex]);
   }, [imageIndex, imageList]);
 
-  // Reset when product changes
+  // Reset when product changes and track product view
   useEffect(() => {
-    if (product) {
+    if (product && isOpen) {
       console.log('RESETTING imageIndex to 0 due to product change:', product.id);
       setImageIndex(0);
       setImageLoading(true);
       setImageError(false);
       resetScroll();
+
+      // Track product view (virtual pageview + event)
+      trackProductView({
+        product_id: product.id,
+        product_name: product.name,
+        product_category: product.category,
+        product_brand: product.brand,
+        source: 'modal'
+      });
     }
-  }, [product, resetScroll]);
+  }, [product, isOpen, resetScroll]);
 
 
   // Image handlers
@@ -399,10 +412,21 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
     setImageError(true);
   };
 
-  // Navigation handlers
+  // Navigation handlers with analytics tracking
   const goToNext = () => {
     const nextIndex = (imageIndex + 1) % imageList.length;
     console.log('goToNext:', imageIndex, '->', nextIndex, 'imageList:', imageList);
+    
+    if (product) {
+      trackImageNavigation({
+        product_id: product.id,
+        product_name: product.name,
+        action: 'next',
+        image_index: nextIndex,
+        total_images: imageList.length
+      });
+    }
+    
     setImageIndex(nextIndex);
     setImageLoading(true);
     setImageError(false);
@@ -411,6 +435,17 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
   const goToPrev = () => {
     const prevIndex = (imageIndex - 1 + imageList.length) % imageList.length;
     console.log('goToPrev:', imageIndex, '->', prevIndex, 'imageList:', imageList);
+    
+    if (product) {
+      trackImageNavigation({
+        product_id: product.id,
+        product_name: product.name,
+        action: 'prev',
+        image_index: prevIndex,
+        total_images: imageList.length
+      });
+    }
+    
     setImageIndex(prevIndex);
     setImageLoading(true);
     setImageError(false);
@@ -419,6 +454,17 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
   const goToIndex = (index: number) => {
     console.log('goToIndex called:', imageIndex, '->', index, 'imageList:', imageList);
     console.log('About to call setImageIndex with:', index);
+    
+    if (product) {
+      trackImageNavigation({
+        product_id: product.id,
+        product_name: product.name,
+        action: 'thumbnail_click',
+        image_index: index,
+        total_images: imageList.length
+      });
+    }
+    
     setImageIndex(index);
     setImageLoading(true);
     setImageError(false);
@@ -435,6 +481,16 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
 
   const handleWhatsApp = () => {
     if (!product) return;
+    
+    // Track WhatsApp click with product context
+    trackWhatsAppClick({
+      product_id: product.id,
+      product_name: product.name,
+      product_category: product.category,
+      click_source: 'modal',
+      page_location: window.location.href
+    });
+    
     const message = `Hola, me interesa obtener más información sobre: ${product.name}`;
     const url = `https://wa.me/593980582555?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank");

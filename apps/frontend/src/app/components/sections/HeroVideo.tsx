@@ -3,6 +3,7 @@ import { Button } from '../ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { Download, Check } from 'lucide-react';
+import { trackFileDownload } from '@/lib/analytics';
 
 export default function HeroVideo() {
   const [isDownloading, setIsDownloading] = useState(false);
@@ -14,6 +15,13 @@ export default function HeroVideo() {
     setIsDownloading(true);
     
     try {
+      // Track catalog download analytics - key conversion event
+      trackFileDownload({
+        file_name: 'catalogo.pdf',
+        file_type: 'pdf',
+        download_source: 'homepage_hero'
+      });
+
       // 1. Mostrar efecto de descarga
       await new Promise(resolve => setTimeout(resolve, 1000));
       

@@ -39,6 +39,7 @@ jobs:
       contents: read
     env:
       NEXT_PUBLIC_API_URL_DEV: ${{ secrets.NEXT_PUBLIC_API_URL_DEV }}
+      NEXT_PUBLIC_GA_TRACKING_ID_DEV: ${{ secrets.NEXT_PUBLIC_GA_TRACKING_ID }}
 
     steps:
       - name: Checkout repo
@@ -74,6 +75,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           build-args: |
             NEXT_PUBLIC_API_URL=${{ env.NEXT_PUBLIC_API_URL_DEV }}
+            NEXT_PUBLIC_GA_TRACKING_ID=${{ env.NEXT_PUBLIC_GA_TRACKING_ID }}
           push: true
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/campomaq-app:latest
