@@ -28,11 +28,19 @@ class GoogleAnalytics {
   constructor() {
     this.config = {
       trackingId: process.env.NEXT_PUBLIC_GA_TRACKING_ID || '',
-      isDevelopment: false,
-    //   isDevelopment: process.env.NODE_ENV === 'development',
+      // isDevelopment: false,
+      isDevelopment: process.env.NODE_ENV === 'development',
       debugMode: process.env.NODE_ENV === 'development',
       enableConsent: true
     };
+
+    // Log environment info for debugging
+    console.log('[GA] Config loaded:', {
+      hasTrackingId: !!this.config.trackingId,
+      trackingId: this.config.trackingId,
+      isDevelopment: this.config.isDevelopment,
+      nodeEnv: process.env.NODE_ENV
+    });
   }
 
   // Initialize Google Analytics

@@ -41,7 +41,7 @@ jobs:
       contents: read
     env:
       NEXT_PUBLIC_API_URL_PROD: ${{ secrets.NEXT_PUBLIC_API_URL_PROD }}
-      NEXT_PUBLIC_GA_TRACKING_ID_PROD: ${{ secrets.NEXT_PUBLIC_GA_TRACKING_ID }}
+      NEXT_PUBLIC_GA_TRACKING_ID: ${{ secrets.NEXT_PUBLIC_GA_TRACKING_ID }}
 
     steps:
       - name: Checkout repo
@@ -65,6 +65,13 @@ jobs:
         run: |
           if [ -z "${NEXT_PUBLIC_API_URL_PROD}" ]; then
             echo "::error::NEXT_PUBLIC_API_URL_PROD is not set. Define it as a GitHub Secret or Repository Variable.";
+            exit 1
+          fi
+
+      - name: Validate NEXT_PUBLIC_GA_TRACKING_ID
+        run: |
+          if [ -z "${NEXT_PUBLIC_GA_TRACKING_ID}" ]; then
+            echo "::error::NEXT_PUBLIC_GA_TRACKING_ID is not set. Define it as a GitHub Secret or Repository Variable.";
             exit 1
           fi
 
