@@ -1,5 +1,5 @@
 #
-# CI: Build and push Docker image for the Next.js frontend to Docker Hub (tags: dev and commit SHA).
+# CI: Build and push Docker image for the Next.js frontend to Docker Hub (tags: prod and commit SHA).
 # CD: Azure App Service pulls the image from Docker Hub via Deployment Center Continuous Deployment.
 #
 # ------------------
@@ -7,8 +7,9 @@
 # ------------------
 # - DOCKER_USERNAME: Docker Hub username
 # - DOCKER_PASSWORD: Docker Hub Access Token (not your password)
-# - NEXT_PUBLIC_API_URL_DEV: Public API base URL used at build-time for Next.js DEV environment
+# - NEXT_PUBLIC_API_URL_PROD: Public API base URL used at build-time for Next.js PROD environment
 #   (store as a GitHub Secret or Repository Variable; referenced during Docker build)
+# - GA_TRACKING_ID: Google Analytics tracking ID
 #
 # ------------------
 #  AZURE SETUP
@@ -18,17 +19,18 @@
 # - Image source: Other container registries
 # - Image type: Private (if your repo is private) or Public
 # - Registry login server: index.docker.io
-# - Image and tag: [YOUR_DOCKER_USERNAME]/campomaq-ec:dev
+# - Image and tag: [YOUR_DOCKER_USERNAME]/campomaq-app:prod
 # - Continuous deployment: Enabled
 # App settings:
 # - WEBSITES_PORT = 3000
-# - NEXT_PUBLIC_API_URL = [your dev API URL value] (this is the runtime variable name for Azure)
+# - NEXT_PUBLIC_API_URL = [your prod API URL value] (this is the runtime variable name for Azure)
 #
-name: Build and Push Frontend Docker Image to Docker Hub (DEV)
+---
+name: Build and Push Frontend Docker Image to Docker Hub (PROD)
 
 on:
   push:
-    branches: [ dev ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -38,8 +40,8 @@ jobs:
       id-token: write
       contents: read
     env:
-      NEXT_PUBLIC_API_URL_DEV: ${{ secrets.NEXT_PUBLIC_API_URL_DEV }}
-      NEXT_PUBLIC_GA_TRACKING_ID_DEV: ${{ secrets.NEXT_PUBLIC_GA_TRACKING_ID }}
+      NEXT_PUBLIC_API_URL_PROD: ${{ secrets.NEXT_PUBLIC_API_URL_PROD }}
+      NEXT_PUBLIC_GA_TRACKING_ID_PROD: ${{ secrets.NEXT_PUBLIC_GA_TRACKING_ID }}
 
     steps:
       - name: Checkout repo
@@ -52,17 +54,17 @@ jobs:
         uses: docker/setup-qemu-action@v3
         with:
           platforms: arm64,amd64
-          
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Validate NEXT_PUBLIC_API_URL_DEV
+      - name: Validate NEXT_PUBLIC_API_URL_PROD
         run: |
-          if [ -z "${NEXT_PUBLIC_API_URL_DEV}" ]; then
-            echo "::error::NEXT_PUBLIC_API_URL_DEV is not set. Define it as a GitHub Secret or Repository Variable.";
+          if [ -z "${NEXT_PUBLIC_API_URL_PROD}" ]; then
+            echo "::error::NEXT_PUBLIC_API_URL_PROD is not set. Define it as a GitHub Secret or Repository Variable.";
             exit 1
           fi
 
@@ -74,7 +76,7 @@ jobs:
           file: ./apps/frontend/Dockerfile
           platforms: linux/amd64,linux/arm64
           build-args: |
-            NEXT_PUBLIC_API_URL=${{ env.NEXT_PUBLIC_API_URL_DEV }}
+            NEXT_PUBLIC_API_URL=${{ env.NEXT_PUBLIC_API_URL_PROD }}
             NEXT_PUBLIC_GA_TRACKING_ID=${{ env.NEXT_PUBLIC_GA_TRACKING_ID }}
           push: true
           tags: |

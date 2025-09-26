@@ -20,6 +20,11 @@ ARG NEXT_PUBLIC_API_URL
 # Set it as an environment variable for this build stage
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
+# Accept the NEXT_PUBLIC_GA_TRACKING_ID as a build argument
+ARG NEXT_PUBLIC_GA_TRACKING_ID
+# Set it as an environment variable for this build stage
+ENV NEXT_PUBLIC_GA_TRACKING_ID=${NEXT_PUBLIC_GA_TRACKING_ID}
+
 # Copy dependencies from the 'deps' stage
 COPY --from=deps /app/node_modules ./node_modules
 # Copy all source files from the build context
