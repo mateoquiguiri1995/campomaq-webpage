@@ -14,6 +14,7 @@ import { ProductService } from "./services/productService";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { availableBrands } from "./components/brands";
+import { trackFilter, trackSearch } from "@/lib/analytics";
 // Definir los tipos de modo de navegación
 type NavigationMode = "search" | "brand" | "category" | "tab";
 
@@ -46,7 +47,6 @@ function ProductosPageContent() {
   });
 
   // Estado para manejo de datos y carga
-  const [isLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Estado para productos de API - TODOS los productos
@@ -257,6 +257,16 @@ function ProductosPageContent() {
 
   const handleSearch = useCallback((query: string) => {
     if (query.trim()) {
+      // Get potential result count from current products
+      const resultCount = allProducts.length; // This could be improved with actual search results
+      
+      // Track search with result count
+      trackSearch({
+        search_term: query.trim(),
+        search_results_count: resultCount,
+        search_source: 'productos_page'
+      });
+
       updateFilters({
         searchQuery: query.trim(),
         showSearchResults: true,
@@ -272,7 +282,7 @@ function ProductosPageContent() {
     } else {
       handleResetToAll();
     }
-  }, [updateFilters, router, handleResetToAll]);
+  }, [updateFilters, router, handleResetToAll, allProducts.length]);
 
   const handleBackFromSearch = useCallback(() => {
     handleResetToAll();
@@ -281,6 +291,13 @@ function ProductosPageContent() {
 
   const handleTabChange = useCallback((tab: string) => {
     console.log("[handleTabChange] Cambiando a tab:", tab);
+    
+    // Track filter usage
+    trackFilter({
+      filter_type: 'tab',
+      filter_value: tab,
+      previous_filter: filters.activeTab
+    });
     
     updateFilters({
       activeTab: tab,
@@ -305,10 +322,17 @@ function ProductosPageContent() {
       loadAllProducts();
     }
     // Si ya tenemos productos y estamos en modo tab, no hacer nada más (filtrado instantáneo)
-  }, [updateFilters, router, allProducts.length, filters.navigationMode, loadAllProducts]);
+  }, [updateFilters, router, allProducts.length, filters.navigationMode, loadAllProducts, filters.activeTab]);
 
   const handleBrandClick = useCallback((brand: string | undefined) => {
     if (brand) {
+      // Track brand filter usage
+      trackFilter({
+        filter_type: 'brand',
+        filter_value: brand,
+        previous_filter: filters.selectedBrand || undefined
+      });
+
       updateFilters({
         selectedBrand: brand,
         selectedCategory: "",
@@ -335,7 +359,7 @@ function ProductosPageContent() {
       params.set('brand', brand);
       router.replace(`/productos?${params.toString()}`, { scroll: false });
     }
-  }, [updateFilters, router, allProducts, loadProductsByBrand]);
+  }, [updateFilters, router, allProducts, loadProductsByBrand, filters.selectedBrand]);
 
   // Función para breadcrumbs
   const getBreadcrumbItems = useCallback(() => {

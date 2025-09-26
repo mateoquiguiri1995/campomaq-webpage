@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Image from 'next/image'
 
 interface Image {
@@ -33,6 +33,8 @@ const imagePairs: [number, number][] = [
 export default function Ubicacion() {
   const [pairIndex, setPairIndex] = useState(0)
   const [topImageIndex, bottomImageIndex] = imagePairs[pairIndex]
+  const [isMapVisible, setIsMapVisible] = useState(false)
+  const mapRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -40,6 +42,26 @@ export default function Ubicacion() {
     }, 7000)
 
     return () => clearInterval(interval)
+  }, [])
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsMapVisible(true)
+            observer.disconnect()
+          }
+        })
+      },
+      { threshold: 0.1 }
+    )
+
+    if (mapRef.current) {
+      observer.observe(mapRef.current)
+    }
+
+    return () => observer.disconnect()
   }, [])
 
   return (
@@ -91,19 +113,28 @@ export default function Ubicacion() {
 
         {/* Mapa */}
         <motion.div
+          ref={mapRef}
           whileHover={{ scale: 1.02 }}
           className="relative rounded-xl overflow-hidden shadow-xl border border-gray-200 h-[500px]"
         >
-          
-          <iframe
-            src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d6836.718431266332!2d-78.147646!3d0.037993!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e2a08f8f22e24a5%3A0xd6b23f6070e0cef6!2sCampo%20Maq!5e1!3m2!1ses-419!2sar!4v1754957490265!5m2!1ses-419!2sar"
-            width="100%"
-            height="100%"
-            style={{ border: 0 }}
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-          />
+          {isMapVisible ? (
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d6836.718431266332!2d-78.147646!3d0.037993!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e2a08f8f22e24a5%3A0xd6b23f6070e0cef6!2sCampo%20Maq!5e1!3m2!1ses-419!2sar!4v1754957490265!5m2!1ses-419!2sar"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-campomaq mx-auto mb-2"></div>
+                <p className="text-gray-600 text-sm">Cargando mapa...</p>
+              </div>
+            </div>
+          )}
         </motion.div>
       </div>
     </section>

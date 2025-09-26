@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Eye } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { trackCategoryClick } from '@/lib/analytics'
 
 const products = [
   { name: 'MOTOCULTORES', image: '/images/prod-home/MOTOCULTOR-TKC-450-1.png' },
@@ -46,6 +47,15 @@ export default function Productos() {
     // Para otros productos, ir con búsqueda
     const searchQuery = encodeURIComponent(productName.toLowerCase())
     return `/productos?search=${searchQuery}`
+  }
+
+  // Handle category click with analytics tracking
+  const handleCategoryClick = (productName: string) => {
+    trackCategoryClick({
+      category_name: productName,
+      click_source: 'homepage',
+      search_query: productName !== 'Y MUCHO MÁS' ? productName.toLowerCase() : undefined
+    });
   }
 
   return (
@@ -122,6 +132,7 @@ export default function Productos() {
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
+                      onClick={() => handleCategoryClick(product.name)}
                       className="bg-black text-white px-3 py-1 text-sm font-semibold hover:bg-white hover:text-black cursor-pointer transition-colors rounded"
                     >
                       Ver más
@@ -137,6 +148,7 @@ export default function Productos() {
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
+                    onClick={() => handleCategoryClick(product.name)}
                     className="p-1 rounded-full bg-campomaq text-black hover:bg-black hover:text-campomaq hover:border-campomaq hover:border transition-colors cursor-pointer"
                   >
                     <Eye size={14} />

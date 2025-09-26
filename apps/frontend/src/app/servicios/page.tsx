@@ -7,17 +7,6 @@ import { Wrench, Truck, Headphones, Shield, Clock, Users, Check, Star } from "lu
 /****************************
  * 1) Utilidades de rendimiento
  ****************************/
-const usePrefersReducedMotion = () => {
-  const [reduced, setReduced] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
-    mq.addEventListener?.("change", handler);
-    return () => mq.removeEventListener?.("change", handler);
-  }, []);
-  return reduced;
-};
 
 /****************************
  * 2) Contador animado (ligero)
