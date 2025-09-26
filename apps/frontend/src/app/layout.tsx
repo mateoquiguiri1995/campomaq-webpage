@@ -9,8 +9,8 @@ import Chatbot from "@/app/components/Chatbot";
 import AnalyticsProvider from "@/app/components/providers/AnalyticsProvider";
 
 export const metadata: Metadata = {
-  title: "Campo Maq",
-  description: "Garantizamos Nuestro Servicio",
+  title: "Campomaq | Maquinaria Agrícola y Florícola en Ecuador",
+  description: "Campo Maq ofrece motocultores, bombas de fumigación, motoguadañas, motosierras, y más equipos agrícolas de calidad. Soluciones confiables con servicio técnico especializado en Cayambe, Ecuador.",
 };
 
 export default function RootLayout({

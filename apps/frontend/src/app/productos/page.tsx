@@ -52,6 +52,28 @@ function ProductosPageContent() {
   // Estado para productos de API - TODOS los productos
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [apiLoading, setApiLoading] = useState(false);
+  // UI loading state para mantener el spinner hasta que la UI termine de pintar
+  const [uiLoading, setUiLoading] = useState(false);
+
+  // Mantener un pequeño periodo de gracia tras el fin de la carga de la API
+  // para asegurar que los productos e imágenes estén listos antes de ocultar el spinner
+  useEffect(() => {
+    if (apiLoading) {
+      setUiLoading(true);
+      return;
+    }
+    let rafId: number | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    rafId = requestAnimationFrame(() => {
+      timeoutId = setTimeout(() => setUiLoading(false), 250);
+    });
+
+    return () => {
+      if (rafId != null) cancelAnimationFrame(rafId);
+      if (timeoutId != null) clearTimeout(timeoutId);
+    };
+  }, [apiLoading]);
 
   // Estado para el modal
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -411,6 +433,8 @@ function ProductosPageContent() {
     return items;
   }, [filters.navigationMode, filters.searchQuery, filters.selectedBrand, filters.selectedCategory, filters.activeTab]);
 
+  const showLoading = apiLoading || uiLoading;
+
   return (
     <div className="flex flex-col md:flex-row min-h-screen pt-24">
       {/* Sidebar en desktop */}
@@ -444,7 +468,7 @@ function ProductosPageContent() {
           />
 
           {/* Indicador de carga - Solo para búsquedas y categorías */}
-          {(isLoading || (apiLoading && (filters.navigationMode === "search" || filters.navigationMode === "category"))) && (
+          {showLoading && (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-campomaq"></div>
               <span className="ml-2 text-gray-600">Cargando productos...</span>
@@ -467,7 +491,7 @@ function ProductosPageContent() {
             </div>
           )}
 
-          {!isLoading && !(apiLoading && (filters.navigationMode === "search" || filters.navigationMode === "category")) && !error && (
+          {!showLoading && !error && (
             <>
               {filters.showSearchResults ? (
                 <SearchResults 

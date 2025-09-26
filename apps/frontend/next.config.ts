@@ -7,6 +7,7 @@ const nextConfig: import('next').NextConfig = {
   trailingSlash: true,
   images: {
     remotePatterns: [
+      // Tu configuración existente
       {
         protocol: 'https',
         hostname: 'campomaq.blob.core.windows.net',
@@ -51,6 +52,7 @@ const nextConfig: import('next').NextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   webpack(config) {
+    // Tu configuración existente de webpack para videos
     config.module.rules.push({
       test: /\.(mp4|webm)$/,
       use: {
@@ -61,9 +63,23 @@ const nextConfig: import('next').NextConfig = {
           name: '[name].[hash].[ext]',
         },
       },
-    })
-    return config
+    });
+    
+    // Opcional: Configuración adicional para manejar más tipos de archivo de video
+    config.module.rules.push({
+      test: /\.(mov|avi|mkv|m4v|ogg)$/,
+      use: {
+        loader: 'file-loader',
+        options: {
+          publicPath: '/_next/static/videos/',
+          outputPath: 'static/videos/',
+          name: '[name].[hash].[ext]',
+        },
+      },
+    });
+    
+    return config;
   },
-}
- 
-module.exports = nextConfig
+};
+
+module.exports = nextConfig;
