@@ -276,10 +276,10 @@ const CoverageSection = () => (
       >
         <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
           Cobertura
-          <span className="block text-yellow-400">Nacional</span>
+          <span className="block text-yellow-400">Sierra Centro Norte</span>
         </h2>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Servicios técnicos disponibles en las principales zonas agrícolas del Ecuador
+          Servicio técnico disponibles en toda la zona florícola del Ecuador.
         </p>
       </motion.div>
 
