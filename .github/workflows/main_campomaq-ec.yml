@@ -11,21 +11,7 @@
 #   (store as a GitHub Secret or Repository Variable; referenced during Docker build)
 # - GA_TRACKING_ID: Google Analytics tracking ID
 #
-# ------------------
-#  AZURE SETUP
-# ------------------
-# Deployment Center (Container):
-# - Container type: Single container
-# - Image source: Other container registries
-# - Image type: Private (if your repo is private) or Public
-# - Registry login server: index.docker.io
-# - Image and tag: [YOUR_DOCKER_USERNAME]/campomaq-app:prod
-# - Continuous deployment: Enabled
-# App settings:
-# - WEBSITES_PORT = 3000
-# - NEXT_PUBLIC_API_URL = [your prod API URL value] (this is the runtime variable name for Azure)
-#
----
+
 name: Build and Push Frontend Docker Image to Docker Hub (PROD)
 
 on:
@@ -74,6 +60,29 @@ jobs:
             echo "::error::NEXT_PUBLIC_GA_TRACKING_ID is not set. Define it as a GitHub Secret or Repository Variable.";
             exit 1
           fi
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/frontend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd apps/frontend
+          npm ci
+
+      - name: Lint (optional but recommended)
+        run: |
+          cd apps/frontend
+          npm run lint --if-present
+
+      - name: Build (smoke test)
+        run: |
+          cd apps/frontend
+          NEXT_PUBLIC_API_URL=${{ env.NEXT_PUBLIC_API_URL_PROD }} \
+          NEXT_PUBLIC_GA_TRACKING_ID=${{ env.NEXT_PUBLIC_GA_TRACKING_ID }} \
+          npm run build
 
       - name: Build and push Docker image
         id: build-and-push
@@ -87,11 +96,11 @@ jobs:
             NEXT_PUBLIC_GA_TRACKING_ID=${{ env.NEXT_PUBLIC_GA_TRACKING_ID }}
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/campomaq-app:latest
-            ${{ secrets.DOCKER_USERNAME }}/campomaq-app:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/campomaq-app:prod
+            ${{ secrets.DOCKER_USERNAME }}/campomaq-app:prod-${{ github.sha }}
 
       - name: Post-build summary
         run: |
           echo "Pushed tags:"
-          echo "${{ secrets.DOCKER_USERNAME }}/campomaq-app:latest"
-          echo "${{ secrets.DOCKER_USERNAME }}/campomaq-app:${{ github.sha }}"
+          echo "${{ secrets.DOCKER_USERNAME }}/campomaq-app:prod"
+          echo "${{ secrets.DOCKER_USERNAME }}/campomaq-app:prod-${{ github.sha }}"
