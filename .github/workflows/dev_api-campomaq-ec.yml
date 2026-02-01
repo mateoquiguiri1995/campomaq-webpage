@@ -5,9 +5,9 @@
 name: Build and deploy Python app to Azure Web App - api-campomaq-ec
 
 on:
-  push:
-    branches:
-      - dev
+  # push:
+  #   branches:
+  #     - dev
   workflow_dispatch:
 
 jobs:

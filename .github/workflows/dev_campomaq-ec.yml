@@ -9,21 +9,7 @@
 # - DOCKER_PASSWORD: Docker Hub Access Token (not your password)
 # - NEXT_PUBLIC_API_URL_DEV: Public API base URL used at build-time for Next.js DEV environment
 #   (store as a GitHub Secret or Repository Variable; referenced during Docker build)
-#
-# ------------------
-#  AZURE SETUP
-# ------------------
-# Deployment Center (Container):
-# - Container type: Single container
-# - Image source: Other container registries
-# - Image type: Private (if your repo is private) or Public
-# - Registry login server: index.docker.io
-# - Image and tag: [YOUR_DOCKER_USERNAME]/campomaq-ec:dev
-# - Continuous deployment: Enabled
-# App settings:
-# - WEBSITES_PORT = 3000
-# - NEXT_PUBLIC_API_URL = [your dev API URL value] (this is the runtime variable name for Azure)
-#
+
 name: Build and Push Frontend Docker Image to Docker Hub (DEV)
 
 on:
@@ -85,11 +71,11 @@ jobs:
             NEXT_PUBLIC_GA_TRACKING_ID=${{ env.NEXT_PUBLIC_GA_TRACKING_ID }}
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/campomaq-app:latest
-            ${{ secrets.DOCKER_USERNAME }}/campomaq-app:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/campomaq-app:dev
+            ${{ secrets.DOCKER_USERNAME }}/campomaq-app:dev-${{ github.sha }}
 
       - name: Post-build summary
         run: |
           echo "Pushed tags:"
-          echo "${{ secrets.DOCKER_USERNAME }}/campomaq-app:latest"
-          echo "${{ secrets.DOCKER_USERNAME }}/campomaq-app:${{ github.sha }}"
+          echo "${{ secrets.DOCKER_USERNAME }}/campomaq-app:dev"
+          echo "${{ secrets.DOCKER_USERNAME }}/campomaq-app:dev-${{ github.sha }}"
