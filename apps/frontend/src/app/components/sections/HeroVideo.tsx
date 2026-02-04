@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { Download, Check } from 'lucide-react';
 import { trackFileDownload } from '@/lib/analytics';
+import Image from 'next/image';
 
 export default function HeroVideo() {
   const [isDownloading, setIsDownloading] = useState(false);
@@ -62,19 +63,18 @@ export default function HeroVideo() {
 
   return (
     <section className="relative w-full h-[100vh] md:h-screen overflow-hidden bg-black z-0">
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="absolute inset-0 object-cover w-full h-full z-[1]"
-        poster="/images/campomaq/homepage-background.jpg"
-      >
-        <source src="/videos/videoCM.mp4" type="video/mp4" />
-      </video>
+      {/* Imagen de fondo */}
+      <Image
+        src="/images/campomaq/homepage-background.jpg"
+        alt="Campo Maq Hero Background"
+        fill
+        priority
+        className="object-cover"
+        quality={90}
+      />
 
-      {/* Oscurecer video para mejor contraste */}
-      <div className="absolute inset-0 bg-black bg-opacity-50" />
+      {/* Oscurecer imagen para mejor contraste */}
+      <div className="absolute inset-0 bg-black/70 bg-opacity-50 z-[2]" />
 
       <div className="relative z-10 pt-20 pl-8 pr-9 md:pl-40 md:pt-60 max-w-4xl">
         {/* h1 fluido */}

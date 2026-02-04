@@ -506,18 +506,20 @@ export default function ServiciosPage() {
     <main className="min-h-screen pt-20 overflow-hidden">
       {/* HERO MINIMALISTA CON VIDEO DE FONDO */}
       <section className="relative h-screen flex items-center justify-center bg-black">
-        <div className="absolute inset-0 w-full h-full">
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="w-full h-full object-cover opacity-40"
-          >
-            <source src="/videos/servicios.mp4" type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/50" />
-        </div>
+       {/* Imagen de fondo */}
+             <Image
+               src="/images/campomaq/agricultura.jpg"
+               alt="Campo Maq Hero Background"
+               fill
+               loading="lazy"
+               className="object-cover"
+               quality={90}
+             />
+       
+             {/* Oscurecer imagen para mejor contraste */}
+             <div className="absolute inset-0 bg-black/70 bg-opacity-50 z-[2]" />
+       
+           
         
         <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-6">
           <motion.h1
