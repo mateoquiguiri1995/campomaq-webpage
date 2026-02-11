@@ -160,22 +160,6 @@ const ProductBadges = ({ product, className = "" }: { product: Product; classNam
     )}
   </div>
 );
-/*
-const ProductRating = ({ size = "default" }: { size?: "default" | "small" }) => {
-  const starSize = size === "small" ? "size-4" : "size-4";
-  const textSize = size === "small" ? "text-xs" : "text-sm";
-  
-  return (
-    <div className="flex items-center gap-1">
-      {[...Array(5)].map((_, i) => (
-        <Star key={i} className={`${starSize} fill-yellow-400 text-yellow-400`} />
-      ))}
-      <span className={`ml-2 ${textSize} text-gray-600`}>
-        4.8 ({size === "small" ? "128" : "128 reseñas"})
-      </span>
-    </div>
-  );
-}; */
 
 const ProductFeatures = ({ size = "default" }: { size?: "default" | "small" }) => {
   const badgeSize = size === "small" ? "px-2 py-0.5 text-[11px]" : "px-3 py-1 text-sm";
@@ -247,11 +231,26 @@ const getYouTubeEmbedUrl = (url: string): string => {
   return url;
 };
 
-// Función utilitaria para detectar si una URL es un video
-const isVideoUrl = (url: string): boolean => {
-  const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv'];
-  const urlLower = url.toLowerCase();
-  return videoExtensions.some(ext => urlLower.includes(ext));
+// Función para obtener thumbnail de YouTube
+const getYouTubeThumbnail = (url: string): string => {
+  try {
+    let videoId = '';
+    
+    if (url.includes('youtube.com/watch')) {
+      const urlParams = new URLSearchParams(url.split('?')[1]);
+      videoId = urlParams.get('v') || '';
+    } else if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1]?.split('?')[0] || '';
+    }
+    
+    if (videoId) {
+      return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+    }
+  } catch (error) {
+    console.error('Error getting YouTube thumbnail:', error);
+  }
+  
+  return '';
 };
 
 // Componente mejorado para renderizar diferentes tipos de media
@@ -327,7 +326,7 @@ const MediaRenderer = ({
           className={className}
           fill
           sizes="100vw"
-          onLoadingComplete={handleLoad}
+          onLoad={handleLoad}
           onError={handleError}
           unoptimized
           style={{ objectFit: 'contain' }}
@@ -347,8 +346,6 @@ const MediaRenderer = ({
   }
 };
 
-/* Removed unused MediaThumbnail component to satisfy eslint: no-unused-vars */
-
 const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose }) => {
   const isMobile = useResponsive();
   const { isClosing, handleClose, setIsClosing } = useModalEffects(isOpen, onClose);
@@ -361,12 +358,12 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
     }
   }, [isOpen, product, setIsClosing]);
 
-  // Simple state management - no complex hooks
+  // Simple state management
   const [imageIndex, setImageIndex] = useState(0);
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
 
-  // Get images array - prioritize additionalImages, fallback to main image
+  // Get images array
   const imageList = useMemo(() => {
     if (!product) return [];
     if (product.additionalImages && product.additionalImages.length > 0) {
@@ -375,21 +372,14 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
     return product.image ? [product.image] : [];
   }, [product]);
 
-  // Debug state changes
-  useEffect(() => {
-    console.log('imageIndex changed to:', imageIndex, 'currentImageSrc:', imageList[imageIndex]);
-  }, [imageIndex, imageList]);
-
   // Reset when product changes and track product view
   useEffect(() => {
     if (product && isOpen) {
-      console.log('RESETTING imageIndex to 0 due to product change:', product.id);
       setImageIndex(0);
       setImageLoading(true);
       setImageError(false);
       resetScroll();
 
-      // Track product view (virtual pageview + event)
       trackProductView({
         product_id: product.id,
         product_name: product.name,
@@ -399,7 +389,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
       });
     }
   }, [product, isOpen, resetScroll]);
-
 
   // Image handlers
   const handleImageLoad = () => {
@@ -412,10 +401,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
     setImageError(true);
   };
 
-  // Navigation handlers with analytics tracking
+  // Navigation handlers with analytics
   const goToNext = () => {
     const nextIndex = (imageIndex + 1) % imageList.length;
-    console.log('goToNext:', imageIndex, '->', nextIndex, 'imageList:', imageList);
     
     if (product) {
       trackImageNavigation({
@@ -434,7 +422,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
 
   const goToPrev = () => {
     const prevIndex = (imageIndex - 1 + imageList.length) % imageList.length;
-    console.log('goToPrev:', imageIndex, '->', prevIndex, 'imageList:', imageList);
     
     if (product) {
       trackImageNavigation({
@@ -452,9 +439,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
   };
 
   const goToIndex = (index: number) => {
-    console.log('goToIndex called:', imageIndex, '->', index, 'imageList:', imageList);
-    console.log('About to call setImageIndex with:', index);
-    
     if (product) {
       trackImageNavigation({
         product_id: product.id,
@@ -468,7 +452,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
     setImageIndex(index);
     setImageLoading(true);
     setImageError(false);
-    console.log('setImageIndex called with:', index);
   };
 
   const htmlDesc = useMemo(() => 
@@ -482,7 +465,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
   const handleWhatsApp = () => {
     if (!product) return;
     
-    // Track WhatsApp click with product context
     trackWhatsAppClick({
       product_id: product.id,
       product_name: product.name,
@@ -521,13 +503,15 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
           <header className="flex items-center gap-3 border-b border-gray-100 px-4 sm:px-6 py-3 bg-white/90 backdrop-blur">
             {product.brandLogo && (
               <span className="inline-flex size-11 items-center justify-center rounded-xl bg-white p-1">
-                <Image
-                  src={product.brandLogo}
-                  alt={product.brand || "brand"}
-                  className="h-full w-full object-contain"
-                  width={44}
-                  height={44}
-                />
+                <div className="relative w-full h-full">
+                  <Image
+                    src={product.brandLogo}
+                    alt={product.brand || "brand"}
+                    className="object-contain"
+                    fill
+                    sizes="44px"
+                  />
+                </div>
               </span>
             )}
             <div className="min-w-0 flex-1">
@@ -585,7 +569,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                         priority={imageIndex === 0}
                         onLoad={handleImageLoad}
                         onError={handleImageError}
-                        autoplay={true} // Videos tendrán autoplay
+                        autoplay={true}
                       />
                     </div>
                   )}
@@ -603,12 +587,16 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                   )}
                 </div>
 
-                {/* Thumbnails con indicador de video */}
+                {/* Thumbnails - FIXED: Usar thumbnail de YouTube en lugar de intentar cargar el video con Next Image */}
                 {imageList.length > 1 && (
                   <div className="h-28 bg-white/60 backdrop-blur px-4">
                     <div className="flex gap-3 py-3 overflow-x-auto">
                       {imageList.map((media, i) => {
-                        const isVideo = isVideoUrl(media);
+                        const mediaType = getMediaType(media);
+                        const isVideo = mediaType === 'video';
+                        const isYouTube = mediaType === 'youtube';
+                        const youtubeThumbnail = isYouTube ? getYouTubeThumbnail(media) : '';
+                        
                         return (
                           <button
                             key={`thumb-${i}`}
@@ -634,6 +622,25 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                                   </div>
                                 </div>
                               </>
+                            ) : isYouTube && youtubeThumbnail ? (
+                              <>
+                                {/* Usar thumbnail de YouTube */}
+                                <Image
+                                  src={youtubeThumbnail}
+                                  alt={`YouTube video ${i + 1}`}
+                                  className="h-full w-full object-cover"
+                                  width={80}
+                                  height={80}
+                                  loading="lazy"
+                                  unoptimized
+                                />
+                                {/* Indicador de YouTube */}
+                                <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                  <svg className="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                  </svg>
+                                </div>
+                              </>
                             ) : (
                               <Image
                                 src={media}
@@ -642,6 +649,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                                 width={80}
                                 height={80}
                                 loading="lazy"
+                                unoptimized
                               />
                             )}
                           </button>
@@ -656,7 +664,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
               <section className="relative flex flex-col min-h-0">
                 <div className="px-6 py-5">
                   <div className="flex items-center justify-between gap-4 flex-wrap">
-                   {/** <ProductRating />*/} 
                     <ProductFeatures />
                   </div>
                 </div>
@@ -715,7 +722,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                         priority={imageIndex === 0}
                         onLoad={handleImageLoad}
                         onError={handleImageError}
-                        autoplay={true} // Videos tendrán autoplay
+                        autoplay={true}
                       />
                     </div>
                   )}
@@ -752,7 +759,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                 }}
               >
                 <div className="mb-4 flex items-center justify-between">
-                  {/** <ProductRating size="small" />*/} 
                   <ProductFeatures size="small" />
                 </div>
 

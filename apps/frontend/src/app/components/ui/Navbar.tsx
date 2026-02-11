@@ -326,7 +326,7 @@ export default function Navbar() {
                 fill
                 sizes='(max-width: 1024px) 150px, 180px'
                 style={{ objectFit: 'contain' }}
-                priority
+                priority={true}
               />
             </div>
           </Link>
@@ -540,7 +540,6 @@ export default function Navbar() {
                 fill
                 sizes='(max-width: 640px) 120px, (max-width: 824px) 120px, 140px'
                 style={{ objectFit: 'contain' }}
-                priority
               />
             </Link>
 
@@ -607,7 +606,6 @@ export default function Navbar() {
                 fill
                 sizes='(max-width: 640px) 120px, (max-width: 824px) 140px, 120px'
                 style={{ objectFit: 'contain' }}
-                priority
               />
             </Link>
 
