@@ -24,22 +24,8 @@ const productCategories = [
 
 export default function Footer() {
   return (
-    <footer className="relative text-white bg-gray-900 min-h-fit">
-      {/* Imagen de fondo con Next.js Image optimizado */}
-      <div className="absolute inset-0 z-0">
-        <Image
-          src="/images/bg/cayambe.jpg"
-          alt="Volcán Cayambe"
-          fill
-          sizes="100vw"
-          priority={false}
-          quality={75}
-          className="object-cover object-top"
-        />
-        {/* Overlay oscuro para mejor legibilidad */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/70 to-black/80" />
-      </div>
-
+    <footer className="relative text-white bg-black min-h-fit">
+      
       <div className="relative z-10">
         {/* Sección principal */}
         <div className="max-w-7xl mx-auto px-6 py-16">

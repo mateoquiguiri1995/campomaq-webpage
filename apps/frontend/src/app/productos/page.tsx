@@ -15,8 +15,13 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { availableBrands } from "./components/brands";
 import { trackFilter, trackSearch } from "@/lib/analytics";
+import Pagination from "./components/Pagination";
+
 // Definir los tipos de modo de navegación
 type NavigationMode = "search" | "brand" | "category" | "tab";
+
+// Constantes de paginación
+const ITEMS_PER_PAGE = 20;
 
 interface ExtendedFilterState extends FilterState {
   navigationMode: NavigationMode;
@@ -46,17 +51,19 @@ function ProductosPageContent() {
     navigationMode: "tab"
   });
 
-  // Estado para manejo de datos y carga
-  const [error, setError] = useState<string | null>(null);
-
   // Estado para productos de API - TODOS los productos
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [apiLoading, setApiLoading] = useState(false);
-  // UI loading state para mantener el spinner hasta que la UI termine de pintar
   const [uiLoading, setUiLoading] = useState(false);
 
+  // Estado para el modal
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Estado para paginación
+  const [currentPage, setCurrentPage] = useState(1);
+
   // Mantener un pequeño periodo de gracia tras el fin de la carga de la API
-  // para asegurar que los productos e imágenes estén listos antes de ocultar el spinner
   useEffect(() => {
     if (apiLoading) {
       setUiLoading(true);
@@ -75,61 +82,43 @@ function ProductosPageContent() {
     };
   }, [apiLoading]);
 
-  // Estado para el modal
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Obtener marcas desde la configuración estática
-
   // Función para cargar TODOS los productos una sola vez
   const loadAllProducts = useCallback(async () => {
     setApiLoading(true);
-    setError(null);
     try {
-      console.log("[loadAllProducts] Cargando todos los productos...");
       const results = await ProductService.getAllProducts();
-      console.log("[loadAllProducts] Productos cargados:", results.length);
       setAllProducts(results);
     } catch (error) {
-      console.error('Error loading all products:', error);
+      console.error('Error loading products:', error);
       setAllProducts([]);
-      setError('Error al cargar productos');
     } finally {
       setApiLoading(false);
     }
   }, []);
 
-  // Función para cargar productos por marca usando la API
+  // Función para cargar productos por marca
   const loadProductsByBrand = useCallback(async (brand: string) => {
     setApiLoading(true);
-    setError(null);
     try {
-      console.log("[loadProductsByBrand] Buscando productos de marca:", brand);
       const results = await ProductService.searchProducts(brand);
-      console.log("[loadProductsByBrand] Productos encontrados:", results.length);
       setAllProducts(results);
     } catch (error) {
       console.error('Error loading products by brand:', error);
       setAllProducts([]);
-      setError('Error al cargar productos por marca');
     } finally {
       setApiLoading(false);
     }
   }, []);
 
-  // Función para cargar productos por categoría usando la API
+  // Función para cargar productos por categoría
   const loadProductsByCategory = useCallback(async (category: string) => {
     setApiLoading(true);
-    setError(null);
     try {
-      console.log("[loadProductsByCategory] Buscando productos de categoría:", category);
       const results = await ProductService.searchProducts(category);
-      console.log("[loadProductsByCategory] Productos encontrados:", results.length);
       setAllProducts(results);
     } catch (error) {
       console.error('Error loading products by category:', error);
       setAllProducts([]);
-      setError('Error al cargar productos por categoría');
     } finally {
       setApiLoading(false);
     }
@@ -178,7 +167,6 @@ function ProductosPageContent() {
       
       loadProductsByCategory(categoryFromURL);
     } else {
-      // Cargar todos los productos para los filtros por tabs
       const initialTab = tabFromURL || "all";
       setFilters(prev => ({
         ...prev,
@@ -189,54 +177,31 @@ function ProductosPageContent() {
     }
   }, [brandFromURL, searchFromURL, categoryFromURL, tabFromURL, loadAllProducts, loadProductsByBrand, loadProductsByCategory]);
 
-  // Productos filtrados - APLICAR FILTROS LOCALMENTE
+  // Productos filtrados - APLICAR FILTROS LOCALMENTE (sin paginación)
   const filteredProducts = useMemo(() => {
-    console.log("[filteredProducts] Modo de navegación:", filters.navigationMode);
-    console.log("[filteredProducts] Productos disponibles:", allProducts.length);
-    console.log("[filteredProducts] Tab activo:", filters.activeTab);
-
-    // Si estamos en modo de navegación por marca, categoría o búsqueda, usar todos los productos cargados
     if (filters.navigationMode === "brand" || filters.navigationMode === "category") {
       return allProducts;
     }
 
-    // Para el modo tab, aplicar filtros locales
     if (filters.navigationMode === "tab") {
       let filtered = [...allProducts];
 
       switch (filters.activeTab) {
         case "ofertas":
-          console.log("[filteredProducts] Filtrando ofertas...");
-          filtered = allProducts.filter(product => {
-            const hasDiscount = product.discount && product.discount > 0;
-            console.log(`Producto: ${product.name}, Descuento: ${product.discount}, Tiene descuento: ${hasDiscount}`);
-            return hasDiscount;
-          });
-          console.log("[filteredProducts] Ofertas encontradas:", filtered.length);
+          filtered = allProducts.filter(product => product.discount && product.discount > 0);
           break;
           
         case "tendencia":
-          console.log("[filteredProducts] Filtrando tendencias...");
-          // Para tendencias, podemos usar productos con ciertas características
-          // o simplemente mostrar los primeros productos como ejemplo
-          filtered = allProducts.slice(0, Math.min(20, allProducts.length));
-          console.log("[filteredProducts] Productos en tendencia:", filtered.length);
+          filtered = allProducts.slice(0, Math.min(100, allProducts.length));
           break;
           
         case "nuevos":
-          console.log("[filteredProducts] Filtrando nuevos...");
-          filtered = allProducts.filter(product => {
-            const isNew = product.isNew === true;
-            console.log(`Producto: ${product.name}, Es nuevo: ${isNew}`);
-            return isNew;
-          });
-          console.log("[filteredProducts] Productos nuevos encontrados:", filtered.length);
+          filtered = allProducts.filter(product => product.isNew === true);
           break;
           
         case "all":
         default:
-          console.log("[filteredProducts] Mostrando todos los productos (limitado a 30)");
-          filtered = allProducts.slice(0, 30); // Limitar a 30 productos
+          filtered = allProducts; // Mostrar todos los productos
           break;
       }
 
@@ -245,6 +210,18 @@ function ProductosPageContent() {
 
     return allProducts;
   }, [allProducts, filters.navigationMode, filters.activeTab]);
+
+  // Productos paginados - APLICAR PAGINACIÓN
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredProducts.slice(startIndex, endIndex);
+  }, [filteredProducts, currentPage]);
+
+  // Calcular total de páginas
+  const totalPages = useMemo(() => {
+    return Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  }, [filteredProducts.length]);
 
   // Funciones para el modal
   const handleProductClick = (product: Product) => {
@@ -261,6 +238,18 @@ function ProductosPageContent() {
   const updateFilters = useCallback((updates: Partial<ExtendedFilterState>) => {
     setFilters(prev => ({ ...prev, ...updates }));
   }, []);
+
+  // Función para cambiar de página
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+    // Scroll suave hacia arriba
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  // Reset página cuando cambian los filtros
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters.activeTab, filters.selectedBrand, filters.selectedCategory, filters.searchQuery]);
 
   // Manejadores de eventos
   const handleResetToAll = useCallback(() => {
@@ -279,10 +268,8 @@ function ProductosPageContent() {
 
   const handleSearch = useCallback((query: string) => {
     if (query.trim()) {
-      // Get potential result count from current products
-      const resultCount = allProducts.length; // This could be improved with actual search results
+      const resultCount = allProducts.length;
       
-      // Track search with result count
       trackSearch({
         search_term: query.trim(),
         search_results_count: resultCount,
@@ -310,11 +297,7 @@ function ProductosPageContent() {
     handleResetToAll();
   }, [handleResetToAll]);
 
-
   const handleTabChange = useCallback((tab: string) => {
-    console.log("[handleTabChange] Cambiando a tab:", tab);
-    
-    // Track filter usage
     trackFilter({
       filter_type: 'tab',
       filter_value: tab,
@@ -330,7 +313,6 @@ function ProductosPageContent() {
       navigationMode: "tab"
     });
     
-    // Actualizar URL
     if (tab !== "all") {
       const params = new URLSearchParams();
       params.set('tab', tab);
@@ -339,16 +321,13 @@ function ProductosPageContent() {
       router.replace('/productos', { scroll: false });
     }
     
-    // Solo cargar productos si no los tenemos o estamos cambiando de modo de navegación
     if (allProducts.length === 0 || filters.navigationMode !== "tab") {
       loadAllProducts();
     }
-    // Si ya tenemos productos y estamos en modo tab, no hacer nada más (filtrado instantáneo)
   }, [updateFilters, router, allProducts.length, filters.navigationMode, loadAllProducts, filters.activeTab]);
 
   const handleBrandClick = useCallback((brand: string | undefined) => {
     if (brand) {
-      // Track brand filter usage
       trackFilter({
         filter_type: 'brand',
         filter_value: brand,
@@ -364,16 +343,13 @@ function ProductosPageContent() {
         navigationMode: "brand"
       });
       
-      // Filtrar productos por marca localmente sin loading
       const brandProducts = allProducts.filter(product =>
         product.brand && product.brand.toLowerCase().includes(brand.toLowerCase())
       );
       
-      // Si encontramos productos localmente, usarlos
       if (brandProducts.length > 0) {
         setAllProducts(brandProducts);
       } else {
-        // Solo si no encontramos productos localmente, hacer búsqueda en API
         loadProductsByBrand(brand);
       }
       
@@ -467,7 +443,7 @@ function ProductosPageContent() {
             onProductsClick={handleResetToAll}
           />
 
-          {/* Indicador de carga - Solo para búsquedas y categorías */}
+          {/* Indicador de carga */}
           {showLoading && (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-campomaq"></div>
@@ -475,23 +451,7 @@ function ProductosPageContent() {
             </div>
           )}
 
-          {/* Manejo de errores */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-              <p className="text-red-800">Error: {error}</p>
-              <button
-                onClick={() => {
-                  setError(null);
-                  handleResetToAll();
-                }}
-                className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
-              >
-                Reintentar
-              </button>
-            </div>
-          )}
-
-          {!showLoading && !error && (
+          {!showLoading && (
             <>
               {filters.showSearchResults ? (
                 <SearchResults 
@@ -540,7 +500,7 @@ function ProductosPageContent() {
                           Nuevos
                         </button>
 
-                        {/* Filtro de marcas mejorado */}
+                        {/* Filtro de marcas mejorado - FIX AQUÍ */}
                         <div className="relative">
                           <button
                             onClick={() => updateFilters({ showBrandFilters: !filters.showBrandFilters })}
@@ -563,13 +523,15 @@ function ProductosPageContent() {
                                     className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors duration-200"
                                   >
                                     {brand.logo && (
-                                      <Image
-                                        src={brand.logo}
-                                        alt={brand.name}
-                                        width={24}
-                                        height={24}
-                                        className="object-contain"
-                                      />
+                                      <div className="relative w-[30px] h-[30px] flex-shrink-0">
+                                        <Image
+                                          src={brand.logo}
+                                          alt={brand.name}
+                                          fill
+                                          className="object-contain"
+                                          sizes="30px"
+                                        />
+                                      </div>
                                     )}
                                     <span>{brand.name}</span>
                                   </button>
@@ -597,7 +559,7 @@ function ProductosPageContent() {
                   {/* Resultados */}
                   <div className="mb-4">
                     <p className="text-gray-600">
-                      Mostrando {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''}
+                      Mostrando {paginatedProducts.length > 0 ? ((currentPage - 1) * ITEMS_PER_PAGE) + 1 : 0} - {Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} de {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''}
                       {filters.navigationMode === "tab" && filters.activeTab !== "all" && (
                         <span className="text-gray-600 font-medium"> - {
                           filters.activeTab === "ofertas" ? "Ofertas" :
@@ -609,26 +571,36 @@ function ProductosPageContent() {
                   </div>
 
                   {/* Grid de productos */}
-                  {filteredProducts.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6">
-                      {filteredProducts.map((product) => (
-                        <div key={product.id} className="relative">
-                          <div onClick={() => handleProductClick(product)} className="cursor-pointer">
-                            <CardProducto
-                              id={product.id}
-                              name={product.name}
-                              image={product.image}
-                              category={product.category}
-                              brand={product.brand}
-                              brandLogo={product.brandLogo}
-                              isNew={product.isNew}
-                              discount={product.discount}
-                              description={product.description}
-                            />
+                  {paginatedProducts.length > 0 ? (
+                    <>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6">
+                        {paginatedProducts.map((product) => (
+                          <div key={product.id} className="relative">
+                            <div onClick={() => handleProductClick(product)} className="cursor-pointer">
+                              <CardProducto
+                                id={product.id}
+                                name={product.name}
+                                image={product.image}
+                                category={product.category}
+                                brand={product.brand}
+                                brandLogo={product.brandLogo}
+                                isNew={product.isNew}
+                                discount={product.discount}
+                                description={product.description}
+                              />
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+
+                      {/* Paginación */}
+                      <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={handlePageChange}
+                        className="mt-8 mb-4"
+                      />
+                    </>
                   ) : (
                     <div className="text-center py-12">
                       <p className="text-gray-500 text-lg">No se encontraron productos</p>
