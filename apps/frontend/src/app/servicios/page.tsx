@@ -1,368 +1,585 @@
 'use client';
 
-import { motion, useScroll, useTransform, useInView } from 'framer-motion';
-import { Wrench, Truck, Headphones, Shield, Clock, Users, ChevronDown, ChevronUp, Check, Star} from 'lucide-react';
-import { FaWhatsapp, FaYoutube} from 'react-icons/fa';
-import { useState, useRef, useEffect } from 'react';
+import { memo, useMemo, useRef, useState, useEffect } from "react";
+import type { ComponentType } from "react";
+import { motion, useInView } from "framer-motion";
+import { Wrench, Truck, Headphones, Shield, Clock, Users, Check, ChevronDown, ChevronUp, MapPin, Phone, Zap, Award } from "lucide-react";
+import Image from "next/image";
 
-const stats = [
-  { number: "20+", label: "Años de Experiencia", icon: <Clock className="w-6 h-6" />, color: "from-blue-500 to-blue-600" },
-  { number: "1000+", label: "Clientes Satisfechos", icon: <Users className="w-6 h-6" />, color: "from-green-500 to-green-600" },
-  { number: '24/', label: "Soporte Técnico", icon: <Headphones className="w-6 h-6" />, color: "from-purple-500 to-purple-600" },
-  { number: "100%", label: "Garantía", icon: <Shield className="w-6 h-6" />, color: "from-orange-500 to-orange-600" }
-];
+/****************************
+ * 1) Utilidades de rendimiento
+ ****************************/
 
-const services = [
-  {
-    icon: <Wrench className="w-10 h-10 text-black/60" />,
-    title: "Servicio Técnico Especializado",
-    description: "Contamos con técnicos certificados por las principales marcas para brindarte el mejor servicio post-venta y mantenimiento preventivo con tecnología de punta.",
-    features: ["Diagnóstico especializado", "Reparación garantizada", "Mantenimiento preventivo", "Certificaciones oficiales"],
-    videoId: "T2DXpm3xXCM",
-    gradient: "from-blue-600 to-indigo-700",
-    benefits: ["Reducción de tiempos de inactividad", "Mayor vida útil del equipo", "Costos operativos menores"]
-  },
-  {
-    icon: <Truck className="w-10 h-10 text-gray-700" />,
-    title: "Entrega y Logística",
-    description: "Servicio de entrega a domicilio en todo el país con seguimiento en tiempo real, flota propia y garantía de entrega segura y puntual.",
-    features: ["Entrega a domicilio", "Seguimiento en tiempo real", "Embalaje seguro", "Cobertura nacional"],
-    videoId: "F4wYJjBu-7Y",
-    gradient: "from-green-600 to-emerald-700",
-    benefits: ["Entrega garantizada", "Seguimiento GPS", "Instalación incluida"]
-  },
-  {
-    icon: <Headphones className="w-10 h-10 text-gray-700" />,
-    title: "Asesoría Técnica",
-    description: "Asesoramiento especializado personalizado para ayudarte a elegir la mejor maquinaria según tus necesidades específicas y presupuesto.",
-    features: ["Asesoría personalizada", "Análisis de necesidades", "Comparativas técnicas", "Recomendaciones expertas"],
-    videoId: "Bgg3ynClrsk",
-    gradient: "from-purple-600 to-violet-700",
-    benefits: ["Decisiones informadas", "Máximo ROI", "Soluciones a medida"]
-  },
-  {
-    icon: <Shield className="w-10 h-10 text-gray-700" />,
-    title: "Garantía Extendida",
-    description: "Garantías extendidas en todos nuestros productos con cobertura completa, soporte técnico incluido y repuestos originales garantizados.",
-    features: ["Garantía extendida", "Cobertura completa", "Soporte técnico", "Repuestos originales"],
-    videoId: "Jm0WtfD5Gek",
-    gradient: "from-orange-600 to-red-700",
-    benefits: ["Tranquilidad total", "Protección de inversión", "Servicio premium"]
-  },
-  {
-    icon: <Clock className="w-10 h-10 text-gray-700" />,
-    title: "Servicio 24/7",
-    description: "Atención al cliente disponible las 24 horas del día, 7 días a la semana para emergencias técnicas con respuesta inmediata garantizada.",
-    features: ["Atención 24/7", "Emergencias técnicas", "Respuesta rápida", "Soporte continuo"],
-    videoId: "n_D4gYO7f3I",
-    gradient: "from-teal-600 to-cyan-700",
-    benefits: ["Disponibilidad total", "Respuesta inmediata", "Soporte de emergencia"]
-  },
-  {
-    icon: <Users className="w-10 h-10 text-gray-700" />,
-    title: "Capacitación",
-    description: "Programas de capacitación integral para el uso correcto, mantenimiento y optimización de la maquinaria agrícola con certificación oficial.",
-    features: ["Capacitación técnica", "Manuales de uso", "Videos instructivos", "Sesiones prácticas"],
-    videoId: "tpCoTL4mtO4",
-    gradient: "from-pink-600 to-rose-700",
-    benefits: ["Operación eficiente", "Seguridad laboral", "Certificación técnica"]
-  }
-];
-
-const testimonials = [
-  {
-    name: "Juan Pérez",
-    role: "Agricultor - Hacienda San José",
-    content: "El servicio técnico es excepcional. Solucionaron mi problema en menos de 24 horas y el técnico era muy profesional. Mi producción no se detuvo gracias a su rapidez.",
-    rating: 5,
-    location: "Cayambe, Ecuador",
-    avatar: "JP"
-  },
-  {
-    name: "María Gómez",
-    role: "Dueña de vivero - Jardines del Valle",
-    content: "La asesoría que recibí fue fundamental para elegir la maquinaria adecuada. Me ahorraron mucho dinero al recomendarme exactamente lo que necesitaba.",
-    rating: 5,
-    location: "Quito, Ecuador",
-    avatar: "MG"
-  },
-  {
-    name: "Carlos Rodríguez",
-    role: "Ingeniero Agrónomo - AgroTech Solutions",
-    content: "Las capacitaciones son muy completas y los instructores tienen un gran conocimiento técnico. Recomiendo sus cursos a todos mis colegas del sector.",
-    rating: 5,
-    location: "Ibarra, Ecuador",
-    avatar: "CR"
-  },
-  {
-    name: "Ana Martínez",
-    role: "Productora Orgánica - EcoFarms",
-    content: "Su servicio de garantía extendida me ha dado mucha tranquilidad. Cuando tuve un problema, lo resolvieron sin costo adicional y muy rápido.",
-    rating: 5,
-    location: "Latacunga, Ecuador",
-    avatar: "AM"
-  }
-];
-
-const AnimatedCounter = ({ target, duration = 2 }: { target: string; duration?: number }) => {
+/****************************
+ * 2) Contador animado (ligero)
+ ****************************/
+const AnimatedCounter = memo(({ target, duration = 1.2 }: { target: string; duration?: number }) => {
   const [count, setCount] = useState(0);
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
+  const ref = useRef<HTMLSpanElement | null>(null);
+  const inView = useInView(ref, { once: true, margin: "-50px" });
 
   useEffect(() => {
-    if (isInView) {
-      const numericTarget = parseInt(target.replace(/\D/g, ''));
-      let startTime: number;
-      
-      const animateCount = (timestamp: number) => {
-        if (!startTime) startTime = timestamp;
-        const progress = Math.min((timestamp - startTime) / (duration * 1000), 1);
-        
-        const easeOutCubic = 1 - Math.pow(1 - progress, 3);
-        setCount(Math.floor(easeOutCubic * numericTarget));
-        
-        if (progress < 1) {
-          requestAnimationFrame(animateCount);
-        }
-      };
-      
-      requestAnimationFrame(animateCount);
-    }
-  }, [isInView, target, duration]);
+    if (!inView) return;
+    const numericTarget = parseInt(target.replace(/\D/g, ""));
+    const start = performance.now();
+    let raf: number;
+    const step = (now: number) => {
+      const p = Math.min((now - start) / (duration * 1000), 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setCount(Math.floor(eased * numericTarget));
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [inView, target, duration]);
 
-  const formatCount = (num: number) => {
-    if (target.includes('+')) return `${num}+`;
-    if (target.includes('/')) return `${num}/7`;
-    if (target.includes('%')) return `${num}%`;
-    return num.toString();
+  const format = (n: number) => {
+    if (target.includes("+")) return `${n}+`;
+    if (target.includes("/")) return `${n}/7`;
+    if (target.includes("%")) return `${n}%`;
+    return String(n);
   };
 
-  return <span ref={ref}>{formatCount(count)}</span>;
+  return <span ref={ref}>{format(count)}</span>;
+});
+AnimatedCounter.displayName = "AnimatedCounter";
+
+/**********************************************
+ * 3) Lite YouTube
+ **********************************************/
+interface LiteYouTubeProps {
+  id: string;
+  title: string;
+}
+
+const LiteYouTube = memo(({ id, title }: LiteYouTubeProps) => {
+  const [activated, setActivated] = useState(false);
+  const thumb = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+  const url = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&modestbranding=1&rel=0&playsinline=1`;
+
+  const onActivate = () => setActivated(true);
+
+  return (
+    <div className="relative aspect-video rounded-lg overflow-hidden bg-black">
+      {!activated ? (
+        <button
+          type="button"
+          aria-label={`Reproducir video: ${title}`}
+          onClick={onActivate}
+          className="group absolute inset-0 w-full h-full cursor-pointer"
+        >
+          <Image
+            src={thumb}
+            alt="Miniatura del video"
+            width={1280}
+            height={720}
+            loading="lazy"
+            unoptimized
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+          <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors" />
+          <div className="absolute inset-0 grid place-items-center">
+            <div className="bg-white/20 backdrop-blur-sm rounded-full p-3 border border-white/30">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </div>
+          </div>
+        </button>
+      ) : (
+        <iframe
+          className="absolute inset-0 h-full w-full"
+          src={url}
+          title={title}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+          loading="lazy"
+          referrerPolicy="strict-origin-when-cross-origin"
+        />
+      )}
+    </div>
+  );
+});
+LiteYouTube.displayName = "LiteYouTube";
+
+/****************************
+ * 4) Componente de Restricción Minimalista
+ ****************************/
+const RestrictionBadge = ({ text, details }: { text: string; details?: string }) => {
+  const [showDetails, setShowDetails] = useState(false);
+
+  return (
+    <div className="relative inline-block">
+      <button
+        onClick={() => setShowDetails(!showDetails)}
+        className="inline-flex items-center gap-1 bg-amber-100 border border-amber-200 text-amber-800 px-2 py-1 rounded text-xs font-medium hover:bg-amber-200 transition-colors cursor-help"
+      >
+        <span>{text}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+        </svg>
+      </button>
+      
+      {showDetails && details && (
+        <div className="absolute z-10 top-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg p-3">
+          <p className="text-sm text-gray-700">{details}</p>
+          <div className="absolute -top-1 left-4 w-2 h-2 bg-white border-l border-t border-gray-200 transform rotate-45" />
+        </div>
+      )}
+    </div>
+  );
 };
 
-export default function ServiciosPage() {
-  const [expanded, setExpanded] = useState<number | null>(null);
-  const { scrollYProgress } = useScroll();
-  const yBg = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
-  
+/****************************
+ * 5) Componente Servicio Mejorado - 2 por fila alternados
+ ****************************/
+
+type IconType = ComponentType<{ className?: string }>;
+
+interface ServiceItem {
+  icon: IconType;
+  title: string;
+  description: string;
+  features: string[];
+  restrictions: { text: string; details?: string };
+  videoId: string;
+}
+
+const ServiceCard = ({ service, index, isReversed }: { service: ServiceItem; index: number; isReversed: boolean }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const Icon = service.icon;
+
   return (
-    <main className="min-h-screen pt-20 overflow-hidden">
-       {/* Hero Section with Advanced Animations */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        <motion.div 
-          className="absolute inset-0 z-0"
-          style={{ y: yBg }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-black via-black/70 to-yellow-200" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.6, delay: index * 0.1 }}
+      className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-8"
+    >
+      {/* Desktop Layout - 2 columnas alternadas */}
+      <div className="hidden lg:grid lg:grid-cols-2 gap-8">
+        {/* Contenido de texto */}
+        <div className={`p-8 ${isReversed ? 'lg:order-2' : 'lg:order-1'}`}>
+          <div className="flex items-center gap-4 mb-6">
+            <div className="bg-black rounded-lg p-3">
+              <Icon className="w-7 h-7 text-yellow-400" />
+            </div>
+            <div>
+              <h3 className="text-2xl font-semibold text-gray-900">{service.title}</h3>
+              <div className="flex items-center gap-2 mt-2">
+                <RestrictionBadge 
+                  text={service.restrictions.text} 
+                  details={service.restrictions.details} 
+                />
+              </div>
+            </div>
+          </div>
+
+          <p className="text-gray-700 mb-6 leading-relaxed">{service.description}</p>
           
-          {/* Floating Elements */}
-          <motion.div
-            className="absolute top-1/4 left-1/4 w-32 h-32 bg-campomaq/20 rounded-full blur-3xl"
-            animate={{ 
-              scale: [1, 1.5, 1],
-              rotate: [0, 180, 360],
-              opacity: [0.3, 0.6, 0.3]
-            }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-yellow-400/20 rounded-full blur-2xl"
-            animate={{ 
-              scale: [1.5, 1, 1.5],
-              rotate: [360, 180, 0],
-              opacity: [0.4, 0.8, 0.4]
-            }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          />
-        </motion.div>
-
-        <div className="relative z-10 text-center px-6 max-w-6xl">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-          >
-            <h1 className="text-6xl md:text-8xl font-black text-white mb-8 leading-tight">
-              <span className="block">NUESTROS</span>
-              <span className="block bg-gradient-to-r from-campomaq via-yellow-400 to-orange-400 bg-clip-text text-transparent">
-                SERVICIOS
-              </span>
-            </h1>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="backdrop-blur-md bg-white/10 rounded-3xl p-8 border border-white/20 mb-10"
-          >
-            <p className="text-xl md:text-2xl text-white font-light leading-relaxed">
-              Soluciones integrales para el campo y jardinería con el respaldo de
-              <br className="hidden md:block" />
-              <span className="font-semibold text-campomaq"> más de 20 años de experiencia</span>
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.7 }}
-            className="flex flex-wrap justify-center gap-4"
-          >
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Stats Section - Clean Black & Yellow */}
-      <section className="py-16 bg-white border-y-2 border-gray-100">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((stat, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="text-center group"
-              >
-                <div className="bg-black rounded-lg p-4 mb-3 inline-block group-hover:bg-gray-800 transition-colors">
-                  <div className="text-campomaq">{stat.icon}</div>
-                </div>
-                <div className="text-3xl md:text-4xl font-bold text-black mb-1">
-                  <AnimatedCounter target={stat.number} />
-                </div>
-                <div className="text-gray-600 text-sm font-medium">{stat.label}</div>
-              </motion.div>
+          <ul className="space-y-3 mb-8">
+            {service.features.map((feature: string, idx: number) => (
+              <li key={idx} className="flex items-center text-gray-600">
+                <Check className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                {feature}
+              </li>
             ))}
+          </ul>
+
+          <a
+            href="https://wa.me/593980582555"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 bg-black text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+          >
+            Solicitar Servicio
+          </a>
+        </div>
+
+        {/* Video */}
+        <div className={`p-8 ${isReversed ? 'lg:order-1' : 'lg:order-2'}`}>
+          <LiteYouTube id={service.videoId} title={`Video - ${service.title}`} />
+        </div>
+      </div>
+
+      {/* Mobile Layout - Colapsable */}
+      <div className="lg:hidden">
+        {/* Header - Siempre visible */}
+        <div 
+          className="p-6 cursor-pointer"
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="bg-black rounded-lg p-2">
+                <Icon className="w-6 h-6 text-yellow-400" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900">{service.title}</h3>
+                <div className="flex items-center gap-2 mt-1">
+                  <RestrictionBadge 
+                    text={service.restrictions.text} 
+                    details={service.restrictions.details} 
+                  />
+                </div>
+              </div>
+            </div>
+            {isExpanded ? <ChevronUp className="w-5 h-5 text-gray-500" /> : <ChevronDown className="w-5 h-5 text-gray-500" />}
           </div>
         </div>
+
+        {/* Contenido - Colapsable en mobile */}
+        {isExpanded && (
+          <div className="px-6 pb-6 border-t border-gray-100">
+            <p className="text-gray-700 mb-6 leading-relaxed pt-6">{service.description}</p>
+            
+            <ul className="space-y-2 mb-6">
+              {service.features.map((feature: string, idx: number) => (
+                <li key={idx} className="flex items-center text-gray-600 text-sm">
+                  <Check className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+
+            <div className="mb-6">
+              <LiteYouTube id={service.videoId} title={`Video - ${service.title}`} />
+            </div>
+
+            <a
+              href="https://wa.me/593980582555"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 bg-black text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors w-full"
+            >
+              Solicitar Servicio
+            </a>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+};
+
+/****************************
+ * 6) Sección de Cobertura Geográfica
+ ****************************/
+const CoverageSection = () => (
+  <section className="py-20 bg-white">
+    <div className="max-w-7xl mx-auto px-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="text-center mb-16"
+      >
+        <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
+          Cobertura
+          <span className="block text-yellow-400">Sierra Centro Norte</span>
+        </h2>
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          Servicio técnico disponibles en toda la zona florícola del Ecuador.
+        </p>
+      </motion.div>
+
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        {[
+          { province: "Pichincha", cities: ["Cayambe", "Tabacundo", "Pedro Moncayo"], icon: MapPin },
+          { province: "Imbabura", cities: ["Ibarra", "Otavalo", "Cotacachi"], icon: MapPin },
+          { province: "Cotopaxi", cities: ["Latacunga", "Salcedo", "Saquisilí"], icon: MapPin },
+          { province: "Tungurahua", cities: ["Ambato", "Pelileo", "Baños"], icon: MapPin },
+        ].map((region, index) => {
+          const Icon = region.icon;
+          return (
+            <motion.div
+              key={region.province}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              className="bg-gray-50 rounded-lg p-6 border border-gray-200 text-center"
+            >
+              <div className="bg-black rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                <Icon className="w-6 h-6 text-yellow-400" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-3">{region.province}</h3>
+              <ul className="space-y-1">
+                {region.cities.map((city, idx) => (
+                  <li key={idx} className="text-sm text-gray-600">{city}</li>
+                ))}
+              </ul>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="text-center mt-12"
+      >
+        <p className="text-gray-600 mb-6">
+          ¿No encuentras tu ubicación? Contáctanos para verificar cobertura en tu zona.
+        </p>
+        <a
+          href="https://wa.me/593980582555"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 bg-yellow-400 text-black px-6 py-3 rounded-lg font-medium hover:bg-yellow-300 transition-colors"
+        >
+          <Phone className="w-5 h-5" />
+          Consultar Cobertura
+        </a>
+      </motion.div>
+    </div>
+  </section>
+);
+
+/****************************
+ * 7) Sección de Certificaciones y Garantías
+ ****************************/
+const CertificationsSection = () => (
+  <section className="py-20 bg-gray-50">
+    <div className="max-w-7xl mx-auto px-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="text-center mb-16"
+      >
+        <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
+          Certificaciones y
+          <span className="block text-yellow-400">Garantías</span>
+        </h2>
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          Respaldados por las principales marcas y con garantías extendidas
+        </p>
+      </motion.div>
+
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {[
+          {
+            title: "Técnicos Certificados",
+            description: "Personal con certificaciones oficiales de las marcas que representamos",
+            icon: Award,
+            features: ["Husqvarna", "Maruyama", "Briggs & Stratton", "STIHL"]
+          },
+          {
+            title: "Garantía Extendida",
+            description: "Servicios y repuestos con garantía extendida hasta 12 meses",
+            icon: Shield,
+            features: ["Repuestos originales", "Mano de obra garantizada", "Soporte post-venta"]
+          },
+          {
+            title: "Respuesta Rápida",
+            description: "Sistema de atención prioritaria para emergencias técnicas",
+            icon: Zap,
+            features: ["Respuesta en 24h", "Soporte telefónico", "Visitas programadas"]
+          }
+        ].map((item, index) => {
+          const Icon = item.icon;
+          return (
+            <motion.div
+              key={item.title}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              className="bg-white rounded-lg p-6 border border-gray-200"
+            >
+              <div className="bg-black rounded-lg p-3 w-12 h-12 flex items-center justify-center mb-4">
+                <Icon className="w-6 h-6 text-yellow-400" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-3">{item.title}</h3>
+              <p className="text-gray-600 text-sm mb-4">{item.description}</p>
+              <ul className="space-y-2">
+                {item.features.map((feature, idx) => (
+                  <li key={idx} className="flex items-center text-sm text-gray-600">
+                    <Check className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+);
+
+/****************************
+ * 8) Datos memoizados
+ ****************************/
+const useData = () => {
+  const stats = useMemo(
+    () => [
+      { number: "20+", label: "Años de Experiencia", icon: Clock },
+      { number: "1000+", label: "Clientes Satisfechos", icon: Users },
+      { number: "24/", label: "Atención en línea", icon: Headphones }, 
+      { number: "100%", label: "Garantía", icon: Shield },
+    ],
+    []
+  );
+
+  const services = useMemo(
+    () => [
+      {
+        icon: Wrench,
+        title: "Servicio Técnico en Campo",
+        description: "Nuestros técnicos certificados se trasladan hasta tu cultivo para realizar mantenimiento y reparaciones en el lugar, evitando que tu trabajo se detenga.",
+        features: [
+          "Diagnóstico especializado",
+          "Reparación garantizada",
+          "Mantenimiento preventivo",
+          "Certificaciones oficiales",
+        ],
+        restrictions: {
+          text: "Se aplican restricciones",
+          details: "El servicio en campo aplica para zonas dentro de un radio de 50km desde nuestras sucursales. Para distancias mayores, consultar tarifas especiales."
+        },
+        videoId: "T2DXpm3xXCM",
+      },
+      {
+        icon: Truck,
+        title: "Entrega y Logística",
+        description: "Enviamos tus equipos y repuestos a cualquier parte del país. Para la zona florícola ofrecemos transporte e instalación sin costo en equipos seleccionados.",
+        features: [
+          "Envíos a todo el país", 
+          "Transporte e instalacion sin costo",
+          "Instalación en el sitio", 
+          "Cobertura nacional"
+        ],
+        restrictions: {
+          text: "Condiciones especiales",
+          details: "Transporte gratuito aplica para pedidos superiores a $500 en zona florícola. Instalación incluida en equipos seleccionados."
+        },
+        videoId: "F4wYJjBu-7Y",
+      },
+      {
+        icon: Headphones,
+        title: "Asesoría y Capacitación Técnica",
+        description: "Ofrecemos asesoramiento especializado para capacitar al personal técnico de tu florícola o cultivo.",
+        features: [
+          "Asesoría personalizada", 
+          "Análisis de necesidades", 
+          "Comparativas técnicas", 
+          "Recomendaciones expertas"
+        ],
+        restrictions: {
+          text: "Programación requerida",
+          details: "Las capacitaciones requieren agenda previa. Mínimo 3 participantes para grupos."
+        },
+        videoId: "Bgg3ynClrsk",
+      },
+      {
+        icon: Shield,
+        title: "Servicio de Torno y Soldadura",
+        description: "Contamos con torno y soldadura especializada para fabricar y reparar las piezas que necesite.",
+        features: [
+          "Torno", 
+          "Sueldas especiales", 
+          "Fabricación de piezas"
+        ],
+        restrictions: {
+          text: "Tiempos de fabricación",
+          details: "Tiempos de entrega varían según complejidad de la pieza. Materiales no incluidos."
+        },
+        videoId: "Jm0WtfD5Gek",
+      },
+    ],
+    []
+  );
+
+  return { stats, services };
+};
+
+/****************************
+ * 9) Página principal
+ ****************************/
+export default function ServiciosPage() {
+  const { stats, services } = useData();
+
+  return (
+    <main className="min-h-screen pt-20 overflow-hidden">
+      {/* HERO MINIMALISTA CON VIDEO DE FONDO */}
+      <section className="relative h-screen flex items-center justify-center bg-black">
+       {/* Imagen de fondo */}
+             <Image
+               src="/images/campomaq/agricultura.jpg"
+               alt="Campo Maq Hero Background"
+               fill
+               loading="lazy"
+               className="object-cover"
+               quality={90}
+             />
+       
+             {/* Oscurecer imagen para mejor contraste */}
+             <div className="absolute inset-0 bg-black/70 bg-opacity-50 z-[2]" />
+       
+           
+        
+        <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-6">
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-5xl md:text-7xl font-black mb-6"
+          >
+            Servicios
+            <span className="block text-yellow-400">Especializados</span>
+          </motion.h1>
+          
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-xl md:text-2xl text-gray-300 mb-8"
+          >
+            Soluciones técnicas profesionales para el sector agrícola ecuatoriano
+          </motion.p>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 1 }}
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+        >
+          <div className="w-6 h-10 border-2 border-yellow-400 rounded-full flex justify-center">
+            <motion.div
+              animate={{ y: [0, 12, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+              className="w-1 h-3 bg-yellow-400 rounded-full mt-2"
+            />
+          </div>
+        </motion.div>
       </section>
 
-      {/* Services Section - Clean and Professional */}
-      <section id="servicios" className="py-20 bg-black">
-        
-        <div className="max-w-7xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-           
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Nuestros Servicios
-            </h2>
-            <div className="w-20 h-1 bg-campomaq mx-auto mb-4" />
-            <p className="text-gray-300 text-lg max-w-2xl mx-auto">
-              Soluciones profesionales para maximizar tu productividad
-            </p>
-          </motion.div>
-
-          <div className="space-y-12">
-            {services.map((service, index) => {
-              const isExpanded = expanded === index;
-              const reverse = index % 2 !== 0;
-              
+      {/* STATS - MANTENIENDO DISEÑO ORIGINAL */}
+      <section className="py-14 bg-white border-y border-gray-100">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {stats.map((s, i) => {
+              const Icon = s.icon;
               return (
-                
                 <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 50 }}
+                  key={s.label}
+                  initial={{ opacity: 0, y: 14 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className={`flex flex-col lg:flex-row ${reverse ? "lg:flex-row-reverse" : ""} gap-6`}
+                  transition={{ duration: 0.45, delay: i * 0.06 }}
+                  className="text-center"
                 >
-                  
-                  {/* Content Card */}
-                  <div className="flex-1">
-                    <div className="bg-white rounded-xl p-6 h-full flex flex-col border-2 border-gray-100 hover:border-campomaq/30 transition-all duration-300">
-                      {/* Header */}
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center">
-                          <div className="w-12 h-12 bg-campomaq rounded-lg flex items-center justify-center mr-4">
-                            {service.icon}
-                          </div>
-                          <h3 className="text-xl font-bold text-black">{service.title}</h3>
-                        </div>
-                        
-                        {/* Mobile expand button */}
-                        <button
-                          onClick={() => setExpanded(isExpanded ? null : index)}
-                          className="lg:hidden w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
-                        >
-                          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                        </button>
-                      </div>
-
-                      {/* Description - Always visible on desktop */}
-                      <p className="text-gray-600 mb-4 hidden lg:block flex-grow">
-                        {service.description}
-                      </p>
-
-                      {/* Mobile: Truncated description */}
-                      <p className="text-gray-600 mb-4 lg:hidden">
-                        {isExpanded ? service.description : `${service.description.slice(0, 80)}...`}
-                      </p>
-
-                      {/* Features - Desktop always visible, Mobile expandable */}
-                      <div className={`${isExpanded ? 'block' : 'hidden'} lg:block mb-6`}>
-                        <ul className="space-y-2">
-                          {service.features.map((feature, i) => (
-                            <li key={i} className="flex items-center text-sm text-gray-700">
-                              <div className="w-4 h-4 bg-campomaq/20 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                                <Check className="w-3 h-3 text-black" />
-                              </div>
-                              {feature}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* CTA Button - Desktop always visible, Mobile expandable */}
-                      <div className={`${isExpanded ? 'block' : 'hidden'} lg:block mt-auto`}>
-                        <a
-                          href="https://wa.me/593XXXXXXXXX"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 bg-campomaq text-black px-6 py-3 rounded-lg font-semibold hover:bg-yellow-400 transition-colors w-full lg:w-auto justify-center lg:justify-start"
-                        >
-                          <FaWhatsapp className="w-4 h-4" />
-                          Solicitar Servicio
-                        </a>
-                      </div>
-                    </div>
+                  <div className="mx-auto mb-2 grid size-12 place-items-center rounded-lg bg-black text-yellow-300">
+                    <Icon className="h-6 w-6" />
                   </div>
-
-                  {/* Video Player */}
-                  <div className="flex-1">
-                    <div className="aspect-video rounded-xl overflow-hidden bg-gray-900 relative">
-                      <iframe
-                        width="100%"
-                        height="100%"
-                        src={`https://www.youtube.com/embed/${service.videoId}?autoplay=1&mute=1&modestbranding=1&rel=0&loop=1&playlist=${service.videoId}&controls=1`}
-                        title={`Video - ${service.title}`}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        className="w-full h-full"
-                      />
-                      
-                      {/* Video overlay with YouTube link */}
-                      <div className="absolute top-4 right-4">
-                        <a
-                          href={`https://youtube.com/watch?v=${service.videoId}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="bg-black/50 backdrop-blur-sm px-3 py-2 rounded-lg text-white text-xs hover:bg-black/70 transition-colors flex items-center gap-2"
-                        >
-                          <FaYoutube className="w-3 h-3" />
-                          YouTube
-                        </a>
-                      </div>
-                    </div>
+                  <div className="text-3xl md:text-4xl font-bold text-black">
+                    <AnimatedCounter target={s.number} />
                   </div>
+                  <div className="text-gray-600 text-sm font-medium">{s.label}</div>
                 </motion.div>
               );
             })}
@@ -370,75 +587,40 @@ export default function ServiciosPage() {
         </div>
       </section>
 
-      {/* Testimonials - Enhanced Design */}
-      <section className="py-32 bg-gradient-to-br from-gray-50 to-white relative overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-campomaq/5 to-transparent" />
-        </div>
-
-        <div className="relative z-10 max-w-7xl mx-auto px-6">
+      {/* SERVICIOS - 2 POR FILA ALTERNADOS */}
+      <section id="servicios" className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-6">
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-20"
+            className="text-center mb-16"
           >
-            <h2 className="text-5xl md:text-6xl font-black text-gray-900 mb-6">
-              TESTIMONIOS
-              <span className="block bg-gradient-to-r from-campomaq to-yellow-500 bg-clip-text text-transparent">
-                REALES
-              </span>
+            <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
+              Nuestros
+              <span className="block text-yellow-400">Servicios</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Experiencias auténticas de agricultores y profesionales que confían en nuestros servicios
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Soluciones profesionales diseñadas para maximizar la productividad de tu operación
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ y: -10, scale: 1.02 }}
-                className="group relative"
-              >
-                <div className="absolute -inset-2 bg-gradient-to-r from-campomaq to-yellow-400 rounded-3xl blur-lg opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
-                <div className="relative bg-white rounded-3xl p-8 shadow-lg border border-gray-100 h-full">
-                  {/* Rating */}
-                  <div className="flex mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-5 h-5 ${i < testimonial.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Quote */}
-                  <blockquote className="text-gray-600 mb-6 italic leading-relaxed flex-grow">
-                    &quot;{testimonial.content}&quot;
-                  </blockquote>
-
-                  {/* Author */}
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 bg-gradient-to-r from-campomaq to-yellow-400 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                      {testimonial.avatar}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-bold text-gray-900 text-sm">{testimonial.name}</h4>
-                      <p className="text-gray-500 text-xs mb-1">{testimonial.role}</p>
-                      <p className="text-gray-400 text-xs">{testimonial.location}</p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
+          <div className="space-y-0">
+            {services.map((service, index) => (
+              <ServiceCard 
+                key={service.title} 
+                service={service} 
+                index={index}
+                isReversed={index % 2 !== 0} // Alterna el orden
+              />
             ))}
           </div>
         </div>
       </section>
+
+      {/* NUEVAS SECCIONES EN LUGAR DE TESTIMONIOS */}
+      <CoverageSection />
+      <CertificationsSection />
     </main>
   );
 }

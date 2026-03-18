@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import CardProducto from "@/app/components/ui/CardProducto";
-import { searchProducts, getRelatedProducts, Product } from "../data/products";
+import { ProductService } from "../services/productService";
+import { Product } from "../types"; 
 import { Search, ArrowLeft } from "lucide-react";
+import ProductModal from "./ProductDetailModal";
 
 interface SearchResultsProps {
   searchQuery: string;
@@ -12,31 +14,54 @@ interface SearchResultsProps {
 
 export default function SearchResults({ searchQuery, onBack }: SearchResultsProps) {
   const [searchResults, setSearchResults] = useState<Product[]>([]);
-  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (searchQuery.trim()) {
-      const results = searchProducts(searchQuery);
-      setSearchResults(results);
-      
-      // Si hay resultados, obtener productos relacionados del primer resultado
-      if (results.length > 0) {
-        const related = getRelatedProducts(results[0].id, 4);
-        setRelatedProducts(related);
-      } else {
-        setRelatedProducts([]);
+    let cancelled = false;
+
+    const fetchSearchResults = async () => {
+      const q = searchQuery.trim();
+      if (!q) {
+        setSearchResults([]);
+        setSelectedProduct(null);
+        setIsLoading(false);
+        return;
       }
-    } else {
-      setSearchResults([]);
-      setRelatedProducts([]);
-    }
+
+      setIsLoading(true);
+      try {
+        const results = await ProductService.searchProducts(q);
+        if (!cancelled) {
+          setSearchResults(results);
+          setSelectedProduct(null);
+        }
+      } catch (error) {
+        console.error('Error searching products:', error);
+        if (!cancelled) {
+          setSearchResults([]);
+          setSelectedProduct(null);
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    };
+
+    fetchSearchResults();
+    return () => { cancelled = true; };
   }, [searchQuery]);
 
-  const handleProductClick = (product: Product) => {
+  // Función para manejar el click en un producto
+  const handleProductClick = async (product: Product) => {
     setSelectedProduct(product);
-    const related = getRelatedProducts(product.id, 4);
-    setRelatedProducts(related);
+    setIsModalOpen(true);
+  };
+
+  // Función para cerrar el modal
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedProduct(null);
   };
 
   return (
@@ -63,14 +88,19 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
       </div>
 
       {/* Resultados de búsqueda */}
-      {searchResults.length > 0 ? (
+      {isLoading ? (
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Buscando productos...</p>
+        </div>
+      ) : searchResults.length > 0 ? (
         <div className="space-y-8">
           {/* Productos encontrados */}
           <section>
             <h2 className="text-xl font-bold text-gray-900 mb-4">
               Productos Encontrados
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6">
               {searchResults.map((product) => (
                 <div
                   key={product.id}
@@ -80,14 +110,11 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
                   <CardProducto
                     id={product.id}
                     name={product.name}
-                    price={product.price}
-                    originalPrice={product.originalPrice}
                     image={product.image}
                     category={product.category}
                     brand={product.brand}
                     brandLogo={product.brandLogo}
                     isNew={product.isNew}
-                    isOnSale={product.isOnSale}
                     discount={product.discount}
                     description={product.description}
                   />
@@ -95,39 +122,6 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
               ))}
             </div>
           </section>
-
-          {/* Productos relacionados */}
-          {relatedProducts.length > 0 && (
-            <section>
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
-                Productos Relacionados
-                {selectedProduct && (
-                  <span className="text-lg font-normal text-gray-600 ml-2">
-                    con &quot;{selectedProduct.name}&quot;
-                  </span>
-                )}
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {relatedProducts.map((product) => (
-                  <CardProducto
-                    key={product.id}
-                    id={product.id}
-                    name={product.name}
-                    price={product.price}
-                    originalPrice={product.originalPrice}
-                    image={product.image}
-                    category={product.category}
-                    brand={product.brand}
-                    brandLogo={product.brandLogo}
-                    isNew={product.isNew}
-                    isOnSale={product.isOnSale}
-                    discount={product.discount}
-                    description={product.description}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
         </div>
       ) : (
         /* No se encontraron resultados */
@@ -146,11 +140,18 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
             <ul className="text-sm text-gray-500 space-y-1">
               <li>• Verifica que las palabras estén escritas correctamente</li>
               <li>• Intenta con términos más generales</li>
-              <li>• Usa sinónimos o términos relacionados</li>
+              
             </ul>
           </div>
         </div>
       )}
+
+      {/* Modal de producto */}
+      <ProductModal
+        product={selectedProduct}
+        isOpen={isModalOpen}
+        onClose={closeModal}
+      />
     </div>
   );
 }

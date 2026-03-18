@@ -17,7 +17,7 @@ export function Button({
   onClick,
   type = 'button'
 }: Props) {
-  const base = 'px-6 py-2 md:px-8 md:py-3 font-semibold text-sm md:text-base transition-colors duration-300 hover:cursor-pointer';
+  const base = 'inline-flex items-center justify-center px-6 py-2 md:px-8 md:py-3 font-semibold text-sm md:text-base transition-colors duration-300 hover:cursor-pointer';
   
   const styles = {
     primary: 'bg-black text-white hover:bg-campomaq hover:text-black',

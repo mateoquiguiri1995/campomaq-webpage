@@ -1,10 +1,33 @@
-import { Product, ProductsResponse, SearchFilters } from '../types';
-import {products} from '../data/products'; // Importación ES6 en lugar de require
+import { Product } from '../types';
+// Fallback helpers & data when API is down
+import {
+  products as localProducts,
+  searchProducts as localSearchProducts
+} from '../data/products';
 
-// Configuración base para la API
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://campomaq.azurewebsites.net/search';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5001';
 
-// Cliente HTTP básico
+// API response interfaces
+interface ApiProduct {
+  id?: string | number;
+  product_name?: string;
+  category_name?: string;
+  brand_name?: string;
+  brand_logo?: string;
+  new_product?: boolean;
+  discount?: number;
+  discount_percent?: number;
+  discount_percentage?: number;
+  description?: string;
+  tags?: string[];
+  link?: string | string[];
+}
+
+interface ApiError {
+  message?: string;
+  [key: string]: unknown;
+}
+
 class ApiClient {
   private baseURL: string;
 
@@ -12,162 +35,159 @@ class ApiClient {
     this.baseURL = baseURL;
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
-    
     const config: RequestInit = {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
+      headers: { 'Content-Type': 'application/json', ...options.headers },
       ...options,
     };
 
     try {
+      console.log("[ApiClient] Fetching:", url, config);
       const response = await fetch(url, config);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
 
-      return await response.json();
-    } catch (error) {
-      console.error('API request failed:', error);
-      throw error;
-    }
+      if (!response.ok) {
+        const text = await response.text();
+        console.error(`[ApiClient] Error response: ${response.status}`, text);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${text}`);
+      }
+      const json = await response.json();
+      console.log("[ApiClient] Success:", json);
+      return json as T;
+    } catch (err: unknown) {
+      console.error("[ApiClient] Network/Fetch error:", err);
+      const msg = (err && typeof err === 'object' && err !== null && 'message' in err)
+        ? (err as ApiError).message || String(err)
+        : String(err);
+      throw new Error(
+        msg.includes('Failed to fetch') || msg.includes('fetch failed')
+          ? 'Network error: Could not connect to the server. Please check if the backend is running.'
+          : msg
+    );
   }
+}
 
   async get<T>(endpoint: string): Promise<T> {
     return this.request<T>(endpoint);
   }
-
-  async post<T>(endpoint: string, data: unknown): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async put<T>(endpoint: string, data: unknown): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async delete<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: 'DELETE',
-    });
-  }
 }
 
-// Instancia del cliente API
 const apiClient = new ApiClient(API_BASE_URL);
 
-// Servicio de productos
 export class ProductService {
-  // Obtener todos los productos con filtros opcionales
-  static async getProducts(filters?: SearchFilters): Promise<ProductsResponse> {
-    const params = new URLSearchParams();
-    
-    if (filters) {
-      if (filters.query) params.append('q', filters.query);
-      if (filters.category) params.append('category', filters.category);
-      if (filters.brand) params.append('brand', filters.brand);
-      if (filters.priceRange) {
-        params.append('minPrice', filters.priceRange.min.toString());
-        params.append('maxPrice', filters.priceRange.max.toString());
-      }
-      if (filters.tags?.length) {
-        filters.tags.forEach(tag => params.append('tags', tag));
-      }
-      if (filters.inStockOnly) params.append('inStock', 'true');
-      if (filters.sortBy) params.append('sortBy', filters.sortBy);
-      if (filters.page) params.append('page', filters.page.toString());
-      if (filters.limit) params.append('limit', filters.limit.toString());
+  /**
+   * Search products via /search. If API fails, fallback to local search.
+   */
+  static async searchProducts(query: string): Promise<Product[]> {
+    const q = query?.trim() ?? '';
+    if (!q) return []; // keep empty if no query; UI handles it
+
+    const params = new URLSearchParams({ q });
+    const endpoint = `/search?${params.toString()}`;
+
+    try {
+      const apiProducts = await apiClient.get<ApiProduct[]>(endpoint);
+      const mapped = Array.isArray(apiProducts)
+        ? apiProducts.map(p => this.mapApiProductToProduct(p))
+        : [];
+      return mapped;
+    } catch (error) {
+      // Fallback to local in-memory search
+      console.error("[ProductService.searchProducts] API failed, falling back:", error);
+      return localSearchProducts(q);
     }
-
-    const endpoint = `/products${params.toString() ? `?${params.toString()}` : ''}`;
-    return apiClient.get<ProductsResponse>(endpoint);
   }
 
-  // Obtener un producto por ID
-  static async getProductById(id: string): Promise<Product> {
-    return apiClient.get<Product>(`/products/${id}`);
+  /**
+   * Related products = search by product name, skip first result, exclude the current product id.
+   * Limit results (default 4).
+   */
+  static async getRelatedProducts(product: Product, limit: number = 4): Promise<Product[]> {
+    const name = product?.name?.trim() ?? '';
+    if (!name) return [];
+
+    try {
+      const results = await this.searchProducts(name);
+      // Skip first result + exclude current product id
+      return results
+        .slice(1)
+        .filter(p => p.id !== product.id)
+        .slice(0, limit);
+    } catch {
+      // Fallback: use local search in the same way
+      const localResults = localSearchProducts(name);
+      return localResults
+        .slice(1)
+        .filter(p => p.id !== product.id)
+        .slice(0, limit);
+    }
   }
 
-  // Buscar productos
-  static async searchProducts(query: string, filters?: Omit<SearchFilters, 'query'>): Promise<ProductsResponse> {
-    return this.getProducts({ query, ...filters });
+  static async getAllProducts(limit?: number): Promise<Product[]> {
+    const endpoint = `/products`;
+
+    try {
+      const apiProducts = await apiClient.get<ApiProduct[]>(endpoint);
+      const mappedProducts = Array.isArray(apiProducts)
+        ? apiProducts.map(p => this.mapApiProductToProduct(p))
+        : [];
+      
+      // Apply limit if specified
+      return limit ? mappedProducts.slice(0, limit) : mappedProducts;
+    } catch (error) {
+      console.error("[ProductService.getAllProducts] API failed, falling back:", error);
+      const fallbackProducts = localProducts;
+      return limit ? fallbackProducts.slice(0, limit) : fallbackProducts;
+    }
   }
 
-  // Obtener productos en oferta
-  static async getProductsOnSale(): Promise<ProductsResponse> {
-    return apiClient.get<ProductsResponse>('/products/sale');
-  }
 
-  // Obtener productos nuevos
-  static async getNewProducts(): Promise<ProductsResponse> {
-    return apiClient.get<ProductsResponse>('/products/new');
-  }
 
-  // Obtener productos en tendencia
-  static async getTrendingProducts(): Promise<ProductsResponse> {
-    return apiClient.get<ProductsResponse>('/products/trending');
-  }
+  // Map API product to local Product shape
+  private static mapApiProductToProduct(apiProduct: ApiProduct): Product {
+    const links: string[] =
+      Array.isArray(apiProduct?.link)
+        ? apiProduct.link
+        : (typeof apiProduct?.link === 'string' ? [apiProduct.link] : []);
 
-  // Obtener productos relacionados
-  static async getRelatedProducts(productId: string, limit: number = 4): Promise<Product[]> {
-    return apiClient.get<Product[]>(`/products/${productId}/related?limit=${limit}`);
-  }
+    const safeId =
+      (apiProduct && apiProduct.id) ||
+      (globalThis.crypto?.randomUUID?.() ?? `api-${Math.random().toString(36).slice(2, 11)}`);
 
-  // Obtener categorías disponibles
-  static async getCategories(): Promise<string[]> {
-    return apiClient.get<string[]>('/categories');
-  }
-
-  // Obtener marcas disponibles
-  static async getBrands(): Promise<string[]> {
-    return apiClient.get<string[]>('/brands');
-  }
-
-  // Obtener filtros disponibles
-  static async getAvailableFilters(): Promise<{
-    categories: string[];
-    brands: string[];
-    priceRange: { min: number; max: number };
-  }> {
-    return apiClient.get('/filters');
+    return {
+      id: String(safeId),
+      name: apiProduct?.product_name?.trim() || 'Producto sin nombre',
+      image: links.length > 0 ? links[0] : '/images/brands/placeholder.png',
+      category: apiProduct?.category_name?.trim() || 'Sin categoría',
+      brand: apiProduct?.brand_name?.trim() || 'Sin marca',
+      brandLogo: apiProduct?.brand_logo || '/images/brands/placeholder.png',
+      isNew: Boolean(apiProduct?.new_product) || false,
+      discount: (() => {
+        const raw = apiProduct?.discount ?? apiProduct?.discount_percent ?? apiProduct?.discount_percentage;
+        let d = 0;
+        if (typeof raw === 'number') {
+          d = raw > 0 && raw < 1 ? Math.round(raw * 100) : Math.round(raw);
+        } else if (typeof raw === 'string') {
+          const parsed = parseInt(String(raw).replace(/[^\d.-]/g, ''), 10);
+          d = Number.isFinite(parsed) ? parsed : 0;
+        }
+        return Math.max(0, Math.min(100, d));
+      })(),
+      description: apiProduct?.description || 'Sin descripción',
+      tags: Array.isArray(apiProduct?.tags) ? apiProduct.tags : [],
+      additionalImages: links,
+    };
   }
 }
 
-// Hook personalizado para usar el servicio de productos
+// Minimal hook (only what actually works with your backend)
 export const useProductService = () => {
   return {
-    getProducts: ProductService.getProducts,
-    getProductById: ProductService.getProductById,
     searchProducts: ProductService.searchProducts,
-    getProductsOnSale: ProductService.getProductsOnSale,
-    getNewProducts: ProductService.getNewProducts,
-    getTrendingProducts: ProductService.getTrendingProducts,
     getRelatedProducts: ProductService.getRelatedProducts,
-    getCategories: ProductService.getCategories,
-    getBrands: ProductService.getBrands,
-    getAvailableFilters: ProductService.getAvailableFilters,
   };
 };
 
-// Función de fallback para cuando la API no esté disponible
-export const getFallbackProducts = (): Product[] => {
-  return products;
-};
-
-// Función para manejar errores de API y usar datos locales como fallback
-export const handleApiError = <T>(error: Error, fallbackData: T): T => {
-  console.warn('API error, using fallback data:', error);
-  return fallbackData;
-};
+// Optional: export local products in case you want to show them somewhere else easily
+export const getFallbackProducts = (): Product[] => localProducts;
+//console.log("API_BASE_URL is:", API_BASE_URL);

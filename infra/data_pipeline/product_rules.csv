@@ -1,0 +1,7 @@
+rule_type,rule_value,category
+word,disco,low_value
+word,nylon,low_value
+word,bomba,boost
+word,cuchilla,low_value
+code,408-0009SI,boost
+code,408-0011SI,new_product

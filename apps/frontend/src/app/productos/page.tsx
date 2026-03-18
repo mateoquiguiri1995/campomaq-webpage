@@ -7,214 +7,409 @@ import CategoryMenuMobile from "./components/CategoryMenuMobile";
 import SearchResults from "./components/SearchResults";
 import Breadcrumb from "./components/Breadcrumb";
 import CardProducto from "@/app/components/ui/CardProducto";
-import { products } from "./data/products";
+import ProductModal from "./components/ProductDetailModal";
 import { ChevronDown } from "lucide-react";
 import { Product, FilterState } from "./types";
-import { ProductService, getFallbackProducts } from "./services/productService";
-import { useSearchParams } from "next/navigation";
+import { ProductService } from "./services/productService";
+import { useSearchParams, useRouter } from "next/navigation";
+import Image from "next/image";
+import { availableBrands } from "./components/brands";
+import { trackFilter, trackSearch } from "@/lib/analytics";
+import Pagination from "./components/Pagination";
+
+// Definir los tipos de modo de navegación
+type NavigationMode = "search" | "brand" | "category" | "tab";
+
+// Constantes de paginación
+const ITEMS_PER_PAGE = 20;
+
+interface ExtendedFilterState extends FilterState {
+  navigationMode: NavigationMode;
+}
 
 // Componente interno con Suspense
 function ProductosPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  // Detectar el tipo de navegación basado en los parámetros URL
   const brandFromURL = searchParams.get('brand');
-  const searchFromURL = searchParams.get('search'); // 👈 Nuevo: obtener búsqueda desde URL
+  const searchFromURL = searchParams.get('search');
+  const categoryFromURL = searchParams.get('category');
+  const tabFromURL = searchParams.get('tab');
 
-  // Estado centralizado para filtros (con búsqueda inicial desde URL)
-  const [filters, setFilters] = useState<FilterState>({
-    searchQuery: searchFromURL || "", // 👈 Inicializar con búsqueda desde URL
-    showSearchResults: !!searchFromURL, // 👈 Mostrar resultados si hay búsqueda inicial
-    activeTab: "all",
-    selectedCategory: "",
+  // Estado centralizado para filtros con modo de navegación
+  const [filters, setFilters] = useState<ExtendedFilterState>({
+    searchQuery: searchFromURL || "",
+    showSearchResults: !!searchFromURL,
+    activeTab: tabFromURL || "all",
+    selectedCategory: categoryFromURL || "",
     selectedBrand: brandFromURL || "",
     sortBy: "name",
     showPriceFilters: false,
     showBrandFilters: false,
+    navigationMode: "tab"
   });
 
-  // Estado para manejo de datos y carga
-  const [allProducts, setAllProducts] = useState<Product[]>(products);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Estado para productos de API - TODOS los productos
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [apiLoading, setApiLoading] = useState(false);
+  const [uiLoading, setUiLoading] = useState(false);
 
-  // Obtener categorías y marcas únicas
-  const brands = useMemo(() => {
-    return [...new Set(allProducts.map(p => p.brand).filter(Boolean))];
-  }, [allProducts]);
+  // Estado para el modal
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Función para cargar productos desde la API
-  const loadProductsFromAPI = async () => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      // Intentar cargar desde la API
-      const response = await ProductService.getProducts();
-      setAllProducts(response.data);
-    } catch (apiError) {
-      // Si falla la API, usar datos locales como fallback
-      console.warn('API not available, using local data:', apiError);
-      setAllProducts(getFallbackProducts());
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Estado para paginación
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Cargar productos al montar el componente
+  // Mantener un pequeño periodo de gracia tras el fin de la carga de la API
   useEffect(() => {
-    loadProductsFromAPI();
+    if (apiLoading) {
+      setUiLoading(true);
+      return;
+    }
+    let rafId: number | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    rafId = requestAnimationFrame(() => {
+      timeoutId = setTimeout(() => setUiLoading(false), 250);
+    });
+
+    return () => {
+      if (rafId != null) cancelAnimationFrame(rafId);
+      if (timeoutId != null) clearTimeout(timeoutId);
+    };
+  }, [apiLoading]);
+
+  // Función para cargar TODOS los productos una sola vez
+  const loadAllProducts = useCallback(async () => {
+    setApiLoading(true);
+    try {
+      const results = await ProductService.getAllProducts();
+      setAllProducts(results);
+    } catch (error) {
+      console.error('Error loading products:', error);
+      setAllProducts([]);
+    } finally {
+      setApiLoading(false);
+    }
+  }, []);
+
+  // Función para cargar productos por marca
+  const loadProductsByBrand = useCallback(async (brand: string) => {
+    setApiLoading(true);
+    try {
+      const results = await ProductService.searchProducts(brand);
+      setAllProducts(results);
+    } catch (error) {
+      console.error('Error loading products by brand:', error);
+      setAllProducts([]);
+    } finally {
+      setApiLoading(false);
+    }
+  }, []);
+
+  // Función para cargar productos por categoría
+  const loadProductsByCategory = useCallback(async (category: string) => {
+    setApiLoading(true);
+    try {
+      const results = await ProductService.searchProducts(category);
+      setAllProducts(results);
+    } catch (error) {
+      console.error('Error loading products by category:', error);
+      setAllProducts([]);
+    } finally {
+      setApiLoading(false);
+    }
+  }, []);
+
+  // Efecto inicial para cargar productos
+  useEffect(() => {
+    let newMode: NavigationMode = "tab";
     
-    // 👈 Manejar parámetros iniciales desde URL
     if (brandFromURL) {
-      setFilters((prev) => ({
+      newMode = "brand";
+      setFilters(prev => ({
         ...prev,
         selectedBrand: brandFromURL,
         selectedCategory: "",
+        searchQuery: "",
+        showSearchResults: false,
         activeTab: "all",
+        navigationMode: newMode
       }));
-    }
-    
-    // 👈 Nuevo: manejar búsqueda inicial desde URL
-    if (searchFromURL) {
-      setFilters((prev) => ({
+      
+      loadProductsByBrand(brandFromURL);
+      
+    } else if (searchFromURL) {
+      newMode = "search";
+      setFilters(prev => ({
         ...prev,
         searchQuery: searchFromURL,
         showSearchResults: true,
         selectedCategory: "",
         selectedBrand: "",
         activeTab: "all",
+        navigationMode: newMode
       }));
+    } else if (categoryFromURL) {
+      newMode = "category";
+      setFilters(prev => ({
+        ...prev,
+        selectedCategory: categoryFromURL,
+        selectedBrand: "",
+        searchQuery: "",
+        showSearchResults: false,
+        activeTab: "all",
+        navigationMode: newMode
+      }));
+      
+      loadProductsByCategory(categoryFromURL);
+    } else {
+      const initialTab = tabFromURL || "all";
+      setFilters(prev => ({
+        ...prev,
+        activeTab: initialTab,
+        navigationMode: "tab"
+      }));
+      loadAllProducts();
     }
-  }, [brandFromURL, searchFromURL]); // 👈 Agregar searchFromURL como dependencia
+  }, [brandFromURL, searchFromURL, categoryFromURL, tabFromURL, loadAllProducts, loadProductsByBrand, loadProductsByCategory]);
 
-  // Filtrar productos
+  // Productos filtrados - APLICAR FILTROS LOCALMENTE (sin paginación)
   const filteredProducts = useMemo(() => {
-    let filtered = allProducts;
-
-    // Filtrar por categoría
-    if (filters.selectedCategory) {
-      filtered = filtered.filter(p => p.category === filters.selectedCategory);
+    if (filters.navigationMode === "brand" || filters.navigationMode === "category") {
+      return allProducts;
     }
 
-    // Filtrar por marca
-    if (filters.selectedBrand) {
-      filtered = filtered.filter(p => p.brand === filters.selectedBrand);
+    if (filters.navigationMode === "tab") {
+      let filtered = [...allProducts];
+
+      switch (filters.activeTab) {
+        case "ofertas":
+          filtered = allProducts.filter(product => product.discount && product.discount > 0);
+          break;
+          
+        case "tendencia":
+          filtered = allProducts.slice(0, Math.min(100, allProducts.length));
+          break;
+          
+        case "nuevos":
+          filtered = allProducts.filter(product => product.isNew === true);
+          break;
+          
+        case "all":
+        default:
+          filtered = allProducts; // Mostrar todos los productos
+          break;
+      }
+
+      return filtered;
     }
 
-    // Aplicar filtros según la pestaña activa
-    switch (filters.activeTab) {
-      case "ofertas":
-        filtered = filtered.filter(p => p.isOnSale);
-        break;
-      case "tendencia":
-        const trendingIds = ["3", "5", "7", "9", "11", "12"];
-        filtered = filtered.filter(p => trendingIds.includes(p.id));
-        break;
-      case "nuevos":
-        filtered = filtered.filter(p => p.isNew);
-        break;
-      case "all":
-      default:
-        // Mostrar todos los productos
-        break;
-    }
+    return allProducts;
+  }, [allProducts, filters.navigationMode, filters.activeTab]);
 
-    // Ordenar productos
-    switch (filters.sortBy) {
-      case "price-low":
-        filtered = [...filtered].sort((a, b) => a.price - b.price);
-        break;
-      case "price-high":
-        filtered = [...filtered].sort((a, b) => b.price - a.price);
-        break;
-      case "name":
-      default:
-        filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
-        break;
-    }
+  // Productos paginados - APLICAR PAGINACIÓN
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredProducts.slice(startIndex, endIndex);
+  }, [filteredProducts, currentPage]);
 
-    return filtered;
-  }, [filters.activeTab, filters.selectedCategory, filters.selectedBrand, filters.sortBy, allProducts]);
+  // Calcular total de páginas
+  const totalPages = useMemo(() => {
+    return Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  }, [filteredProducts.length]);
 
-  // Función para actualizar filtros (usando useCallback)
-  const updateFilters = useCallback((updates: Partial<FilterState>) => {
+  // Funciones para el modal
+  const handleProductClick = (product: Product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedProduct(null);
+  };
+
+  // Función para actualizar filtros
+  const updateFilters = useCallback((updates: Partial<ExtendedFilterState>) => {
     setFilters(prev => ({ ...prev, ...updates }));
   }, []);
 
-  // Manejadores de eventos (usando useCallback para evitar re-renders)
-  const handleSearch = useCallback((query: string) => {
-    if (query.trim()) {
-      updateFilters({
-        searchQuery: query.trim(),
-        showSearchResults: true,
-        // Limpiar otros filtros cuando se busca
-        selectedCategory: "",
-        selectedBrand: "",
-        activeTab: "all",
-      });
-    } else {
-      updateFilters({
-        searchQuery: "",
-        showSearchResults: false,
-      });
-    }
-  }, []); // Sin dependencias porque updateFilters es estable
+  // Función para cambiar de página
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+    // Scroll suave hacia arriba
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
-  const handleBackFromSearch = useCallback(() => {
+  // Reset página cuando cambian los filtros
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters.activeTab, filters.selectedBrand, filters.selectedCategory, filters.searchQuery]);
+
+  // Manejadores de eventos
+  const handleResetToAll = useCallback(() => {
     updateFilters({
       showSearchResults: false,
       searchQuery: "",
+      selectedCategory: "",
+      selectedBrand: "",
+      activeTab: "all",
+      navigationMode: "tab"
     });
-  }, [updateFilters]);
+    
+    router.replace('/productos', { scroll: false });
+    loadAllProducts();
+  }, [updateFilters, router, loadAllProducts]);
 
-  const handleTabChange = (tab: string) => {
+  const handleSearch = useCallback((query: string) => {
+    if (query.trim()) {
+      const resultCount = allProducts.length;
+      
+      trackSearch({
+        search_term: query.trim(),
+        search_results_count: resultCount,
+        search_source: 'productos_page'
+      });
+
+      updateFilters({
+        searchQuery: query.trim(),
+        showSearchResults: true,
+        selectedCategory: "",
+        selectedBrand: "",
+        activeTab: "all",
+        navigationMode: "search"
+      });
+      
+      const params = new URLSearchParams();
+      params.set('search', query.trim());
+      router.replace(`/productos?${params.toString()}`, { scroll: false });
+    } else {
+      handleResetToAll();
+    }
+  }, [updateFilters, router, handleResetToAll, allProducts.length]);
+
+  const handleBackFromSearch = useCallback(() => {
+    handleResetToAll();
+  }, [handleResetToAll]);
+
+  const handleTabChange = useCallback((tab: string) => {
+    trackFilter({
+      filter_type: 'tab',
+      filter_value: tab,
+      previous_filter: filters.activeTab
+    });
+    
     updateFilters({
       activeTab: tab,
       selectedCategory: "",
       selectedBrand: "",
-      // 👈 También limpiar búsqueda al cambiar tabs
       showSearchResults: false,
       searchQuery: "",
+      navigationMode: "tab"
     });
-  };
+    
+    if (tab !== "all") {
+      const params = new URLSearchParams();
+      params.set('tab', tab);
+      router.replace(`/productos?${params.toString()}`, { scroll: false });
+    } else {
+      router.replace('/productos', { scroll: false });
+    }
+    
+    if (allProducts.length === 0 || filters.navigationMode !== "tab") {
+      loadAllProducts();
+    }
+  }, [updateFilters, router, allProducts.length, filters.navigationMode, loadAllProducts, filters.activeTab]);
 
-  const handleBrandClick = (brand: string | undefined) => {
+  const handleBrandClick = useCallback((brand: string | undefined) => {
     if (brand) {
+      trackFilter({
+        filter_type: 'brand',
+        filter_value: brand,
+        previous_filter: filters.selectedBrand || undefined
+      });
+
       updateFilters({
         selectedBrand: brand,
         selectedCategory: "",
         activeTab: "all",
-        // 👈 También limpiar búsqueda al filtrar por marca
         showSearchResults: false,
         searchQuery: "",
+        navigationMode: "brand"
       });
+      
+      const brandProducts = allProducts.filter(product =>
+        product.brand && product.brand.toLowerCase().includes(brand.toLowerCase())
+      );
+      
+      if (brandProducts.length > 0) {
+        setAllProducts(brandProducts);
+      } else {
+        loadProductsByBrand(brand);
+      }
+      
+      const params = new URLSearchParams();
+      params.set('brand', brand);
+      router.replace(`/productos?${params.toString()}`, { scroll: false });
     }
-  };
+  }, [updateFilters, router, allProducts, loadProductsByBrand, filters.selectedBrand]);
 
-  const getBreadcrumbItems = () => {
-    if (filters.showSearchResults) {
-      return [
-        { label: "Productos", href: "/productos" },
-        { label: `Búsqueda: "${filters.searchQuery}"`, isActive: true }
-      ];
-    }
-
+  // Función para breadcrumbs
+  const getBreadcrumbItems = useCallback(() => {
     const items = [];
-    if (filters.selectedCategory) {
-      items.push({ label: filters.selectedCategory, isActive: true });
-    } else if (filters.selectedBrand) {
-      items.push({ label: filters.selectedBrand, isActive: true });
-    } else {
-      const tabLabels = {
-        "ofertas": "Ofertas",
-        "tendencia": "Tendencia", 
-        "nuevos": "Nuevos",
-        "all": "Todos los Productos"
-      };
-      items.push({ label: tabLabels[filters.activeTab as keyof typeof tabLabels] || "Productos", isActive: true });
+
+    switch (filters.navigationMode) {
+      case "search":
+        if (filters.searchQuery) {
+          items.push({ 
+            label: `Búsqueda: "${filters.searchQuery}"`, 
+            isActive: true 
+          });
+        }
+        break;
+        
+      case "brand":
+        if (filters.selectedBrand) {
+          items.push({ 
+            label: filters.selectedBrand, 
+            isActive: true 
+          });
+        }
+        break;
+        
+      case "category":
+        if (filters.selectedCategory) {
+          items.push({ 
+            label: filters.selectedCategory, 
+            isActive: true 
+          });
+        }
+        break;
+        
+      case "tab":
+      default:
+        const tabLabels = {
+          "ofertas": "Ofertas",
+          "tendencia": "Tendencia", 
+          "nuevos": "Nuevos",
+          "all": "Todos los Productos"
+        };
+        items.push({ 
+          label: tabLabels[filters.activeTab as keyof typeof tabLabels] || "Todos los Productos", 
+          isActive: true 
+        });
+        break;
     }
 
     return items;
-  };
+  }, [filters.navigationMode, filters.searchQuery, filters.selectedBrand, filters.selectedCategory, filters.activeTab]);
+
+  const showLoading = apiLoading || uiLoading;
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen pt-24">
@@ -229,9 +424,7 @@ function ProductosPageContent() {
         <div className="top-40 pt-15 bg-white z-20 p-4">
           {/* Menú lateral + barra de búsqueda en móviles */}
           <div className="md:hidden flex items-center gap-2 mb-4 pt-5">
-              <CategoryMenuMobile />
-            
-            
+            <CategoryMenuMobile />
             <div className="flex-1">
               <SearchBar onSearch={handleSearch} />
             </div>
@@ -245,31 +438,20 @@ function ProductosPageContent() {
 
         {/* Contenido scrollable */}
         <div className="flex-1 overflow-y-auto p-4">
-          {/* Breadcrumb */}
-          <Breadcrumb items={getBreadcrumbItems()} />
+          <Breadcrumb 
+            items={getBreadcrumbItems()} 
+            onProductsClick={handleResetToAll}
+          />
 
           {/* Indicador de carga */}
-          {isLoading && (
+          {showLoading && (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-campomaq"></div>
               <span className="ml-2 text-gray-600">Cargando productos...</span>
             </div>
           )}
 
-          {/* Manejo de errores */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-              <p className="text-red-800">Error: {error}</p>
-              <button
-                onClick={loadProductsFromAPI}
-                className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
-              >
-                Reintentar
-              </button>
-            </div>
-          )}
-
-          {!isLoading && !error && (
+          {!showLoading && (
             <>
               {filters.showSearchResults ? (
                 <SearchResults 
@@ -279,164 +461,154 @@ function ProductosPageContent() {
               ) : (
                 <>
                   {/* Filtros debajo del search */}
-                  <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                    <div className="flex flex-wrap items-center gap-4">
-                      {/* Botón Ofertas */}
-                      <button
-                        onClick={() => handleTabChange("ofertas")}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                          filters.activeTab === "ofertas"
-                            ? "bg-red-100 text-red-800 ring-2 ring-offset-2 ring-campomaq"
-                            : "bg-white text-gray-700 hover:bg-campomaq/40 border border-gray-200 cursor-pointer"
-                        }`}
-                      >
-                        Ofertas
-                      </button>
-
-                      {/* Botón Tendencia */}
-                      <button
-                        onClick={() => handleTabChange("tendencia")}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                          filters.activeTab === "tendencia"
-                            ? "bg-purple-100 text-purple-800 ring-2 ring-offset-2 ring-campomaq"
-                            : "bg-white text-gray-700 hover:bg-campomaq/40 border border-gray-200 cursor-pointer"
-                        }`}
-                      >
-                        Tendencia
-                      </button>
-
-                      {/* Botón Nuevos */}
-                      <button
-                        onClick={() => handleTabChange("nuevos")}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                          filters.activeTab === "nuevos"
-                            ? "bg-green-100 text-green-800 ring-2 ring-offset-2 ring-campomaq"
-                            : "bg-white text-gray-700 hover:bg-campomaq/40 border border-gray-200 cursor-pointer"
-                        }`}
-                      >
-                        Nuevos
-                      </button>
-
-                      {/* Botón deslizante para filtros de precio */}
-                      <div className="relative">
+                  {filters.navigationMode !== "search" && (
+                    <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                      <div className="flex flex-wrap items-center gap-4">
+                        {/* Botón Ofertas */}
                         <button
-                          onClick={() => updateFilters({ showPriceFilters: !filters.showPriceFilters })}
-                          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-white text-gray-700 hover:bg-campomaq/40 border border-gray-200 transition-all duration-200 cursor-pointer"
+                          onClick={() => handleTabChange("ofertas")}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                            filters.activeTab === "ofertas"
+                              ? "bg-red-100 text-red-800 ring-2 ring-offset-2 ring-campomaq"
+                              : "bg-white text-gray-700 hover:bg-campomaq/40 border border-gray-200 cursor-pointer"
+                          }`}
                         >
-                          Filtro x precios
-                          <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${filters.showPriceFilters ? 'rotate-180' : ''}`} />
+                          Ofertas
                         </button>
-                        
-                        {filters.showPriceFilters && (
-                          <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-10">
-                            <div className="space-y-2">
-                              <button
-                                onClick={() => {
-                                  updateFilters({ sortBy: "price-low", showPriceFilters: false });
-                                }}
-                                className="w-full text-left px-2 py-1 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors duration-200"
-                              >
-                                Menos caro
-                              </button>
-                              <button
-                                onClick={() => {
-                                  updateFilters({ sortBy: "price-high", showPriceFilters: false });
-                                }}
-                                className="w-full text-left px-2 py-1 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors duration-200"
-                              >
-                                Más caro
-                              </button>
-                              <button
-                                onClick={() => {
-                                  updateFilters({ sortBy: "name", showPriceFilters: false });
-                                }}
-                                className="w-full text-left px-2 py-1 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors duration-200"
-                              >
-                                Por nombre
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
 
-                      {/* Botón deslizante para filtros de marcas */}
-                      <div className="relative">
+                        {/* Botón Tendencia */}
                         <button
-                          onClick={() => updateFilters({ showBrandFilters: !filters.showBrandFilters })}
-                          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 transition-all duration-200"
+                          onClick={() => handleTabChange("tendencia")}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                            filters.activeTab === "tendencia"
+                              ? "bg-purple-100 text-purple-800 ring-2 ring-offset-2 ring-campomaq"
+                              : "bg-white text-gray-700 hover:bg-campomaq/40 border border-gray-200 cursor-pointer"
+                          }`}
                         >
-                          Filtro por marcas
-                          <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${filters.showBrandFilters ? 'rotate-180' : ''}`} />
+                          Tendencia
                         </button>
-                        
-                        {filters.showBrandFilters && (
-                          <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-10 max-h-60 overflow-y-auto">
-                            <div className="space-y-2">
-                              {brands.map((brand) => (
-                                <button
-                                  key={brand}
-                                  onClick={() => {
-                                    handleBrandClick(brand);
-                                    updateFilters({ showBrandFilters: false });
-                                  }}
-                                  className="w-full text-left px-2 py-1 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors duration-200"
-                                >
-                                  {brand}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
 
-                      {/* Botón Todos */}
-                      <button
-                        onClick={() => handleTabChange("all")}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                          filters.activeTab === "all"
-                            ? "bg-campomaq text-black ring-2 ring-offset-2 ring-campomaq"
-                            : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
-                        }`}
-                      >
-                        Todos
-                      </button>
+                        {/* Botón Nuevos */}
+                        <button
+                          onClick={() => handleTabChange("nuevos")}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                            filters.activeTab === "nuevos"
+                              ? "bg-green-100 text-green-800 ring-2 ring-offset-2 ring-campomaq"
+                              : "bg-white text-gray-700 hover:bg-campomaq/40 border border-gray-200 cursor-pointer"
+                          }`}
+                        >
+                          Nuevos
+                        </button>
+
+                        {/* Filtro de marcas mejorado - FIX AQUÍ */}
+                        <div className="relative">
+                          <button
+                            onClick={() => updateFilters({ showBrandFilters: !filters.showBrandFilters })}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 transition-all duration-200"
+                          >
+                            Filtro por marcas
+                            <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${filters.showBrandFilters ? 'rotate-180' : ''}`} />
+                          </button>
+                          
+                          {filters.showBrandFilters && (
+                            <div className="absolute top-full left-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-50 max-h-60 overflow-y-auto">
+                              <div className="space-y-2">
+                                {availableBrands.map((brand) => (
+                                  <button
+                                    key={brand.id}
+                                    onClick={() => {
+                                      handleBrandClick(brand.name);
+                                      updateFilters({ showBrandFilters: false });
+                                    }}
+                                    className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors duration-200"
+                                  >
+                                    {brand.logo && (
+                                      <div className="relative w-[30px] h-[30px] flex-shrink-0">
+                                        <Image
+                                          src={brand.logo}
+                                          alt={brand.name}
+                                          fill
+                                          className="object-contain"
+                                          sizes="30px"
+                                        />
+                                      </div>
+                                    )}
+                                    <span>{brand.name}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Botón Todos */}
+                        <button
+                          onClick={() => handleTabChange("all")}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                            filters.activeTab === "all" && filters.navigationMode === "tab"
+                              ? "bg-campomaq text-black ring-2 ring-offset-2 ring-campomaq"
+                              : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+                          }`}
+                        >
+                          Todos
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Resultados */}
                   <div className="mb-4">
                     <p className="text-gray-600">
-                      Mostrando {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''}
+                      Mostrando {paginatedProducts.length > 0 ? ((currentPage - 1) * ITEMS_PER_PAGE) + 1 : 0} - {Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} de {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''}
+                      {filters.navigationMode === "tab" && filters.activeTab !== "all" && (
+                        <span className="text-gray-600 font-medium"> - {
+                          filters.activeTab === "ofertas" ? "Ofertas" :
+                          filters.activeTab === "tendencia" ? "En Tendencia" :
+                          filters.activeTab === "nuevos" ? "Productos Nuevos" : ""
+                        }</span>
+                      )}
                     </p>
                   </div>
 
                   {/* Grid de productos */}
-                  {filteredProducts.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                      {filteredProducts.map((product) => (
-                        <div key={product.id} className="relative">
-                          <CardProducto
-                            id={product.id}
-                            name={product.name}
-                            price={product.price}
-                            originalPrice={product.originalPrice}
-                            image={product.image}
-                            category={product.category}
-                            brand={product.brand}
-                            brandLogo={product.brandLogo}
-                            isNew={product.isNew}
-                            isOnSale={product.isOnSale}
-                            discount={product.discount}
-                            description={product.description}
-                          />
-                        </div>
-                      ))}
-                    </div>
+                  {paginatedProducts.length > 0 ? (
+                    <>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6">
+                        {paginatedProducts.map((product) => (
+                          <div key={product.id} className="relative">
+                            <div onClick={() => handleProductClick(product)} className="cursor-pointer">
+                              <CardProducto
+                                id={product.id}
+                                name={product.name}
+                                image={product.image}
+                                category={product.category}
+                                brand={product.brand}
+                                brandLogo={product.brandLogo}
+                                isNew={product.isNew}
+                                discount={product.discount}
+                                description={product.description}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Paginación */}
+                      <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={handlePageChange}
+                        className="mt-8 mb-4"
+                      />
+                    </>
                   ) : (
                     <div className="text-center py-12">
                       <p className="text-gray-500 text-lg">No se encontraron productos</p>
                       <p className="text-gray-400 text-sm mt-2">
-                        Intenta ajustar los filtros seleccionados
+                        {filters.activeTab === "ofertas" ? "No hay productos con ofertas disponibles" :
+                         filters.activeTab === "nuevos" ? "No hay productos nuevos disponibles" :
+                         filters.activeTab === "tendencia" ? "No hay productos en tendencia disponibles" :
+                         "Intenta ajustar los filtros seleccionados"}
                       </p>
                     </div>
                   )}
@@ -446,11 +618,18 @@ function ProductosPageContent() {
           )}
         </div>
       </div>
+
+      {/* Modal de producto */}
+      <ProductModal
+        product={selectedProduct}
+        isOpen={isModalOpen}
+        onClose={closeModal}
+      />
     </div>
   );
 }
 
-// 👈 Componente principal con Suspense wrapper
+// Componente principal con Suspense wrapper
 export default function ProductosPage() {
   return (
     <Suspense fallback={

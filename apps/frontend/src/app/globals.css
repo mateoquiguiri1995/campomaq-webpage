@@ -171,32 +171,6 @@ html {
   background-clip: text;
 }
 
-/* ==== SCROLLBAR ==== */
-
-/* Para Chrome, Edge, Safari */
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: #000; /* contenedor negro */
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-campomaq); /* amarillo */
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-campomaq); /* amarillo más oscuro al pasar el mouse */
-}
-
-/* Para Firefox */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-campomaq) #000; /* thumb amarillo, track negro */
-}
-
 /* Product card utilities */
 .line-clamp-2 {
   display: -webkit-box;
