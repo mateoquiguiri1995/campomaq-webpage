@@ -104,7 +104,7 @@ export default function CategorySidebar({ variant = "desktop" }: CategorySidebar
     { name: "Ducati", logo: "/images/brands/ducati.png", slug: "ducati" },
     { name: "Echo", logo: "/images/brands/echo.png", slug: "echo" },
     { name: "Husqvarna", logo: "/images/brands/husqvarna.png", slug: "husqvarna" },
-    { name: "Maruyama", logo: "/images/brands/Maruyama.png", slug: "Maruyama" },
+    { name: "Maruyama", logo: "/images/brands/maruyama.png", slug: "Maruyama" },
     { name: "Stihl", logo: "/images/brands/stihl.png", slug: "stihl" },
     { name: "Whale Best", logo: "/images/brands/whale-best.png", slug: "whale-best" },
     { name: "Shindaiwa", logo: "/images/brands/shindaiwa.png", slug: "shindaiwa" },

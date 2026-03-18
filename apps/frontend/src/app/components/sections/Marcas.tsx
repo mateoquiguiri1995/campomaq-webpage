@@ -17,7 +17,7 @@ const brands: Brand[] = [
   { name: 'Annovi', logo: '/images/brands/annovi-reberberi.png'},
   { name: 'Ducati', logo: '/images/brands/ducati.png'},
   { name: 'Whalebest', logo: '/images/brands/whale-best.png', width: 100, height: 50 },
-  { name: 'Maruyama', logo: '/images/brands/Maruyama.png', width: 100 },
+  { name: 'Maruyama', logo: '/images/brands/maruyama.png', width: 100 },
   { name: 'Oleo-Mac', logo: '/images/brands/oleo-mac.png' },
   { name: 'Stihl', logo: '/images/brands/stihl.png' },
   { name: 'Echo', logo: '/images/brands/echo.png' },

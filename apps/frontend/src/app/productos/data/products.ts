@@ -7,7 +7,7 @@ export const products: Product[] = [
     image: "/images/prod-home/motocultor.jpg",
     category: "Motocultores",
     brand: "Maruyama",
-    brandLogo: "/images/brands/Maruyama.png",
+    brandLogo: "/images/brands/maruyama.png",
     
     discount: 10,
     description: `
@@ -58,7 +58,7 @@ export const products: Product[] = [
     image: "/images/prod-home/desbrozadora.jpg",
     category: "Motoguadañas",
     brand: "Maruyama",
-    brandLogo: "/images/brands/Maruyama.png",
+    brandLogo: "/images/brands/maruyama.png",
     isNew: true,
     description: `
       <h2>Desbrozadora Maruyama 525RX</h2>

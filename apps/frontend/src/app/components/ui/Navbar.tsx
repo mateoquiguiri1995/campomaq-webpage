@@ -201,10 +201,10 @@ export default function Navbar() {
     'Ducati': '/images/brands/ducati.png',
     'Whale Best': '/images/brands/whale-best.png',
     'Stihl': '/images/brands/stihl.png',
-    'Maruyama': '/images/brands/Maruyama.png',
+    'Maruyama': '/images/brands/maruyama.png',
     'Oleo-Mac': '/images/brands/oleo-mac.png',
     'Echo': '/images/brands/echo.png',
-    'Shindaiwa': '/images/brands/Shindaiwa.png',
+    'Shindaiwa': '/images/brands/shindaiwa.png',
   }
 
   // Calcular la posición top del navbar principal
