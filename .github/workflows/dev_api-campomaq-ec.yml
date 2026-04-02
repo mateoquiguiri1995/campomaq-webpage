@@ -74,4 +74,4 @@ jobs:
           app-name: 'api-campomaq-ec'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_BFEF436D9FC3490C9483D6C8B13165DA }}
-          startup-command: 'gunicorn --config gunicorn.conf.py app:app'
+          package: .
