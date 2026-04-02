@@ -1,6 +1,7 @@
 flask==3.1.0
 flask-cors==3.0.10
-openai
-python-dotenv
-gunicorn
+openai>=1.0.0,<2.0.0
+python-dotenv==1.0.1
+gunicorn==23.0.0
 pymongo==4.13.0
+dnspython==2.7.0

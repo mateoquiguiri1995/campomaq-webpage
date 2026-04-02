@@ -1,90 +1,180 @@
-##### app.py
-# backend/app.py
-
-from flask import Flask, request, jsonify
+from flask import Flask, Response, jsonify, request, stream_with_context
 from flask_cors import CORS
 from pymongo import MongoClient
+from pymongo.errors import PyMongoError
 
-import os, math
+import json
+import math
+import os
 from bson import ObjectId
-from bson.errors import InvalidId
-
-import openai
+from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
-from dotenv import load_dotenv, find_dotenv
 
-# Load environment variables from .env if development
-os.environ.setdefault('FLASK_ENV', 'development')
-if os.getenv('FLASK_ENV') == 'development':
+
+os.environ.setdefault("FLASK_ENV", "production")
+if os.getenv("FLASK_ENV") == "development":
     load_dotenv(find_dotenv())
-openai_api_key = os.getenv('OPENAI_API_KEY')
-if not openai_api_key:
-    raise ValueError("OPENAI_API_KEY environment variable is required")
 
 
-# Create Flask app
 app = Flask(__name__)
-CORS(app, origins="*")
+app.config["JSON_SORT_KEYS"] = False
+CORS(app, origins=os.getenv("CORS_ORIGINS", "*"))
 
-# OpenAI client and MongoDB client
-openai_client = OpenAI(api_key=openai_api_key)
-mongo_uri = os.getenv("MONGO_URI")
-if not mongo_uri:
-    raise ValueError("MONGO_URI environment variable is required")
-client_mongo = MongoClient(mongo_uri)
-db = client_mongo["campomaq"]
-collection = db["cm_catalog"]
 
-# ---------- Config: change these to match your Atlas indexes & tuning ----------
-TEXT_INDEX = "text_search"        # Atlas Search index name (text)
-VECTOR_INDEX = "vector_index"    # Atlas Vector Search index name
-VECTOR_PATH = "embedding"                 # field with stored vector
-POPULARITY_SCALE = 1                   # scale factor applied to popularity when adding it
-RESULT_LIMIT = 20
-# ------------------------------------------------------------------------------
+TEXT_INDEX = "text_search"
+POPULARITY_SCALE = 1
+RESULT_LIMIT = int(os.getenv("SEARCH_RESULT_LIMIT", "20"))
+MAX_PRODUCTS_LIMIT = int(os.getenv("MAX_PRODUCTS_LIMIT", "200"))
+MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "campomaq")
+MONGO_COLLECTION_NAME = os.getenv("MONGO_COLLECTION_NAME", "cm_catalog")
+MONGO_CONNECT_TIMEOUT_MS = int(os.getenv("MONGO_CONNECT_TIMEOUT_MS", "3000"))
+MONGO_SERVER_SELECTION_TIMEOUT_MS = int(
+    os.getenv("MONGO_SERVER_SELECTION_TIMEOUT_MS", "3000")
+)
+MONGO_SOCKET_TIMEOUT_MS = int(os.getenv("MONGO_SOCKET_TIMEOUT_MS", "10000"))
+MONGO_QUERY_TIMEOUT_MS = int(os.getenv("MONGO_QUERY_TIMEOUT_MS", "8000"))
+OPENAI_CHAT_MODEL = os.getenv("OPENAI_CHAT_MODEL", "gpt-4o-mini")
+OPENAI_TIMEOUT_SECONDS = float(os.getenv("OPENAI_TIMEOUT_SECONDS", "30"))
+
+CHAT_SYSTEM_PROMPT = (
+    "Eres MAQUI, el asistente virtual de Campomaq. "
+    "Responde en espanol claro, breve y util. "
+    "Te especializas en maquinaria agricola, repuestos, implementos, mantenimiento, "
+    "recomendaciones de uso y orientacion comercial inicial. "
+    "Si falta informacion para recomendar una maquina o repuesto, haz una sola pregunta "
+    "de aclaracion y luego orienta. "
+    "No inventes stock, precios, garantias, tiempos de entrega ni politicas si no fueron "
+    "confirmados. Cuando no sepas algo, dilo con honestidad y sugiere contactar a Campomaq al numero 0996517233."
+)
+
+_mongo_client = None
+_openai_client = None
+
+
+def is_development():
+    return os.getenv("FLASK_ENV") == "development"
+
+
+def clamp_int(value, default, min_value=None, max_value=None):
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        parsed = default
+
+    if min_value is not None:
+        parsed = max(min_value, parsed)
+    if max_value is not None:
+        parsed = min(max_value, parsed)
+    return parsed
+
+
+def format_exception_message(exc):
+    if is_development():
+        return str(exc)
+    return exc.__class__.__name__
+
+
+def error_response(message, status_code=500, exc=None):
+    payload = {"error": message}
+    if exc is not None:
+        payload["details"] = format_exception_message(exc)
+    return jsonify(payload), status_code
+
+
+def get_openai_client():
+    global _openai_client
+
+    if _openai_client is None:
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise RuntimeError("OPENAI_API_KEY environment variable is required")
+        _openai_client = OpenAI(
+            api_key=api_key,
+            timeout=OPENAI_TIMEOUT_SECONDS,
+        )
+
+    return _openai_client
+
+
+def get_mongo_client():
+    global _mongo_client
+
+    if _mongo_client is None:
+        mongo_uri = os.getenv("MONGO_URI")
+        if not mongo_uri:
+            raise RuntimeError("MONGO_URI environment variable is required")
+        _mongo_client = MongoClient(
+            mongo_uri,
+            appname="campomaq-api",
+            connect=False,
+            connectTimeoutMS=MONGO_CONNECT_TIMEOUT_MS,
+            serverSelectionTimeoutMS=MONGO_SERVER_SELECTION_TIMEOUT_MS,
+            socketTimeoutMS=MONGO_SOCKET_TIMEOUT_MS,
+        )
+
+    return _mongo_client
+
+
+def get_collection():
+    return get_mongo_client()[MONGO_DB_NAME][MONGO_COLLECTION_NAME]
+
+
+def dependency_status():
+    checks = {
+        "mongo": "not_checked",
+        "openai": "configured" if os.getenv("OPENAI_API_KEY") else "missing_config",
+    }
+    ready = True
+
+    try:
+        get_mongo_client().admin.command("ping")
+        checks["mongo"] = "ok"
+    except Exception as exc:
+        ready = False
+        checks["mongo"] = format_exception_message(exc)
+
+    return ready, checks
+
 
 def serialize_product(product):
-    """Convert MongoDB document to JSON serializable format"""
     if not product:
         return None
 
     def fix_value(value):
         if isinstance(value, ObjectId):
             return str(value)
-        elif isinstance(value, float):
-            # Replace NaN or inf with None (or 0 if you prefer)
+        if isinstance(value, float):
             if math.isnan(value) or math.isinf(value):
                 return None
             return value
-        elif isinstance(value, list):
+        if isinstance(value, list):
             return [fix_value(v) for v in value]
-        elif isinstance(value, dict):
+        if isinstance(value, dict):
             return {k: fix_value(v) for k, v in value.items()}
-        else:
-            return value
+        return value
 
     return {k: fix_value(v) for k, v in product.items()}
 
 
-def build_text_pipeline(query, limit=RESULT_LIMIT, index_name=TEXT_INDEX, popularity_scale=POPULARITY_SCALE):
-    """
-    Uses Atlas Search $search (compound/should) with a function score that **adds**
-    scaled popularity to Atlas' relevance score.
-    """
-    pipeline = [
+def build_text_pipeline(
+    query,
+    limit=RESULT_LIMIT,
+    index_name=TEXT_INDEX,
+    popularity_scale=POPULARITY_SCALE,
+):
+    return [
         {
             "$search": {
                 "index": index_name,
                 "compound": {
                     "should": [
-                        # product_name strongly boosted
                         {
                             "text": {
                                 "query": query,
                                 "path": "product_name",
-                                "synonyms": "synonym_mapping",   # <-- MUST be a string
+                                "synonyms": "synonym_mapping",
                                 "matchCriteria": "any",
-                                "score": {"boost": {"value": 2}}
+                                "score": {"boost": {"value": 2}},
                             }
                         },
                         {
@@ -92,27 +182,23 @@ def build_text_pipeline(query, limit=RESULT_LIMIT, index_name=TEXT_INDEX, popula
                                 "query": query,
                                 "path": "product_name",
                                 "fuzzy": {"maxEdits": 1},
-                                "score": { "boost": { "value": 2 } },
+                                "score": {"boost": {"value": 2}},
                             }
                         },
-                        # brand_name (less boost)
                         {
                             "text": {
                                 "query": query,
                                 "path": "brand_name",
                                 "fuzzy": {"maxEdits": 2},
-                                "score": { "boost": { "value": 1.25 } }
+                                "score": {"boost": {"value": 1.25}},
                             }
                         },
                     ],
-                    # You can add minimumShouldMatch if desired
-                    "minimumShouldMatch": 1
-                }
+                    "minimumShouldMatch": 1,
+                },
             }
         },
-        {
-            "$match": { "show_in_app": True }
-        },
+        {"$match": {"show_in_app": True}},
         {
             "$project": {
                 "_id": 0,
@@ -128,7 +214,7 @@ def build_text_pipeline(query, limit=RESULT_LIMIT, index_name=TEXT_INDEX, popula
                 "show_in_app": 1,
                 "is_spare_part": 1,
                 "new_product": 1,
-                "discount": { "$ifNull": ["$discount", 0] },
+                "discount": {"$ifNull": ["$discount", 0]},
                 "main_boost": 1,
                 "low_value_flag": 1,
                 "popularity": {"$ifNull": ["$popularity", 1]},
@@ -136,181 +222,255 @@ def build_text_pipeline(query, limit=RESULT_LIMIT, index_name=TEXT_INDEX, popula
                 "final_score": 1,
             }
         },
-                {
+        {
             "$addFields": {
                 "final_score": {
-                "$multiply": [
-                    "$score",
-                    { "$ifNull": ["$popularity", 1] },
-                    popularity_scale,
-                    # spare part factor
-                    {
-                    "$cond": [
-                        { "$eq": ["$is_spare_part", False] },
-                        1.9,   # boost if NOT spare part
-                        1.0
+                    "$multiply": [
+                        "$score",
+                        {"$ifNull": ["$popularity", 1]},
+                        popularity_scale,
+                        {
+                            "$cond": [
+                                {"$eq": ["$is_spare_part", False]},
+                                1.9,
+                                1.0,
+                            ]
+                        },
+                        {
+                            "$cond": [
+                                {"$gt": ["$discount", 0]},
+                                1.15,
+                                1.0,
+                            ]
+                        },
+                        {
+                            "$cond": [
+                                {"$eq": ["$new_product", True]},
+                                1.1,
+                                1.0,
+                            ]
+                        },
                     ]
-                    },
-                    # discount factor
-                    {
-                    "$cond": [
-                        { "$gt": ["$discount", 0] },
-                        1.15,  # boost if discount > 0
-                        1.0
-                    ]
-                    },
-                    # new product factor
-                    {
-                    "$cond": [
-                        { "$eq": ["$new_product", True] },
-                        1.1,   # boost if new product
-                        1.0
-                    ]
-                    }
-                ]
                 }
             }
         },
-
-        {
-        "$sort": { "final_score": -1 }
-        },
-        {"$limit": limit}
+        {"$sort": {"final_score": -1}},
+        {"$limit": limit},
     ]
+
+
+def build_products_pipeline(limit=None, page=1):
+    pipeline = [
+        {"$match": {"show_in_app": True}},
+        {
+            "$addFields": {
+                "effective_popularity": {"$ifNull": ["$popularity", 1]},
+                "final_score": {
+                    "$multiply": [
+                        {"$ifNull": ["$popularity", 1]},
+                        {
+                            "$cond": [
+                                {"$eq": ["$is_spare_part", False]},
+                                9,
+                                1.0,
+                            ]
+                        },
+                        {
+                            "$cond": [
+                                {"$gt": ["$discount", 0]},
+                                1.2,
+                                1.0,
+                            ]
+                        },
+                        {
+                            "$cond": [
+                                {"$eq": ["$new_product", True]},
+                                1.2,
+                                1.0,
+                            ]
+                        },
+                    ]
+                }
+            }
+        },
+        {"$sort": {"final_score": -1}},
+        {
+            "$project": {
+                "effective_popularity": 0,
+                "final_score": 0,
+            }
+        },
+    ]
+
+    if limit is not None:
+        skip = max(0, (page - 1) * limit)
+        if skip:
+            pipeline.append({"$skip": skip})
+        pipeline.append({"$limit": limit})
+
     return pipeline
 
-@app.route("/search", methods=["GET"])
+
+def build_chat_messages(user_message):
+    return [
+        {"role": "system", "content": CHAT_SYSTEM_PROMPT},
+        {"role": "user", "content": user_message},
+    ]
+
+
+@app.get("/")
+def root():
+    return jsonify({"service": "campomaq-api", "status": "ok"})
+
+
+@app.get("/health/live")
+def health_live():
+    return jsonify({"status": "alive"})
+
+
+@app.get("/health/ready")
+@app.get("/health")
+def health_ready():
+    ready, checks = dependency_status()
+    status_code = 200 if ready else 503
+    return (
+        jsonify(
+            {
+                "status": "ready" if ready else "degraded",
+                "service": "campomaq-api",
+                "checks": checks,
+            }
+        ),
+        status_code,
+    )
+
+
+@app.get("/search")
 def search():
     q = (request.args.get("q") or "").strip()
-    # mode = (request.args.get("mode") or "hybrid").lower()   # "text", "semantic", "hybrid"
-    # limit = int(request.args.get("limit", RESULT_LIMIT))
-    print(f"Search query: '{q}'")
+    limit = clamp_int(request.args.get("limit"), RESULT_LIMIT, 1, RESULT_LIMIT)
+
     if not q:
         return jsonify([])
 
-    pipeline = build_text_pipeline(q)
-    docs = list(collection.aggregate(pipeline))
-    # print(f"Text search pipeline: {docs}")
-    serialized_products = [serialize_product(product) for product in docs]
-
-    return jsonify(serialized_products)
-    
-@app.route("/products", methods=["GET"])
-def get_products():
-    """
-    List products sorted by popularity (descending).
-    - Only includes documents with show_in_app=True
-    - Supports optional pagination via ?page=1&amp;limit=20
-    """
-    # # Parse optional pagination parameters
-    # limit_default = RESULT_LIMIT
-    # try:
-    #     limit_param = (request.args.get("limit") or "").strip()
-    #     page_param = (request.args.get("page") or "").strip()
-
-    #     limit = int(limit_param) if limit_param.isdigit() else limit_default
-    #     # Clamp to a reasonable range
-    #     limit = max(1, min(limit, 100))
-    #     page = int(page_param) if page_param.isdigit() else 1
-    #     page = max(1, page)
-    # except Exception:
-    #     limit = limit_default
-    #     page = 1
-
-    # skip = (page - 1) * limit
-
-    # Build aggregation pipeline to sort by popularity (default to 1 if missing)
-    pipeline = [
-    {"$match": {"show_in_app": True}},
-    {
-        "$addFields": {
-            "effective_popularity": {"$ifNull": ["$popularity", 1]},
-            "final_score": {
-                "$multiply": [
-                    {"$ifNull": ["$popularity", 1]},
-                    # spare part factor
-                    {
-                        "$cond": [
-                            {"$eq": ["$is_spare_part", False]},
-                            9,  # boost if NOT spare part
-                            1.0
-                        ]
-                    },
-                    # discount factor
-                    {
-                        "$cond": [
-                            {"$gt": ["$discount", 0]},
-                            1.2,  # boost if discount > 0
-                            1.0
-                        ]
-                    },
-                    # new product factor
-                    {
-                        "$cond": [
-                            {"$eq": ["$new_product", True]},
-                            1.2,  # boost if new product
-                            1.0
-                        ]
-                    }
-                ]
-            }
-        }
-    },
-    {"$sort": {"final_score": -1}},
-    {
-        "$project": {
-            "effective_popularity": 0,
-            "final_score": 0  # hide scoring fields from response
-        }
-    }
-]
-
-
-    # if skip:
-    #     pipeline.append({"$skip": skip})
-    # pipeline.append({"$limit": limit})
-
-    docs = list(collection.aggregate(pipeline))
-    serialized_products = [serialize_product(p) for p in docs]
-
-    return jsonify(serialized_products)
-
-@app.route('/chat', methods=['POST'])
-def chat():
-    user_message = request.json.get('message', '')
-
-    if not user_message:
-        return jsonify({'error': 'No message provided'}), 400
+    app.logger.info("Search query: %s", q)
 
     try:
-        response = openai_client.chat.completions.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": "You are a helpful agricultural machinery assistant who help with short and concise answers in spanish."},
-                {"role": "user", "content": user_message}
-            ],
-            temperature=0.0,
-            max_tokens=100,
+        docs = list(
+            get_collection().aggregate(
+                build_text_pipeline(q, limit=limit),
+                allowDiskUse=True,
+                maxTimeMS=MONGO_QUERY_TIMEOUT_MS,
+            )
         )
-        reply = response.choices[0].message.content.strip()
-        print(user_message)
-        return jsonify({'reply': reply})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        serialized_products = [serialize_product(product) for product in docs]
+        return jsonify(serialized_products)
+    except (PyMongoError, RuntimeError) as exc:
+        app.logger.exception("Search failed")
+        return error_response("Search request failed", 500, exc)
 
 
+@app.get("/products")
+def get_products():
+    limit_param = (request.args.get("limit") or "").strip().lower()
+    page_param = request.args.get("page")
 
-@app.route('/health', methods=['GET'])
-def health():
-    return jsonify({'status': 'healthy'})
+    limit = None
+    if limit_param:
+        if limit_param != "all":
+            limit = clamp_int(limit_param, RESULT_LIMIT, 1, MAX_PRODUCTS_LIMIT)
+    elif page_param:
+        limit = RESULT_LIMIT
+
+    page = clamp_int(page_param, 1, 1)
+
+    try:
+        docs = list(
+            get_collection().aggregate(
+                build_products_pipeline(limit=limit, page=page),
+                allowDiskUse=True,
+                maxTimeMS=MONGO_QUERY_TIMEOUT_MS,
+            )
+        )
+        serialized_products = [serialize_product(product) for product in docs]
+        return jsonify(serialized_products)
+    except (PyMongoError, RuntimeError) as exc:
+        app.logger.exception("Products request failed")
+        return error_response("Products request failed", 500, exc)
 
 
+@app.post("/chat")
+def chat():
+    payload = request.get_json(silent=True) or {}
+    user_message = (payload.get("message") or "").strip()
 
-if __name__ == '__main__':
-    port = int(os.getenv('PORT', 5000))
-    debug = os.getenv('FLASK_ENV') == 'development'
-    
-    print(f"Starting Flask server on port {port}")
-    app.run(host='0.0.0.0', port=port, debug=debug)
-# if __name__ == "__main__":
-#     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    if not user_message:
+        return error_response("No message provided", 400)
+
+    try:
+        response = get_openai_client().chat.completions.create(
+            model=OPENAI_CHAT_MODEL,
+            messages=build_chat_messages(user_message),
+            temperature=0.2,
+            max_tokens=180,
+        )
+        reply = (response.choices[0].message.content or "").strip()
+        return jsonify({"reply": reply, "model": OPENAI_CHAT_MODEL})
+    except Exception as exc:
+        app.logger.exception("Chat request failed")
+        return error_response("Chat request failed", 500, exc)
+
+
+@app.post("/chat/stream")
+def chat_stream():
+    payload = request.get_json(silent=True) or {}
+    user_message = (payload.get("message") or "").strip()
+
+    if not user_message:
+        return error_response("No message provided", 400)
+
+    @stream_with_context
+    def generate():
+        full_reply = []
+
+        try:
+            stream = get_openai_client().chat.completions.create(
+                model=OPENAI_CHAT_MODEL,
+                messages=build_chat_messages(user_message),
+                temperature=0.2,
+                max_tokens=180,
+                stream=True,
+            )
+
+            for chunk in stream:
+                delta = chunk.choices[0].delta.content or ""
+                if not delta:
+                    continue
+                full_reply.append(delta)
+                yield f"data: {json.dumps({'delta': delta}, ensure_ascii=False)}\n\n"
+
+            yield (
+                "event: done\n"
+                f"data: {json.dumps({'reply': ''.join(full_reply)}, ensure_ascii=False)}\n\n"
+            )
+        except Exception as exc:
+            app.logger.exception("Streaming chat request failed")
+            yield (
+                "event: error\n"
+                f"data: {json.dumps({'error': format_exception_message(exc)}, ensure_ascii=False)}\n\n"
+            )
+
+    headers = {
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+        "X-Accel-Buffering": "no",
+    }
+    return Response(generate(), mimetype="text/event-stream", headers=headers)
+
+
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", 5000))
+    debug = is_development()
+
+    app.logger.info("Starting Flask server on port %s", port)
+    app.run(host="0.0.0.0", port=port, debug=debug)
