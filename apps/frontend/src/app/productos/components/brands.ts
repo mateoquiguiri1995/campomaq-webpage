@@ -9,7 +9,7 @@ export const availableBrands: Brand[] = [
   {
     id: "maruyama",
     name: "Maruyama",
-    logo: "/images/brands/Maruyama.png"
+    logo: "/images/brands/maruyama.png"
   },
   {
     id: "stihl",

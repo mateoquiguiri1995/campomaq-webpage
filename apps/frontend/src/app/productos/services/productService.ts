@@ -10,6 +10,8 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5001';
 // API response interfaces
 interface ApiProduct {
   id?: string | number;
+  product_id?: string | number;
+  product_code?: string | number;
   product_name?: string;
   category_name?: string;
   brand_name?: string;
@@ -73,6 +75,12 @@ class ApiClient {
 }
 
 const apiClient = new ApiClient(API_BASE_URL);
+
+const IMAGE_URL_PATTERN = /\.(avif|gif|jpe?g|png|svg|webp)(\?.*)?$/i;
+
+function isRenderableImageUrl(value: string): boolean {
+  return IMAGE_URL_PATTERN.test(value);
+}
 
 export class ProductService {
   /**
@@ -150,14 +158,16 @@ export class ProductService {
         ? apiProduct.link
         : (typeof apiProduct?.link === 'string' ? [apiProduct.link] : []);
 
+    const imageLinks = links.filter(isRenderableImageUrl);
+
     const safeId =
-      (apiProduct && apiProduct.id) ||
+      (apiProduct && (apiProduct.product_id || apiProduct.id || apiProduct.product_code)) ||
       (globalThis.crypto?.randomUUID?.() ?? `api-${Math.random().toString(36).slice(2, 11)}`);
 
     return {
       id: String(safeId),
       name: apiProduct?.product_name?.trim() || 'Producto sin nombre',
-      image: links.length > 0 ? links[0] : '/images/brands/placeholder.png',
+      image: imageLinks[0] || '/images/brands/placeholder.png',
       category: apiProduct?.category_name?.trim() || 'Sin categoría',
       brand: apiProduct?.brand_name?.trim() || 'Sin marca',
       brandLogo: apiProduct?.brand_logo || '/images/brands/placeholder.png',
@@ -175,7 +185,7 @@ export class ProductService {
       })(),
       description: apiProduct?.description || 'Sin descripción',
       tags: Array.isArray(apiProduct?.tags) ? apiProduct.tags : [],
-      additionalImages: links,
+      additionalImages: imageLinks,
     };
   }
 }

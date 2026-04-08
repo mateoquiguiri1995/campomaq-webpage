@@ -101,7 +101,7 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
               Productos Encontrados
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6">
-              {searchResults.map((product) => (
+              {searchResults.map((product, index) => (
                 <div
                   key={product.id}
                   onClick={() => handleProductClick(product)}
@@ -117,6 +117,7 @@ export default function SearchResults({ searchQuery, onBack }: SearchResultsProp
                     isNew={product.isNew}
                     discount={product.discount}
                     description={product.description}
+                    priority={index < 4}
                   />
                 </div>
               ))}

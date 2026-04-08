@@ -15,6 +15,9 @@ name: Build and Push Frontend Docker Image to Docker Hub (DEV)
 on:
   push:
     branches: [ dev ]
+    paths:
+      - 'apps/frontend/**'
+      - '.github/workflows/dev_campomaq-ec.yml'
   workflow_dispatch:
 
 jobs:

@@ -2,12 +2,15 @@
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 # More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
 
-name: Build and deploy Python app to Azure Web App - api-campomaq-ec
+name: Build and deploy Python app to Azure Web App - api-campomaq-ec (DEV)
 
 on:
-  # push:
-  #   branches:
-  #     - dev
+  push:
+    branches:
+      - dev
+    paths:
+      - 'apps/backend/**'
+      - '.github/workflows/dev_api-campomaq-ec.yml'
   workflow_dispatch:
 
 jobs:
@@ -71,3 +74,4 @@ jobs:
           app-name: 'api-campomaq-ec'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_BFEF436D9FC3490C9483D6C8B13165DA }}
+          package: .
