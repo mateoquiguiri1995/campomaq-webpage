@@ -574,7 +574,7 @@ function ProductosPageContent() {
                   {paginatedProducts.length > 0 ? (
                     <>
                       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6">
-                        {paginatedProducts.map((product) => (
+                        {paginatedProducts.map((product, index) => (
                           <div key={product.id} className="relative">
                             <div onClick={() => handleProductClick(product)} className="cursor-pointer">
                               <CardProducto
@@ -587,6 +587,7 @@ function ProductosPageContent() {
                                 isNew={product.isNew}
                                 discount={product.discount}
                                 description={product.description}
+                                priority={index < 4}
                               />
                             </div>
                           </div>

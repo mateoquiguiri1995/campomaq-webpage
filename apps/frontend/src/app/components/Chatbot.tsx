@@ -239,7 +239,7 @@ export default function Chatbot() {
                 </div>
                 <div>
                   <div className="text-sm font-extrabold tracking-[0.18em]">MAQUI</div>
-                  <div className="text-xs text-black/70">Asistente de maquinaria agricola</div>
+                  <div className="text-xs text-black/70">Asistente de Campo Maq</div>
                 </div>
               </div>
               <button

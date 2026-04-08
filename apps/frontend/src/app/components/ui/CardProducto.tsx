@@ -11,6 +11,7 @@ interface ProductCardProps {
   isNew?: boolean;
   discount?: number;
   description?: string;
+  priority?: boolean;
 }
 
 export default function CardProducto({
@@ -22,7 +23,9 @@ export default function CardProducto({
   isNew = false,
   discount = 0,
   description,
+  priority = false,
 }: ProductCardProps) {
+  const isBlobStorageImage = image.startsWith("https://campomaq.blob.core.windows.net/");
 
   const handleQuote = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -87,6 +90,9 @@ export default function CardProducto({
           alt={name}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+          priority={priority}
+          loading={priority ? "eager" : "lazy"}
+          unoptimized={isBlobStorageImage}
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
