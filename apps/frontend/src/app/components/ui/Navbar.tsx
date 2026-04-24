@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState, useEffect, useRef, KeyboardEvent } from 'react'
+import { useState, useEffect, useRef, useCallback, KeyboardEvent } from 'react'
 import { Menu, X, Search, ChevronRight } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -26,7 +26,7 @@ export default function Navbar() {
   const [showTopBar, setShowTopBar] = useState(true)
   const [showFloatingSocials, setShowFloatingSocials] = useState(false)
   const [isFooterVisible, setIsFooterVisible] = useState(false)
-  const [lastScrollY, setLastScrollY] = useState(0)
+  const lastScrollYRef = useRef(0)
   const [searchInput, setSearchInput] = useState("")
   const [topBarHeight, setTopBarHeight] = useState(0) // Nueva state para altura dinámica
   const pathname = usePathname()
@@ -73,34 +73,33 @@ export default function Navbar() {
     }
   }, [])
 
-  // Control de scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY
-      const isAtTop = currentScrollY <= 10
-      const isScrollingDown = currentScrollY > lastScrollY
-      
+  // Control de scroll — handler registered once; lastScrollY tracked in a ref
+  // to avoid re-registering the listener on every scroll event.
+  const handleScroll = useCallback(() => {
+    const currentScrollY = window.scrollY
+    const isAtTop = currentScrollY <= 10
+    const isScrollingDown = currentScrollY > lastScrollYRef.current
 
-      setScrolled(currentScrollY > 50)
-      
+    setScrolled(currentScrollY > 50)
 
-      if (isAtTop) {
-        setShowTopBar(true)
-        setShowFloatingSocials(false)
-      } else if (isScrollingDown && currentScrollY > 50) {
-        setShowTopBar(false)
-        setShowFloatingSocials(true)
-      } else if (!isScrollingDown && currentScrollY < 50) {
-        setShowTopBar(true)
-        setShowFloatingSocials(false)
-      }
-
-      setLastScrollY(currentScrollY)
+    if (isAtTop) {
+      setShowTopBar(true)
+      setShowFloatingSocials(false)
+    } else if (isScrollingDown && currentScrollY > 50) {
+      setShowTopBar(false)
+      setShowFloatingSocials(true)
+    } else if (!isScrollingDown && currentScrollY < 50) {
+      setShowTopBar(true)
+      setShowFloatingSocials(false)
     }
 
+    lastScrollYRef.current = currentScrollY
+  }, [])
+
+  useEffect(() => {
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [lastScrollY])
+  }, [handleScroll])
 
   useEffect(() => {
     setOpen(false)

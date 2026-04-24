@@ -374,23 +374,65 @@ class GoogleAnalytics {
   }
 }
 
-// Create singleton instance
-const analytics = new GoogleAnalytics();
+// Only instantiate on the client — the class requires window/document/localStorage
+const analytics = typeof window !== 'undefined' ? new GoogleAnalytics() : null as unknown as GoogleAnalytics;
 
-// Export convenience functions
-export const initializeAnalytics = (consent?: CookieConsent) => analytics.initialize(consent);
-export const updateAnalyticsConsent = (consent: CookieConsent) => analytics.updateConsent(consent);
-export const trackPageView = (path: string, title?: string) => analytics.pageView(path, title);
-export const trackVirtualPageView = (data: VirtualPageView) => analytics.virtualPageView(data);
-export const trackEvent = (eventName: string, parameters?: Record<string, unknown>) => analytics.event(eventName, parameters);
-export const trackProductView = (data: ProductViewEvent) => analytics.trackProductView(data);
-export const trackSearch = (data: SearchEvent) => analytics.trackSearch(data);
-export const trackFilter = (data: FilterEvent) => analytics.trackFilter(data);
-export const trackWhatsAppClick = (data: WhatsAppClickEvent) => analytics.trackWhatsAppClick(data);
-export const trackCategoryClick = (data: CategoryClickEvent) => analytics.trackCategoryClick(data);
-export const trackFileDownload = (data: FileDownloadEvent) => analytics.trackFileDownload(data);
-export const trackImageNavigation = (data: ImageNavigationEvent) => analytics.trackImageNavigation(data);
-export const trackEcommerce = (eventName: string, data: EcommerceEvent) => analytics.trackEcommerce(eventName, data);
-export const getAnalyticsStatus = () => analytics.getStatus();
+// Export convenience functions — all no-op on the server
+export const initializeAnalytics = (consent?: CookieConsent) => {
+  if (typeof window === 'undefined') return;
+  analytics.initialize(consent);
+};
+export const updateAnalyticsConsent = (consent: CookieConsent) => {
+  if (typeof window === 'undefined') return;
+  analytics.updateConsent(consent);
+};
+export const trackPageView = (path: string, title?: string) => {
+  if (typeof window === 'undefined') return;
+  analytics.pageView(path, title);
+};
+export const trackVirtualPageView = (data: VirtualPageView) => {
+  if (typeof window === 'undefined') return;
+  analytics.virtualPageView(data);
+};
+export const trackEvent = (eventName: string, parameters?: Record<string, unknown>) => {
+  if (typeof window === 'undefined') return;
+  analytics.event(eventName, parameters);
+};
+export const trackProductView = (data: ProductViewEvent) => {
+  if (typeof window === 'undefined') return;
+  analytics.trackProductView(data);
+};
+export const trackSearch = (data: SearchEvent) => {
+  if (typeof window === 'undefined') return;
+  analytics.trackSearch(data);
+};
+export const trackFilter = (data: FilterEvent) => {
+  if (typeof window === 'undefined') return;
+  analytics.trackFilter(data);
+};
+export const trackWhatsAppClick = (data: WhatsAppClickEvent) => {
+  if (typeof window === 'undefined') return;
+  analytics.trackWhatsAppClick(data);
+};
+export const trackCategoryClick = (data: CategoryClickEvent) => {
+  if (typeof window === 'undefined') return;
+  analytics.trackCategoryClick(data);
+};
+export const trackFileDownload = (data: FileDownloadEvent) => {
+  if (typeof window === 'undefined') return;
+  analytics.trackFileDownload(data);
+};
+export const trackImageNavigation = (data: ImageNavigationEvent) => {
+  if (typeof window === 'undefined') return;
+  analytics.trackImageNavigation(data);
+};
+export const trackEcommerce = (eventName: string, data: EcommerceEvent) => {
+  if (typeof window === 'undefined') return;
+  analytics.trackEcommerce(eventName, data);
+};
+export const getAnalyticsStatus = () => {
+  if (typeof window === 'undefined') return { isInitialized: false, hasConsent: false, isDevelopment: false };
+  return analytics.getStatus();
+};
 
 export default analytics;

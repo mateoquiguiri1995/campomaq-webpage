@@ -45,7 +45,6 @@ class ApiClient {
     };
 
     try {
-      console.log("[ApiClient] Fetching:", url, config);
       const response = await fetch(url, config);
 
       if (!response.ok) {
@@ -54,7 +53,6 @@ class ApiClient {
         throw new Error(`HTTP error! status: ${response.status}, body: ${text}`);
       }
       const json = await response.json();
-      console.log("[ApiClient] Success:", json);
       return json as T;
     } catch (err: unknown) {
       console.error("[ApiClient] Network/Fetch error:", err);

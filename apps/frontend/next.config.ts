@@ -5,6 +5,12 @@ const nextConfig: import('next').NextConfig = {
   output: 'standalone',
   reactStrictMode: true,
   trailingSlash: true,
+  experimental: {
+    staleTimes: {
+      dynamic: 0,   // don't cache RSC payloads for dynamic routes
+      static: 300,  // 5 min for static routes
+    },
+  },
   images: {
     remotePatterns: [
       // Tu configuración existente
@@ -46,10 +52,10 @@ const nextConfig: import('next').NextConfig = {
         pathname: '/**',
       },
     ],
-    // Configuración adicional para mejor performance
     formats: ['image/webp', 'image/avif'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 3600,
+    deviceSizes: [640, 828, 1080, 1920],
+    imageSizes: [48, 96, 256],
   },
   webpack(config) {
     // Tu configuración existente de webpack para videos
