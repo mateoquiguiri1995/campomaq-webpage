@@ -28,110 +28,35 @@ class GoogleAnalytics {
   constructor() {
     this.config = {
       trackingId: process.env.NEXT_PUBLIC_GA_TRACKING_ID || '',
-      // isDevelopment: false,
-      isDevelopment: process.env.NODE_ENV === 'development',
-      debugMode: process.env.NODE_ENV === 'development',
+      isDevelopment: process.env.NODE_ENV === 'development' &&
+                     process.env.NEXT_PUBLIC_GA_DEBUG !== 'true',
+      debugMode: process.env.NEXT_PUBLIC_GA_DEBUG === 'true',
       enableConsent: true
     };
 
-    // Log environment info for debugging
     console.log('[GA] Config loaded:', {
       hasTrackingId: !!this.config.trackingId,
-      trackingId: this.config.trackingId,
       isDevelopment: this.config.isDevelopment,
-      nodeEnv: process.env.NODE_ENV
+      debugMode: this.config.debugMode,
     });
   }
 
-  // Initialize Google Analytics
+  // Initialize Google Analytics.
+  // gtag.js is loaded by Next.js <Script> in layout.tsx — this method only
+  // syncs the current consent state with the already-running gtag instance.
   async initialize(consent?: CookieConsent): Promise<void> {
-    if (!this.config.trackingId) {
-      console.warn('[GA] Tracking ID not found');
-      return;
-    }
+    if (!this.config.trackingId || this.config.isDevelopment) return;
 
-    if (this.config.isDevelopment) {
-      console.log('[GA] Development mode - tracking disabled');
-      return;
-    }
+    const hasConsent = consent?.analytics ?? this.checkStoredConsent();
+    this.hasConsent = !!hasConsent;
+    this.isInitialized = true;
 
-    try {
-      // Check consent if required
-      if (this.config.enableConsent) {
-        const hasAnalyticsConsent = consent?.analytics ?? this.checkStoredConsent();
-
-        if (!hasAnalyticsConsent) {
-          console.log('[GA] Analytics consent not granted');
-          return;
-        }
-        this.hasConsent = true;
-      }
-
-      await this.loadGtagScript();
-      this.initializeGtag();
-      this.isInitialized = true;
-      console.log('[GA] Initialized successfully');
-    } catch (error) {
-      console.error('[GA] Initialization failed:', error);
-    }
-  }
-
-  // Load Google Analytics script
-  private async loadGtagScript(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (document.getElementById('gtag-script')) {
-        resolve();
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.id = 'gtag-script';
-      script.async = true;
-      script.src = `https://www.googletagmanager.com/gtag/js?id=${this.config.trackingId}`;
-      
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Failed to load Google Analytics script'));
-      
-      document.head.appendChild(script);
-    });
-  }
-
-  // Initialize gtag
-  private initializeGtag(): void {
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = (...args: unknown[]) => {
-      window.dataLayer.push(args);
-    };
-
-    window.gtag('js', new Date());
-    
-    // Configure with consent settings
-    window.gtag('config', this.config.trackingId, {
-      debug_mode: this.config.debugMode,
-      send_page_view: true,
-      anonymize_ip: true,
-      cookie_flags: 'secure;samesite=none',
-    });
-
-    // Set consent mode
-    if (this.config.enableConsent) {
-      window.gtag('consent', 'default', {
-        analytics_storage: 'denied',
+    if (window.gtag) {
+      window.gtag('consent', 'update', {
+        analytics_storage: this.hasConsent ? 'granted' : 'denied',
         ad_storage: 'denied',
-        functionality_storage: 'denied',
-        personalization_storage: 'denied',
-        security_storage: 'granted',
-        wait_for_update: 500,
+        functionality_storage: consent?.functional ? 'granted' : 'denied',
       });
-
-      if (this.hasConsent) {
-        this.updateConsent({
-          analytics: true,
-          marketing: false,
-          functional: true,
-          timestamp: Date.now()
-        });
-      }
     }
   }
 
@@ -141,14 +66,14 @@ class GoogleAnalytics {
       const stored = localStorage.getItem('campomaq_cookie_consent');
 
       if (!stored) {
-        return false;
+        return true; // No stored preference = default granted (opt-out model)
       }
 
       const consent = JSON.parse(stored);
       return consent.analytics === true;
     } catch (error) {
       console.error('[GA] Error checking stored consent:', error);
-      return false;
+      return true; // Default to granted on error
     }
   }
 
