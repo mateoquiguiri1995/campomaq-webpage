@@ -54,6 +54,8 @@ export default function Chatbot() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const nextMessageIdRef = useRef(1);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const streamBufferRef = useRef('');
+  const rafPendingRef = useRef<number | null>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -165,14 +167,27 @@ export default function Chatbot() {
         }
 
         streamedText += delta;
-        updateBotMessage(botMessageId, (message) => ({
-          ...message,
-          text: streamedText,
-          isStreaming: true,
-        }));
+        streamBufferRef.current = streamedText;
+        if (!rafPendingRef.current) {
+          rafPendingRef.current = requestAnimationFrame(() => {
+            const text = streamBufferRef.current;
+            rafPendingRef.current = null;
+            updateBotMessage(botMessageId, (message) => ({
+              ...message,
+              text,
+              isStreaming: true,
+            }));
+          });
+        }
       }
     }
 
+    // Cancel any pending RAF and flush remaining buffered text before finalizing
+    if (rafPendingRef.current) {
+      cancelAnimationFrame(rafPendingRef.current);
+      rafPendingRef.current = null;
+    }
+    streamBufferRef.current = '';
     finalizeBotMessage(botMessageId);
   };
 
