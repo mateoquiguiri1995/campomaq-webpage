@@ -25,3 +25,7 @@ server/*.pyc
 Thumbs.db
 
 .gitattributes
+
+# Claude Code
+.claude/
+CLAUDE.md
