@@ -9,6 +9,13 @@ import os
 from bson import ObjectId
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
+from utils.cache import (
+    redis_ping,
+    get_cached_search,
+    set_cached_search,
+    get_cached_products,
+    set_cached_products,
+)
 
 
 os.environ.setdefault("FLASK_ENV", "production")
@@ -123,6 +130,7 @@ def dependency_status():
     checks = {
         "mongo": "not_checked",
         "openai": "configured" if os.getenv("OPENAI_API_KEY") else "missing_config",
+        "redis": redis_ping(),
     }
     ready = True
 
@@ -355,6 +363,10 @@ def search():
 
     app.logger.info("Search query: %s", q)
 
+    cached = get_cached_search(q, limit)
+    if cached is not None:
+        return jsonify(cached)
+
     try:
         docs = list(
             get_collection().aggregate(
@@ -364,6 +376,7 @@ def search():
             )
         )
         serialized_products = [serialize_product(product) for product in docs]
+        set_cached_search(q, limit, serialized_products)
         return jsonify(serialized_products)
     except (PyMongoError, RuntimeError) as exc:
         app.logger.exception("Search failed")
@@ -384,6 +397,13 @@ def get_products():
 
     page = clamp_int(page_param, 1, 1)
 
+    use_cache = not limit_param and not page_param
+
+    if use_cache:
+        cached = get_cached_products()
+        if cached is not None:
+            return jsonify(cached)
+
     try:
         docs = list(
             get_collection().aggregate(
@@ -393,6 +413,8 @@ def get_products():
             )
         )
         serialized_products = [serialize_product(product) for product in docs]
+        if use_cache:
+            set_cached_products(serialized_products)
         return jsonify(serialized_products)
     except (PyMongoError, RuntimeError) as exc:
         app.logger.exception("Products request failed")
