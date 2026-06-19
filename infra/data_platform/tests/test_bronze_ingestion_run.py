@@ -86,7 +86,7 @@ def test_date_chunks_invalid_dates_yield_original_range_once():
     assert chunks == [("not-a-date", "still-not-a-date")]
 
 
-def test_sqlserver_query_range_shifts_incremental_utc_to_local_time():
+def test_sqlserver_query_range_shifts_incremental_utc_to_local_dates():
     run = _load_bronze_run_module()
 
     start_str, end_str = run._sqlserver_query_range(
@@ -95,8 +95,21 @@ def test_sqlserver_query_range_shifts_incremental_utc_to_local_time():
         apply_local_offset=True,
     )
 
-    assert start_str == "2026-06-18 23:29:01"
-    assert end_str == "2026-06-18 23:46:49"
+    assert start_str == "2026-06-18"
+    assert end_str == "2026-06-19"
+
+
+def test_sqlserver_query_range_queries_full_current_local_day():
+    run = _load_bronze_run_module()
+
+    start_str, end_str = run._sqlserver_query_range(
+        "2026-06-19 18:34:13",
+        "2026-06-19 19:10:10",
+        apply_local_offset=True,
+    )
+
+    assert start_str == "2026-06-19"
+    assert end_str == "2026-06-20"
 
 
 def test_sqlserver_query_range_leaves_historical_dates_unchanged():

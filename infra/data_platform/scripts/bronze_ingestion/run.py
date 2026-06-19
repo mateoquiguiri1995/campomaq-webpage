@@ -101,9 +101,11 @@ def _sqlserver_query_range(start_str: str, end_str: str, apply_local_offset: boo
     if not apply_local_offset:
         return start_str, end_str
 
-    query_start = _shift_datetime_string(start_str, SQLSERVER_LOCAL_OFFSET_HOURS)
-    query_end = _shift_datetime_string(end_str, SQLSERVER_LOCAL_OFFSET_HOURS)
-    logger.info(f"SQL Server query window (UTC-5 local): {query_start} → {query_end}")
+    local_start = datetime.fromisoformat(_shift_datetime_string(start_str, SQLSERVER_LOCAL_OFFSET_HOURS))
+    local_end = datetime.fromisoformat(_shift_datetime_string(end_str, SQLSERVER_LOCAL_OFFSET_HOURS))
+    query_start = local_start.date().isoformat()
+    query_end = (local_end.date() + timedelta(days=1)).isoformat()
+    logger.info(f"SQL Server query window (UTC-5 local dates): {query_start} → {query_end}")
     return query_start, query_end
 
 
