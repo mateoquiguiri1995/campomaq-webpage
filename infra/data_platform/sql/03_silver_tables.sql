@@ -1,0 +1,10 @@
+-- Silver tables — typed, cleaned, deduplicated rows.
+-- TBD: columns defined in Week 2 after source PK discovery and field mapping.
+--
+-- Expected tables:
+--   silver.products       (from bronze.raw_products)
+--   silver.prices         (from bronze.raw_products — same source, split at Silver)
+--   silver.stock          (from bronze.raw_stock + bronze.raw_kardex)
+--   silver.sales          (from bronze.raw_sales)
+--   silver.sales_detail   (from bronze.raw_sales_detail)
+--   silver.credit_notes   (from bronze.raw_credit_notes)

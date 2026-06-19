@@ -1,0 +1,7 @@
+-- Gold tables — business-ready aggregates and joined views.
+-- TBD: columns and join logic defined in Week 2-3 after Silver schema is confirmed.
+--
+-- Expected tables/views:
+--   gold.product_catalog      (products + current price + current stock — replaces MongoDB cm_catalog)
+--   gold.inventory_summary    (stock levels by product/warehouse/date)
+--   gold.sales_summary        (sales aggregated by product/customer/period)
