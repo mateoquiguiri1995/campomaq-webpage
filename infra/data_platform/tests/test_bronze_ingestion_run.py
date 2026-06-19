@@ -86,6 +86,32 @@ def test_date_chunks_invalid_dates_yield_original_range_once():
     assert chunks == [("not-a-date", "still-not-a-date")]
 
 
+def test_sqlserver_query_range_shifts_incremental_utc_to_local_time():
+    run = _load_bronze_run_module()
+
+    start_str, end_str = run._sqlserver_query_range(
+        "2026-06-19 04:29:01",
+        "2026-06-19 04:46:49",
+        apply_local_offset=True,
+    )
+
+    assert start_str == "2026-06-18 23:29:01"
+    assert end_str == "2026-06-18 23:46:49"
+
+
+def test_sqlserver_query_range_leaves_historical_dates_unchanged():
+    run = _load_bronze_run_module()
+
+    start_str, end_str = run._sqlserver_query_range(
+        "2023-01-01",
+        "2026-01-01",
+        apply_local_offset=False,
+    )
+
+    assert start_str == "2023-01-01"
+    assert end_str == "2026-01-01"
+
+
 def test_resolve_date_range_uses_last_data_end_with_safety_window(monkeypatch):
     run = _load_bronze_run_module()
     monkeypatch.setattr(

@@ -31,6 +31,7 @@ DIMENSION_JOB_NAME = "bronze_ingestion_dimension"
 CHUNK_DAYS = 30
 INCREMENTAL_SAFETY_MINUTES = 5
 DEFAULT_HISTORY_START = "2022-01-01"
+SQLSERVER_LOCAL_OFFSET_HOURS = -5
 
 
 # ---------------------------------------------------------------------------
@@ -84,6 +85,26 @@ def _date_chunks(start_str, end_str, chunk_days=CHUNK_DAYS):
         chunk_end = min(current + timedelta(days=chunk_days), end)
         yield current.strftime(fmt), chunk_end.strftime(fmt)
         current = chunk_end
+
+
+def _shift_datetime_string(value: str, hours: int) -> str:
+    try:
+        dt = datetime.fromisoformat(value)
+    except ValueError:
+        return value
+
+    fmt = "%Y-%m-%d %H:%M:%S" if len(value) > 10 else "%Y-%m-%d"
+    return (dt + timedelta(hours=hours)).strftime(fmt)
+
+
+def _sqlserver_query_range(start_str: str, end_str: str, apply_local_offset: bool) -> tuple[str, str]:
+    if not apply_local_offset:
+        return start_str, end_str
+
+    query_start = _shift_datetime_string(start_str, SQLSERVER_LOCAL_OFFSET_HOURS)
+    query_end = _shift_datetime_string(end_str, SQLSERVER_LOCAL_OFFSET_HOURS)
+    logger.info(f"SQL Server query window (UTC-5 local): {query_start} → {query_end}")
+    return query_start, query_end
 
 
 def _compute_hash_col(df: pd.DataFrame, entity_key: str) -> pd.Series:
@@ -172,6 +193,11 @@ def main():
         # ── Date-filtered tables ──────────────────────────────────────────
         if not args.dimension:
             start_str, end_str = _resolve_date_range(args.start_date, args.end_date)
+            query_start_str, query_end_str = _sqlserver_query_range(
+                start_str,
+                end_str,
+                apply_local_offset=not (args.start_date and args.end_date),
+            )
 
             for entity_key, read_fn, write_fn in [
                 ("kardex",       readers.read_kardex,       writers.write_kardex),
@@ -181,7 +207,7 @@ def main():
             ]:
                 logger.info(f"Reading {entity_key}...")
                 r, w = _ingest_date_range(engine, conn, entity_key, read_fn, write_fn,
-                                          run_id, extracted_at, start_str, end_str)
+                                          run_id, extracted_at, query_start_str, query_end_str)
                 total_read += r; total_written += w
 
         complete_run(
