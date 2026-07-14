@@ -12,11 +12,9 @@ On-prem SQL Server (EMPRESA.dbo.*)
 Supabase — bronze.*
   Raw rows + metadata columns (JSONB). No transformation applied.
   │
-  │  Azure WebJob (api-campomaq-ec App Service)
-  │  webjobs/silver_fast_refresh  — every 10 min  → stock only
-  │  webjobs/silver_slow_refresh  — every 30 min  → products, prices, sales
-  │  ├── mode: incremental (WebJob default)
-  │  └── mode: historical  (run locally once with --start-date / --end-date)
+  │  Supabase Cron (pg_cron)
+  │  silver-fast-refresh  - at :01/:11/... -> sales, sales detail, stock
+  │  silver-slow-refresh  - daily         -> products, clients, kardex, credit notes
   ↓
 Supabase — silver.*
   Typed, cleaned, deduplicated rows. Business keys resolved.
@@ -45,7 +43,7 @@ Flask API (apps/backend/) + Dashboard + Salesman app
 | Script | Where it runs | Trigger |
 |---|---|---|
 | `scripts/bronze_ingestion/run.py` | On-prem Windows machine | Task Scheduler cron / local manual |
-| `webjobs/silver_*/run.py` | Azure App Service `api-campomaq-ec` | Azure WebJob triggered schedule |
+| `sql/03_silver_tables.sql`, `sql/05_silver_cron.sql` | Supabase Postgres | Materialized views + pg_cron |
 | `webjobs/gold_refresh/run.py` | Azure App Service `api-campomaq-ec` | Azure WebJob triggered schedule |
 
 ## Legacy ETL

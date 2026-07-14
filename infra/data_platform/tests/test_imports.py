@@ -25,22 +25,6 @@ def test_import_bronze_readers():
     import campomaq_etl.bronze.readers  # noqa: F401
 
 
-def test_import_silver_products():
-    import campomaq_etl.silver.products  # noqa: F401
-
-
-def test_import_silver_prices():
-    import campomaq_etl.silver.prices  # noqa: F401
-
-
-def test_import_silver_stock():
-    import campomaq_etl.silver.stock  # noqa: F401
-
-
-def test_import_silver_sales():
-    import campomaq_etl.silver.sales  # noqa: F401
-
-
 def test_import_gold_product_catalog():
     import campomaq_etl.gold.product_catalog  # noqa: F401
 

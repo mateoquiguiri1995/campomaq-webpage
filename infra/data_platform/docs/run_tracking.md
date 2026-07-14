@@ -41,9 +41,10 @@ CREATE TABLE IF NOT EXISTS platform.etl_runs (
 
 `job_name` values:
 - `bronze_ingestion`
-- `silver_fast_refresh`
-- `silver_slow_refresh`
 - `gold_refresh`
+
+Silver refreshes run inside Supabase Cron and are tracked separately in
+`cron.job_run_details` under `silver-fast-refresh` and `silver-slow-refresh`.
 
 ## Run Lifecycle
 
@@ -71,12 +72,13 @@ It then reads rows from Bronze/Silver updated after `(last_success - 15 min)`. T
 
 ## Retry Policy
 
-- WebJobs: no automatic retry. Azure restarts the job on the next schedule tick.
+- Gold WebJob: no automatic retry. Azure restarts the job on the next schedule tick.
+- Silver Cron: a failed refresh is recorded in `cron.job_run_details`; the next scheduled run tries again.
 - On-prem cron: no automatic retry. Task Scheduler re-runs on next trigger.
 - Failures are logged in `etl_runs.error_message` and surfaced in Azure Log Stream.
 
 ## Idempotency Strategy
 
-Silver and Gold jobs truncate the target date partition before writing. Running the same job twice for the same time range is safe — the second run overwrites the first.
+Silver materialized views are rebuilt from Bronze on every refresh. Gold keeps its own target-write strategy.
 
 Historical runs split the date range into 30-day chunks, each with its own `run_id`.

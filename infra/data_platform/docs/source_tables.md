@@ -11,7 +11,7 @@ Status: PK candidates and field lists are **TBD — complete in Week 2** after d
 - **Update frequency**: every 30 min
 - **Known issues**: TBD
 - **Fields needed**: TBD
-- **Notes**: This view contains both product master data and current prices. May be split into `silver.products` and `silver.prices` during Silver transformation.
+- **Notes**: Product master data and current price fields remain together in `silver.products`.
 
 ---
 

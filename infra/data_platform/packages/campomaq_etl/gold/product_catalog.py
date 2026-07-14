@@ -1,7 +1,7 @@
 """
 Gold: product catalog
 
-Sources: silver.products, silver.prices, silver.stock
+Sources: silver.products, silver.stock
 Target: gold.product_catalog
 
 Intended logic (TBD Week 3):

@@ -9,8 +9,9 @@ Run these files in order against the `campomaq` Supabase project. The project is
    - `00_schemas.sql`
    - `01_platform_tables.sql`
    - `02_bronze_tables.sql`
-   - `03_silver_tables.sql` (placeholder — no-op until Week 2)
+   - `03_silver_tables.sql`
    - `04_gold_tables.sql` (placeholder — no-op until Week 2)
+   - `05_silver_cron.sql`
 
 ## Option B: psql CLI
 
@@ -24,10 +25,11 @@ psql $SUPABASE_DB_URL < sql/01_platform_tables.sql
 psql $SUPABASE_DB_URL < sql/02_bronze_tables.sql
 psql $SUPABASE_DB_URL < sql/03_silver_tables.sql
 psql $SUPABASE_DB_URL < sql/04_gold_tables.sql
+psql $SUPABASE_DB_URL < sql/05_silver_cron.sql
 ```
 
 ## Notes
 
-- All `CREATE TABLE` statements use `IF NOT EXISTS` — safe to re-run.
-- `03_silver_tables.sql` and `04_gold_tables.sql` are placeholders in Week 1. They will gain actual column definitions in Week 2 after source PK discovery.
+- Silver is implemented as materialized views refreshed by Supabase Cron.
+- `04_gold_tables.sql` remains a placeholder until the Gold queries are finalized.
 - Do not apply migrations on prod before testing on dev.

@@ -15,16 +15,17 @@
 - No transformation — raw data + 5 metadata columns only
 - Each run appends new/changed rows (incremental) or a date range (historical)
 
-## Silver Transformations (Azure WebJob)
+## Silver Transformations (Supabase Cron)
 
 | WebJob | Tables refreshed | Schedule |
 |---|---|---|
-| `silver_fast_refresh` | `silver.stock`, `silver.kardex` | Every 10 min (`0 */10 * * * *`) |
-| `silver_slow_refresh` | `silver.products`, `silver.prices`, `silver.sales` | Every 30 min (`0 */30 * * * *`) |
+| `silver-fast-refresh` | `silver.sales`, `silver.sales_detail`, `silver.stock` | Every 10 min, one minute after Bronze (`1-59/10 * * * *`) |
+| `silver-slow-refresh` | `silver.products`, `silver.clients`, `silver.kardex`, `silver.credit_notes` | Daily at 02:01 UTC (`1 2 * * *`) |
 
-- Responsibility: Azure WebJob inside `api-campomaq-ec` App Service
-- Reads from Bronze, applies cleaning/normalization, writes to Silver
-- Incremental by default; supports `--start-date` / `--end-date` for local historical runs
+- Responsibility: Supabase Cron (`pg_cron`)
+- Refreshes the Silver materialized views directly inside Postgres
+- Fast Silver runs at minutes `01, 11, 21, 31, 41, 51`, after Bronze's ten-minute ingestion cycle.
+- Materialized views are rebuilt from the current Bronze data on each refresh.
 
 ## Gold Refresh (Azure WebJob)
 
@@ -32,7 +33,7 @@
 |---|---|---|
 | `gold_refresh` | `gold.product_catalog`, `gold.inventory_summary`, `gold.sales_summary` | Every 30 min at :15/:45 (`0 15 */1 * * *`) |
 
-- Runs 15 min after the Silver slow refresh to ensure Silver is complete
+- Runs hourly at minute 15 and reads the latest completed Silver refresh.
 - Reads from Silver, produces business-ready aggregates
 - Incremental by default; supports `--start-date` / `--end-date` for local historical runs
 
@@ -45,8 +46,8 @@ Historical runs are executed **locally** by the developer. WebJobs always run in
 python scripts/bronze_ingestion/run.py --start-date 2023-01-01 --end-date 2026-05-13
 
 # Silver historical (run locally, pointing at Supabase)
-python webjobs/silver_slow_refresh/run.py --start-date 2023-01-01 --end-date 2026-05-13
-python webjobs/silver_fast_refresh/run.py --start-date 2023-01-01 --end-date 2026-05-13
+SELECT silver.refresh_slow();
+SELECT silver.refresh_fast();
 
 # Gold historical
 python webjobs/gold_refresh/run.py --start-date 2023-01-01 --end-date 2026-05-13
