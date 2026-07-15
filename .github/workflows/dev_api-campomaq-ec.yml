@@ -32,7 +32,13 @@ jobs:
       - name: Install dependencies
         run: |
           cd apps/backend
+          pip install -r requirements.txt
           pip install -r requirements.txt --target=".python_packages/lib/site-packages"
+
+      - name: Run backend tests
+        run: |
+          cd apps/backend
+          python -m pytest
 
       - name: Zip artifact for deployment
         run: |
