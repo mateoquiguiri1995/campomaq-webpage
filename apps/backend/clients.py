@@ -1,6 +1,6 @@
 from flask import Blueprint, current_app, jsonify, request
 
-from auth import require_active_seller
+from auth import require_authenticated_seller
 from common import error_response, parse_positive_int
 from db import postgres_cursor
 
@@ -68,7 +68,7 @@ def fetch_clients_page(query, page, page_size):
 
 
 @clients_bp.get("/clients")
-@require_active_seller
+@require_authenticated_seller
 def get_clients():
     query = (request.args.get("q") or "").strip()
     if len(query) > MAX_SEARCH_LENGTH:

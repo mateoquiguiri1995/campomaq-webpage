@@ -110,7 +110,7 @@ def test_auth_me_returns_503_when_supabase_is_unavailable(client, monkeypatch):
     assert response.get_json() == {"error": "Authentication service unavailable"}
 
 
-def test_auth_me_rejects_missing_seller_profile(client, monkeypatch):
+def test_auth_me_uses_email_when_seller_profile_is_missing(client, monkeypatch):
     monkeypatch.setattr(
         auth,
         "validate_supabase_token",
@@ -123,11 +123,16 @@ def test_auth_me_rejects_missing_seller_profile(client, monkeypatch):
         headers={"Authorization": "Bearer valid-token"},
     )
 
-    assert response.status_code == 403
-    assert response.get_json() == {"error": "Seller access is not active"}
+    assert response.status_code == 200
+    assert response.get_json() == {
+        "id": "user-id",
+        "name": "seller@campomaq.ec",
+        "email": "seller@campomaq.ec",
+        "role": "seller",
+    }
 
 
-def test_auth_me_rejects_inactive_seller(client, monkeypatch):
+def test_auth_me_does_not_check_active_profile_flag(client, monkeypatch):
     monkeypatch.setattr(
         auth,
         "validate_supabase_token",
@@ -149,7 +154,8 @@ def test_auth_me_rejects_inactive_seller(client, monkeypatch):
         headers={"Authorization": "Bearer valid-token"},
     )
 
-    assert response.status_code == 403
+    assert response.status_code == 200
+    assert response.get_json()["name"] == "Inactive Seller"
 
 
 def test_auth_me_returns_verified_seller(client, active_seller):

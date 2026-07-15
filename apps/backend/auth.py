@@ -87,7 +87,7 @@ def _extract_bearer_token():
     return token.strip()
 
 
-def require_active_seller(view):
+def require_authenticated_seller(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
         access_token = _extract_bearer_token()
@@ -102,30 +102,26 @@ def require_active_seller(view):
             current_app.logger.warning("Authentication service unavailable: %s", exc)
             return error_response("Authentication service unavailable", 503)
 
-        try:
-            seller = get_seller_profile(auth_user["id"])
-        except Exception as exc:
-            current_app.logger.exception("Seller profile lookup failed")
-            return error_response("Database unavailable", 503, exc)
-
-        if seller is None or not seller["active"]:
-            return error_response("Seller access is not active", 403)
-
         g.auth_user = auth_user
-        g.seller = seller
         return view(*args, **kwargs)
 
     return wrapped
 
 
 @auth_bp.get("/auth/me")
-@require_active_seller
+@require_authenticated_seller
 def get_current_seller():
+    try:
+        seller = get_seller_profile(g.auth_user["id"])
+    except Exception as exc:
+        current_app.logger.exception("Seller profile lookup failed")
+        return error_response("Database unavailable", 503, exc)
+
     return jsonify(
         {
             "id": str(g.auth_user["id"]),
-            "name": g.seller["full_name"],
+            "name": seller["full_name"] if seller else g.auth_user.get("email"),
             "email": g.auth_user.get("email"),
-            "role": g.seller["role"],
+            "role": seller["role"] if seller else "seller",
         }
     )

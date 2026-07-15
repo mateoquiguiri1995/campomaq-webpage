@@ -10,6 +10,15 @@ def test_clients_requires_authentication(client):
 
 
 def test_clients_returns_paginated_items(client, active_seller, monkeypatch):
+    import auth
+
+    monkeypatch.setattr(
+        auth,
+        "get_seller_profile",
+        lambda _user_id: (_ for _ in ()).throw(
+            AssertionError("clients endpoint should not query seller profiles")
+        ),
+    )
     monkeypatch.setattr(
         clients,
         "fetch_clients_page",
