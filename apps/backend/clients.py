@@ -13,21 +13,24 @@ clients_bp = Blueprint("clients", __name__)
 DEFAULT_PAGE_SIZE = 20
 MAX_PAGE_SIZE = 100
 MAX_SEARCH_LENGTH = 100
+MAX_DAYS_SINCE_LAST_PURCHASE = 365
 
 
 def fetch_clients_page(query, page, page_size):
-    where_clause = ""
-    filter_params = []
+    where_clause = "WHERE days_since_last_purchase < %s"
+    filter_params = [MAX_DAYS_SINCE_LAST_PURCHASE]
     if query:
-        where_clause = """
-            WHERE client_name ILIKE %s
-               OR client_code ILIKE %s
-               OR telephone_1 ILIKE %s
-               OR telephone_2 ILIKE %s
-               OR email ILIKE %s
+        where_clause += """
+            AND (
+                   client_name ILIKE %s
+                OR client_code ILIKE %s
+                OR telephone_1 ILIKE %s
+                OR telephone_2 ILIKE %s
+                OR email ILIKE %s
+            )
         """
         pattern = f"%{query}%"
-        filter_params = [pattern] * 5
+        filter_params.extend([pattern] * 5)
 
     offset = (page - 1) * page_size
 
@@ -57,7 +60,12 @@ def fetch_clients_page(query, page, page_size):
                 recent_invoices
             FROM gold.clients
             {where_clause}
-            ORDER BY client_name NULLS LAST, client_code
+            ORDER BY
+                total_sales_last_6_months DESC,
+                sales_count_last_6_months DESC,
+                days_since_last_purchase ASC,
+                client_name NULLS LAST,
+                client_code
             LIMIT %s OFFSET %s
             """,
             [*filter_params, page_size, offset],
