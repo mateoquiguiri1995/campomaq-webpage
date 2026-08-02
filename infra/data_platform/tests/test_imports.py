@@ -23,15 +23,3 @@ def test_import_bronze_schemas():
 
 def test_import_bronze_readers():
     import campomaq_etl.bronze.readers  # noqa: F401
-
-
-def test_import_gold_product_catalog():
-    import campomaq_etl.gold.product_catalog  # noqa: F401
-
-
-def test_import_gold_inventory_summary():
-    import campomaq_etl.gold.inventory_summary  # noqa: F401
-
-
-def test_import_gold_sales_summary():
-    import campomaq_etl.gold.sales_summary  # noqa: F401

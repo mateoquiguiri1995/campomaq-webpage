@@ -1,35 +1,41 @@
-# Applying SQL Migrations to Supabase
+# Supabase SQL
 
-Run these files in order against the `campomaq` Supabase project. The project is empty — all schemas and tables need to be created.
+These scripts describe the current Supabase schemas, tables, views,
+materialized views, and Cron orchestration.
 
-## Option A: Supabase SQL Editor (easiest)
+## Apply order
 
-1. Go to Supabase dashboard → SQL Editor
-2. Open and run each file in order:
-   - `00_schemas.sql`
-   - `01_platform_tables.sql`
-   - `02_bronze_tables.sql`
-   - `03_silver_tables.sql`
-   - `04_gold_tables.sql` (placeholder — no-op until Week 2)
-   - `05_silver_cron.sql`
+Run the files in numeric order:
 
-## Option B: psql CLI
+1. `00_schemas.sql`
+2. `01_platform_tables.sql`
+3. `02_bronze_tables.sql`
+4. `03_silver_tables.sql`
+5. `04_gold_tables.sql`
+6. `05_catalog_tables.sql`
+7. `06_supabase_cron.sql`
 
-Requires `SUPABASE_DB_URL` from `docs/environment_variables.md`.
+Using `psql`:
 
 ```bash
 export SUPABASE_DB_URL="postgresql://postgres:<password>@db.<project-ref>.supabase.co:5432/postgres"
 
-psql $SUPABASE_DB_URL < sql/00_schemas.sql
-psql $SUPABASE_DB_URL < sql/01_platform_tables.sql
-psql $SUPABASE_DB_URL < sql/02_bronze_tables.sql
-psql $SUPABASE_DB_URL < sql/03_silver_tables.sql
-psql $SUPABASE_DB_URL < sql/04_gold_tables.sql
-psql $SUPABASE_DB_URL < sql/05_silver_cron.sql
+for file in sql/0*.sql; do
+  psql "$SUPABASE_DB_URL" --set ON_ERROR_STOP=1 --file "$file"
+done
 ```
 
-## Notes
+## Current object model
 
-- Silver is implemented as materialized views refreshed by Supabase Cron.
-- `04_gold_tables.sql` remains a placeholder until the Gold queries are finalized.
-- Do not apply migrations on prod before testing on dev.
+- Bronze contains physical raw tables populated by the on-prem ingestion job.
+- Silver uses normal views for credit notes, sales, sales detail, stock,
+  products, and kardex.
+- `silver.clients` is materialized and refreshed daily because it ranks the
+  complete client history.
+- `gold.clients` is materialized and refreshed hourly.
+- Catalog enrichment and media are physical tables in the `catalog` schema.
+- Supabase Cron is the only Silver/Gold orchestration mechanism.
+
+The scripts are the canonical definitions for bootstrapping an environment.
+Changes to existing materialized-view definitions require an explicit
+drop/recreate migration; `IF NOT EXISTS` does not replace them.

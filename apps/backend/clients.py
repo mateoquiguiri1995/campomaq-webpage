@@ -1,3 +1,6 @@
+import datetime
+import decimal
+
 from flask import Blueprint, current_app, jsonify, request
 
 from auth import require_authenticated_seller
@@ -30,7 +33,7 @@ def fetch_clients_page(query, page, page_size):
 
     with postgres_cursor() as cursor:
         cursor.execute(
-            f"SELECT COUNT(*) FROM silver.clients {where_clause}",
+            f"SELECT COUNT(*) FROM gold.clients {where_clause}",
             filter_params,
         )
         total = cursor.fetchone()[0]
@@ -43,8 +46,16 @@ def fetch_clients_page(query, page, page_size):
                 address,
                 telephone_1,
                 telephone_2,
-                email
-            FROM silver.clients
+                email,
+                total_sales_last_6_months,
+                sales_count_last_6_months,
+                purchase_months_last_6_months,
+                frequency_classification,
+                last_purchase_date,
+                days_since_last_purchase,
+                recency_status,
+                recent_invoices
+            FROM gold.clients
             {where_clause}
             ORDER BY client_name NULLS LAST, client_code
             LIMIT %s OFFSET %s
@@ -61,10 +72,30 @@ def fetch_clients_page(query, page, page_size):
             "phonePrimary": row[3],
             "phoneSecondary": row[4],
             "email": row[5],
+            "totalSalesLast6Months": _json_number(row[6]),
+            "salesCountLast6Months": row[7],
+            "purchaseMonthsLast6Months": row[8],
+            "frequencyClassification": row[9],
+            "lastPurchaseDate": _json_date(row[10]),
+            "daysSinceLastPurchase": row[11],
+            "recencyStatus": row[12],
+            "recentInvoices": row[13] or [],
         }
         for row in rows
     ]
     return items, total
+
+
+def _json_number(value):
+    if isinstance(value, decimal.Decimal):
+        return float(value)
+    return value
+
+
+def _json_date(value):
+    if isinstance(value, (datetime.date, datetime.datetime)):
+        return value.isoformat()
+    return value
 
 
 @clients_bp.get("/clients")

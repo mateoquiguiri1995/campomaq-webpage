@@ -5,17 +5,10 @@ schemas.
 
 ## Layout
 
-- `packages/campomaq_etl/`: shared ETL code imported by local scripts and Azure
-  WebJobs.
+- `packages/campomaq_etl/`: shared Bronze ingestion code.
 - `scripts/bronze_ingestion/`: on-prem SQL Server ingestion entrypoint.
-- `webjobs/`: Azure WebJob wrappers plus per-job `requirements.txt` and
-  `settings.job` schedules.
-- `sql/`: Supabase schema/table setup scripts.
+- `sql/`: Supabase schema, materialized-view, and Cron setup scripts.
 - `tests/`: focused unit and smoke tests.
-
-The WebJob folders are deployment wrappers. Keep silver/gold implementation code
-inside `packages/campomaq_etl/` so it can be tested and reused without copying
-logic between WebJobs.
 
 ## Local Checks
 

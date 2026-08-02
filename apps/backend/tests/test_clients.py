@@ -1,4 +1,6 @@
 from contextlib import contextmanager
+from datetime import date
+from decimal import Decimal
 
 import clients
 
@@ -31,6 +33,14 @@ def test_clients_returns_paginated_items(client, active_seller, monkeypatch):
                     "phonePrimary": "0999999999",
                     "phoneSecondary": None,
                     "email": "cliente@example.com",
+                    "totalSalesLast6Months": 1250.75,
+                    "salesCountLast6Months": 4,
+                    "purchaseMonthsLast6Months": 3,
+                    "frequencyClassification": "Occasional",
+                    "lastPurchaseDate": "2026-07-15",
+                    "daysSinceLastPurchase": 18,
+                    "recencyStatus": "Active",
+                    "recentInvoices": [],
                 }
             ],
             1,
@@ -52,6 +62,14 @@ def test_clients_returns_paginated_items(client, active_seller, monkeypatch):
                 "phonePrimary": "0999999999",
                 "phoneSecondary": None,
                 "email": "cliente@example.com",
+                "totalSalesLast6Months": 1250.75,
+                "salesCountLast6Months": 4,
+                "purchaseMonthsLast6Months": 3,
+                "frequencyClassification": "Occasional",
+                "lastPurchaseDate": "2026-07-15",
+                "daysSinceLastPurchase": 18,
+                "recencyStatus": "Active",
+                "recentInvoices": [],
             }
         ],
         "page": 2,
@@ -104,3 +122,79 @@ def test_client_query_is_parameterized(monkeypatch):
     assert malicious_query not in cursor.calls[0][0]
     assert f"%{malicious_query}%" in cursor.calls[0][1]
     assert cursor.calls[1][1][-2:] == [20, 0]
+    assert "FROM gold.clients" in cursor.calls[0][0]
+    assert "FROM gold.clients" in cursor.calls[1][0]
+
+
+def test_clients_maps_gold_metrics(monkeypatch):
+    class FakeCursor:
+        def __init__(self):
+            self.call_count = 0
+
+        def execute(self, _statement, _parameters):
+            self.call_count += 1
+
+        def fetchone(self):
+            return (1,)
+
+        def fetchall(self):
+            return [
+                (
+                    "C001",
+                    "Agricola Uno",
+                    "Quito",
+                    "022222222",
+                    None,
+                    "cliente@example.com",
+                    Decimal("1250.75"),
+                    4,
+                    3,
+                    "Occasional",
+                    date(2026, 7, 15),
+                    18,
+                    "Active",
+                    [
+                        {
+                            "invoiceNumber": 123,
+                            "paymentType": "EFECTIVO",
+                            "itemCount": 2,
+                        }
+                    ],
+                )
+            ]
+
+    cursor = FakeCursor()
+
+    @contextmanager
+    def fake_postgres_cursor():
+        yield cursor
+
+    monkeypatch.setattr(clients, "postgres_cursor", fake_postgres_cursor)
+
+    items, total = clients.fetch_clients_page("", page=1, page_size=20)
+
+    assert total == 1
+    assert items == [
+        {
+            "id": "C001",
+            "name": "Agricola Uno",
+            "address": "Quito",
+            "phonePrimary": "022222222",
+            "phoneSecondary": None,
+            "email": "cliente@example.com",
+            "totalSalesLast6Months": 1250.75,
+            "salesCountLast6Months": 4,
+            "purchaseMonthsLast6Months": 3,
+            "frequencyClassification": "Occasional",
+            "lastPurchaseDate": "2026-07-15",
+            "daysSinceLastPurchase": 18,
+            "recencyStatus": "Active",
+            "recentInvoices": [
+                {
+                    "invoiceNumber": 123,
+                    "paymentType": "EFECTIVO",
+                    "itemCount": 2,
+                }
+            ],
+        }
+    ]
