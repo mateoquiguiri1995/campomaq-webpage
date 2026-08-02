@@ -1,55 +1,59 @@
 # Data Platform Architecture
 
-## Data Flow
+## Data flow
 
-```
+```text
 On-prem SQL Server (EMPRESA.dbo.*)
   │
   │  scripts/bronze_ingestion/run.py
-  │  ├── mode: incremental (on-prem Windows Task Scheduler, every 10-30 min)
-  │  └── mode: historical  (run locally once with --start-date / --end-date)
+  │  ├── incremental: Windows Task Scheduler, every 10–30 minutes
+  │  └── historical: local run with --start-date / --end-date
   ↓
 Supabase — bronze.*
-  Raw rows + metadata columns (JSONB). No transformation applied.
-  │
-  │  Supabase Cron (pg_cron)
-  │  silver-fast-refresh  - at :01/:11/... -> sales, sales detail, stock
-  │  silver-slow-refresh  - daily         -> products, clients, kardex, credit notes
+  Physical raw tables plus ingestion metadata
   ↓
 Supabase — silver.*
-  Typed, cleaned, deduplicated rows. Business keys resolved.
+  Normal views: credit_notes, sales, sales_detail, stock, products, kardex
+  Materialized view: clients
   │
-  │  Azure WebJob (api-campomaq-ec App Service)
-  │  webjobs/gold_refresh  — every 30 min at :15/:45
+  │  silver-clients-daily — daily at 02:01 UTC
   ↓
-Supabase — gold.*
-  Business-ready tables/views: product catalog, inventory summary, sales summary.
+Supabase — gold.clients
+  Materialized client metrics read model
   │
+  │  gold-clients-refresh — hourly at minute 03 UTC
   ↓
-Flask API (apps/backend/) + Dashboard + Salesman app
+Flask API + internal seller app
 ```
 
-## Layer Responsibilities
+The separate `catalog` schema stores product enrichment and media maintained
+outside the accounting source system.
 
-| Layer | Schema | What it contains | Transformation rule |
-|---|---|---|---|
-| Bronze | `bronze` | Raw rows from SQL Server as JSONB + 5 metadata columns | No transformation — exact copy of source |
-| Silver | `silver` | Typed columns, nulls handled, deduplication applied, business keys resolved | Cleaning and normalization only — no business aggregation |
-| Gold | `gold` | Business-ready aggregates and joined views for product catalog, inventory, and sales | Aggregation, joins across silver tables |
-| Platform | `platform` | ETL run tracking (`etl_runs`) | Infrastructure — not business data |
+## Layer responsibilities
 
-## Execution Environments
-
-| Script | Where it runs | Trigger |
+| Layer | Schema | Responsibility |
 |---|---|---|
-| `scripts/bronze_ingestion/run.py` | On-prem Windows machine | Task Scheduler cron / local manual |
-| `sql/03_silver_tables.sql`, `sql/05_silver_cron.sql` | Supabase Postgres | Materialized views + pg_cron |
-| `webjobs/gold_refresh/run.py` | Azure App Service `api-campomaq-ec` | Azure WebJob triggered schedule |
+| Bronze | `bronze` | Exact source rows plus ingestion metadata |
+| Silver | `silver` | Cleaning, normalization, and business keys |
+| Gold | `gold` | Business-ready aggregates for API reads |
+| Catalog | `catalog` | App-managed product content and media |
+| Platform | `platform` | Bronze ETL run tracking |
 
-## Legacy ETL
+## Execution environments
 
-`infra/data_pipeline/` contains the original manual Jupyter notebook ETL pipeline that syncs SQL Server → MongoDB Atlas. It is kept for reference and is not part of this data platform. The two pipelines are independent.
+| Component | Environment | Trigger |
+|---|---|---|
+| `scripts/bronze_ingestion/run.py` | On-prem Windows machine | Task Scheduler or local manual run |
+| Silver normal views | Supabase Postgres | Always reflect current Bronze data |
+| `silver.refresh_clients()` | Supabase Cron | Daily at 02:01 UTC |
+| `gold.refresh_clients()` | Supabase Cron | Hourly at minute 03 UTC |
 
-## Historical Backfill
+## Historical backfill
 
-All scripts accept `--start-date YYYY-MM-DD --end-date YYYY-MM-DD` for historical runs. Historical runs are always executed locally by the developer. WebJobs always run in incremental mode (no date args).
+Bronze scripts accept `--start-date YYYY-MM-DD --end-date YYYY-MM-DD` for local
+historical runs. After the Bronze backfill, refresh the two materialized views:
+
+```sql
+SELECT silver.refresh_clients();
+SELECT gold.refresh_clients();
+```

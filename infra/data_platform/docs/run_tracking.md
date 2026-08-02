@@ -1,6 +1,6 @@
 # Run Tracking
 
-Every ETL execution (bronze, silver, or gold) writes a record to `platform.etl_runs` in Supabase.
+Bronze ETL executions write a record to `platform.etl_runs` in Supabase.
 
 ## Run ID Format
 
@@ -34,6 +34,8 @@ CREATE TABLE IF NOT EXISTS platform.etl_runs (
   status        TEXT        NOT NULL CHECK (status IN ('running','success','failed')),
   rows_read     INTEGER,
   rows_written  INTEGER,
+  data_start_at TIMESTAMPTZ,
+  data_end_at   TIMESTAMPTZ,
   error_message TEXT,
   PRIMARY KEY (run_id, job_name)
 );
@@ -41,10 +43,9 @@ CREATE TABLE IF NOT EXISTS platform.etl_runs (
 
 `job_name` values:
 - `bronze_ingestion`
-- `gold_refresh`
 
-Silver refreshes run inside Supabase Cron and are tracked separately in
-`cron.job_run_details` under `silver-fast-refresh` and `silver-slow-refresh`.
+Silver and Gold refreshes run inside Supabase Cron and are tracked separately in
+`cron.job_run_details` as `silver-clients-daily` and `gold-clients-refresh`.
 
 ## Run Lifecycle
 
@@ -72,13 +73,14 @@ It then reads rows from Bronze/Silver updated after `(last_success - 15 min)`. T
 
 ## Retry Policy
 
-- Gold WebJob: no automatic retry. Azure restarts the job on the next schedule tick.
-- Silver Cron: a failed refresh is recorded in `cron.job_run_details`; the next scheduled run tries again.
+- Supabase Cron: a failed refresh is recorded in `cron.job_run_details`; the next scheduled run tries again.
 - On-prem cron: no automatic retry. Task Scheduler re-runs on next trigger.
-- Failures are logged in `etl_runs.error_message` and surfaced in Azure Log Stream.
+- Bronze failures are logged in `etl_runs.error_message`.
 
 ## Idempotency Strategy
 
-Silver materialized views are rebuilt from Bronze on every refresh. Gold keeps its own target-write strategy.
+Bronze uses upserts against entity-specific conflict targets. The two
+materialized client views are rebuilt by their Supabase refresh jobs; all other
+Silver objects are normal views.
 
 Historical runs split the date range into 30-day chunks, each with its own `run_id`.

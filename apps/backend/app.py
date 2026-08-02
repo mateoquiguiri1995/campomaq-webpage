@@ -14,7 +14,9 @@ from chat import chat_bp
 from clients import clients_bp
 from common import is_development
 from health import health_bp
+from invoices import invoices_bp
 from search import search_bp
+from stock import stock_bp
 
 
 def create_app(test_config=None):
@@ -30,6 +32,8 @@ def create_app(test_config=None):
     app.register_blueprint(chat_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(clients_bp)
+    app.register_blueprint(stock_bp)
+    app.register_blueprint(invoices_bp)
 
     return app
 
