@@ -16,6 +16,7 @@ from common import is_development
 from health import health_bp
 from invoices import invoices_bp
 from search import search_bp
+from sellers import sellers_bp
 from stock import stock_bp
 
 
@@ -34,6 +35,7 @@ def create_app(test_config=None):
     app.register_blueprint(clients_bp)
     app.register_blueprint(stock_bp)
     app.register_blueprint(invoices_bp)
+    app.register_blueprint(sellers_bp)
 
     return app
 

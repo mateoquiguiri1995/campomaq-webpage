@@ -32,9 +32,10 @@ sales-detail history to select each client's latest record.
 | Cron job | Object | Schedule |
 |---|---|---|
 | `gold-clients-refresh` | `gold.clients` | Hourly at minute 03 (`3 * * * *`) |
+| `gold-sellers-refresh` | `gold.sellers` | Hourly at minute 04 (`4 * * * *`) |
 
 Gold runs entirely in Supabase, reads only from Silver, and produces the client
-read model consumed by the API.
+and seller dashboard read models consumed by the API.
 
 ## Historical backfill
 
@@ -49,6 +50,7 @@ After Bronze finishes:
 ```sql
 SELECT silver.refresh_clients();
 SELECT gold.refresh_clients();
+SELECT gold.refresh_sellers();
 ```
 
 Bronze writes are idempotent through their configured conflict targets. Normal

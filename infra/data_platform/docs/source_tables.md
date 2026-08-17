@@ -42,9 +42,13 @@ Status: PK candidates and field lists are **TBD — complete in Week 2** after d
 - **Source view/table**: `EMPRESA.dbo.VEN_CLIENTES_VENTAS`
 - **Primary key candidate**: TBD (likely invoice/document number)
 - **Update frequency**: every 30 min
-- **Known issues**: TBD
-- **Fields needed**: TBD
+- **Known issues**: `feempl_nome` is not the actual invoice seller in this
+  source, despite having the same name as the seller field in sales detail.
+- **Fields needed**: `emple_vfac` (actual seller name), `emple_cod`, and
+  `emple_vcod` (the two actual-seller code systems).
 - **Notes**: Invoice-level sales per customer. Header-level (no product detail).
+  `emple_reg` and `emple_vfac` currently contain equivalent seller-name values;
+  Silver uses `emple_vfac`.
 
 ---
 
@@ -53,9 +57,13 @@ Status: PK candidates and field lists are **TBD — complete in Week 2** after d
 - **Source view/table**: `EMPRESA.dbo.VEN_VENTAS_CON_DETALLE`
 - **Primary key candidate**: TBD (likely invoice number + line item)
 - **Update frequency**: every 30 min
-- **Known issues**: TBD
-- **Fields needed**: TBD
-- **Notes**: Sales with product-level detail. Joins to raw_sales via invoice number.
+- **Known issues**: Seller fields differ semantically from identically named
+  fields in the header source.
+- **Fields needed**: `feempl_nome` (actual seller name) and `feempl_cedu`
+  (seller cédula/authentication mapping key).
+- **Notes**: Sales with product-level detail. Joins to raw_sales via invoice
+  number. Gold reconciles seller identity with the header using the normalized
+  actual-seller name (`feempl_nome` = header `emple_vfac`).
 
 ---
 

@@ -41,6 +41,17 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION gold.refresh_sellers()
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = gold, silver, public
+AS $$
+BEGIN
+  REFRESH MATERIALIZED VIEW gold.sellers;
+END;
+$$;
+
 SELECT cron.schedule(
   'silver-clients-daily',
   '1 2 * * *',
@@ -51,4 +62,10 @@ SELECT cron.schedule(
   'gold-clients-refresh',
   '3 * * * *',
   'SELECT gold.refresh_clients()'
+);
+
+SELECT cron.schedule(
+  'gold-sellers-refresh',
+  '4 * * * *',
+  'SELECT gold.refresh_sellers()'
 );
