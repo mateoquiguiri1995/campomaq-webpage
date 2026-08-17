@@ -36,7 +36,10 @@ SELECT
   sales.peauxi_nomb AS payment_type,
   credit_notes.credit_note_base15,
   credit_notes.credit_note_base0,
-  credit_notes.credit_note_total
+  credit_notes.credit_note_total,
+  NULLIF(BTRIM(sales.emple_vfac), '') AS salesperson_name,
+  sales.emple_cod AS salesperson_employee_code,
+  sales.emple_vcod AS salesperson_invoice_code
 FROM bronze.raw_sales AS sales
 LEFT JOIN silver.credit_notes AS credit_notes
   ON CAST(sales.iefave_ser3 AS INTEGER) = credit_notes.invoice_number;
@@ -74,7 +77,8 @@ SELECT
   NULLIF(BTRIM(feclie_dirc), '') AS address,
   NULLIF(BTRIM(feempl_nome), '') AS salesperson_name,
   NULLIF(BTRIM(iemarc_nomb), '') AS brand_name,
-  NULLIF(BTRIM(iecate_nomc), '') AS category_name
+  NULLIF(BTRIM(iecate_nomc), '') AS category_name,
+  NULLIF(BTRIM(feempl_cedu), '') AS salesperson_document_id
 FROM bronze.raw_sales_detail;
 
 -- ============================================================

@@ -121,9 +121,49 @@ def test_client_query_is_parameterized(monkeypatch):
     assert total == 0
     assert malicious_query not in cursor.calls[0][0]
     assert f"%{malicious_query}%" in cursor.calls[0][1]
+    assert cursor.calls[0][1][0] == 365
     assert cursor.calls[1][1][-2:] == [20, 0]
     assert "FROM gold.clients" in cursor.calls[0][0]
     assert "FROM gold.clients" in cursor.calls[1][0]
+    assert "WHERE days_since_last_purchase < %s" in cursor.calls[0][0]
+    assert "WHERE days_since_last_purchase < %s" in cursor.calls[1][0]
+    assert "AND (" in cursor.calls[0][0]
+    assert "AND (" in cursor.calls[1][0]
+    assert "total_sales_last_6_months DESC" in cursor.calls[1][0]
+    assert "sales_count_last_6_months DESC" in cursor.calls[1][0]
+    assert "days_since_last_purchase ASC" in cursor.calls[1][0]
+
+
+def test_clients_filter_by_recent_purchase_without_search(monkeypatch):
+    class FakeCursor:
+        def __init__(self):
+            self.calls = []
+
+        def execute(self, statement, parameters):
+            self.calls.append((statement, parameters))
+
+        def fetchone(self):
+            return (0,)
+
+        def fetchall(self):
+            return []
+
+    cursor = FakeCursor()
+
+    @contextmanager
+    def fake_postgres_cursor():
+        yield cursor
+
+    monkeypatch.setattr(clients, "postgres_cursor", fake_postgres_cursor)
+
+    items, total = clients.fetch_clients_page("", page=2, page_size=20)
+
+    assert items == []
+    assert total == 0
+    assert "WHERE days_since_last_purchase < %s" in cursor.calls[0][0]
+    assert "WHERE days_since_last_purchase < %s" in cursor.calls[1][0]
+    assert cursor.calls[0][1] == [365]
+    assert cursor.calls[1][1] == [365, 20, 20]
 
 
 def test_clients_maps_gold_metrics(monkeypatch):
