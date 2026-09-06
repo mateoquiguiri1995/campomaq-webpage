@@ -14,6 +14,7 @@ Run the files in numeric order:
 5. `04_gold_tables.sql`
 6. `05_catalog_tables.sql`
 7. `06_supabase_cron.sql`
+8. `07_catalog_products.sql`
 
 Using `psql`:
 
@@ -37,7 +38,14 @@ done
   actual salesperson plus a company-wide General row, with month-to-date goal
   data and year-to-date dashboard metrics.
 - Catalog enrichment and media are physical tables in the `catalog` schema.
+- `gold.catalog_products` is a normal view joining Silver products with catalog
+  enrichment and ordered image links. Apply `07_catalog_products.sql` alone to
+  add it to an existing project after the catalog tables exist.
 - Supabase Cron is the only Silver/Gold orchestration mechanism.
+
+Catalog publication to Mongo is a separate Python worker command, not a
+Supabase refresh job. See [PIM handoff](../docs/pim_handoff.md) for verified
+state, field ownership, and activation instructions.
 
 The scripts are the canonical definitions for bootstrapping an environment.
 Changes to existing materialized-view definitions require an explicit

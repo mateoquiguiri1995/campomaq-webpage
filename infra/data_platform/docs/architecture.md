@@ -29,6 +29,13 @@ Flask API + internal seller app
 The separate `catalog` schema stores product enrichment and media maintained
 outside the accounting source system.
 
+`gold.catalog_products` joins `silver.products` with those catalog tables as a
+normal view. `apps/backend/publish_catalog.py` publishes it to MongoDB for the
+existing product/search API. Stock is read directly from `silver.stock`;
+catalog prices are still served from the Mongo projection. The publisher must
+be activated and scheduled separately. See [PIM handoff](pim_handoff.md) for
+the live verification findings and cutover instructions.
+
 ## Layer responsibilities
 
 | Layer | Schema | Responsibility |
