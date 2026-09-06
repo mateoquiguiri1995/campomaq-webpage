@@ -5,7 +5,7 @@ SELECT
   p.product_id::BIGINT AS product_id,
   p.product_code,
   COALESCE(NULLIF(BTRIM(e.display_name), ''), p.product_name) AS product_name,
-  p.category_name,
+  COALESCE(NULLIF(BTRIM(e.display_category), ''), p.category_name) AS category_name,
   p.brand_name,
   p.price_cash,
   p.price_card,

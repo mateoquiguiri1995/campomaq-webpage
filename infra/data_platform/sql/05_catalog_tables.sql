@@ -3,6 +3,7 @@
 CREATE TABLE IF NOT EXISTS catalog.product_enrichment (
   product_id BIGINT PRIMARY KEY,
   display_name TEXT,
+  display_category TEXT,
   short_description TEXT,
   description_html TEXT,
   new_product BOOLEAN NOT NULL DEFAULT FALSE,
