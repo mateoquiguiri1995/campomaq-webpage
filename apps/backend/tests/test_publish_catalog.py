@@ -11,12 +11,15 @@ def test_projection_preserves_zero_false_empty_media_and_legacy_fields():
     now = datetime.now(timezone.utc)
     operations, ids = publish_catalog.build_operations([
         {'product_id': 1155, 'price_cash': Decimal('2300.50'),
+         'last_cost': Decimal('1800.00'), 'iva': True,
          'discount': Decimal('0'), 'main_boost': Decimal('0'),
          'show_in_app': False, 'description': 'Edited', 'link': []},
     ], now)
     update = operations[0]._doc
     assert ids == [1155]
     assert update['$set']['price_cash'] == 2300.5
+    assert update['$set']['iva'] is True
+    assert 'last_cost' not in update['$set']
     assert update['$set']['main_boost'] == 0
     assert update['$set']['link'] == []
     assert update['$set']['show_in_app'] is False

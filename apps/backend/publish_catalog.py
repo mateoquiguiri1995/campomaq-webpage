@@ -34,6 +34,9 @@ def build_operations(rows, published_at):
     ids = set()
     for row in rows:
         document = normalize(dict(row))
+        # Cost is available to authenticated internal consumers in Supabase,
+        # but must never be copied into the public Mongo catalog/API.
+        document.pop('last_cost', None)
         product_id = document['product_id']
         if type(product_id) is not int or product_id in ids:
             raise ValueError('Gold must contain unique integer product IDs')

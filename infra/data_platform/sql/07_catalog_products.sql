@@ -22,7 +22,9 @@ SELECT
   COALESCE(e.content_status, 'draft') AS content_status,
   e.created_at,
   e.updated_at,
-  COALESCE(media.links, '[]'::JSONB) AS link
+  COALESCE(media.links, '[]'::JSONB) AS link,
+  p.iva,
+  p.last_cost
 FROM silver.products p
 LEFT JOIN catalog.product_enrichment e ON e.product_id = p.product_id
 LEFT JOIN LATERAL (
