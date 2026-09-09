@@ -387,11 +387,13 @@ for refreshing one product card without reloading the complete stock table.
 
 ## Product commercial data — `GET /product-commercial-data`
 
-This authenticated bulk endpoint joins `silver.products` to `silver.stock` by
-`product_code`. It returns every accounting product with its Matriz stock,
-cash/credit/card prices, IVA flag, last cost, and average cost. The endpoint is
-intended to be loaded once alongside `/products`; it does not require one HTTP
-request per product. Cost and price calculations remain frontend concerns.
+This authenticated bulk endpoint filters products through
+`catalog.product_enrichment.show_in_app = true`, then joins `silver.products`
+to `silver.stock` by `product_code`. It returns each visible product with its
+Matriz stock, cash/credit/card prices, IVA flag, last cost, and average cost.
+The endpoint is intended to be loaded once alongside `/products`; it does not
+require one HTTP request per product. Cost and price calculations remain
+frontend concerns.
 
 ## Invoice details — `GET /invoices/{invoiceNumber}`
 

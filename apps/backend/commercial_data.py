@@ -41,6 +41,9 @@ def fetch_commercial_data():
                 products.last_cost,
                 products.average_cost
             FROM silver.products AS products
+            JOIN catalog.product_enrichment AS enrichment
+              ON enrichment.product_id = products.product_id
+             AND enrichment.show_in_app = TRUE
             LEFT JOIN silver.stock AS stock
               ON stock.product_code = products.product_code
             WHERE products.product_code IS NOT NULL

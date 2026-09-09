@@ -373,8 +373,9 @@ Returns HTTP `404` when the product code is not present:
 
 ### `GET /product-commercial-data`
 
-Returns the complete commercial dataset directly from Supabase. Request it once
-and merge it with `/products` using `product_id` or `product_code`.
+Returns commercial data directly from Supabase for products whose
+`show_in_app` flag is true. Request it once and merge it with `/products` using
+`product_id` or `product_code`.
 
 ```http
 GET {API_BASE_URL}/product-commercial-data

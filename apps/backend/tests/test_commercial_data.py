@@ -40,6 +40,8 @@ def test_fetch_commercial_data_uses_silver_views(monkeypatch):
     result = commercial_data.fetch_commercial_data()
 
     assert "FROM silver.products" in cursor.execute.call_args.args[0]
+    assert "JOIN catalog.product_enrichment" in cursor.execute.call_args.args[0]
+    assert "enrichment.show_in_app = TRUE" in cursor.execute.call_args.args[0]
     assert "LEFT JOIN silver.stock" in cursor.execute.call_args.args[0]
     assert result == [{
         "product_id": 1155,
