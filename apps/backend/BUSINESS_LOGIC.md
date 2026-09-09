@@ -15,13 +15,14 @@ The API currently reads from two data platforms:
 | --- | --- | --- |
 | Product catalog and search | MongoDB | Contains frontend catalog enrichment and search-ranking fields. |
 | Stock | Supabase `silver.stock` | Contains stock for the `Matriz` branch only. |
+| Product commercial data | Supabase `silver.products` + `silver.stock` | Bulk current prices, IVA, costs, and Matriz stock. |
 | Clients | Supabase `gold.clients` | Contains prepared six-month client metrics and three-month invoice summaries. |
 | Seller dashboard | Supabase `gold.sellers` | Contains month-to-date goal data and current-year seller metrics. |
 | Invoice details | Supabase `silver.sales_detail` | Contains the product lines belonging to an invoice. |
 | Authentication | Supabase Auth | Access tokens are validated before protected endpoints are executed. |
 
-Product and stock data are intentionally returned separately. The frontend is
-responsible for matching them by `product_code`.
+Catalog and commercial data are intentionally returned separately. The
+authenticated frontend matches them by `product_id` or `product_code`.
 
 ## Time windows and freshness
 
@@ -383,6 +384,14 @@ for refreshing one product card without reloading the complete stock table.
 - A missing code returns `404`; it does not return a synthetic stock value of
   zero.
 - The frontend should URL-encode the product code before using it in the path.
+
+## Product commercial data — `GET /product-commercial-data`
+
+This authenticated bulk endpoint joins `silver.products` to `silver.stock` by
+`product_code`. It returns every accounting product with its Matriz stock,
+cash/credit/card prices, IVA flag, last cost, and average cost. The endpoint is
+intended to be loaded once alongside `/products`; it does not require one HTTP
+request per product. Cost and price calculations remain frontend concerns.
 
 ## Invoice details — `GET /invoices/{invoiceNumber}`
 

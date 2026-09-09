@@ -6,11 +6,11 @@ SELECT
   p.product_code,
   COALESCE(NULLIF(BTRIM(e.display_name), ''), p.product_name) AS product_name,
   COALESCE(NULLIF(BTRIM(e.display_category), ''), p.category_name) AS category_name,
-  p.brand_name,
+  COALESCE(NULLIF(BTRIM(e.display_brand), ''), p.brand_name) AS brand_name,
   p.price_cash,
   p.price_card,
   p.price_credit,
-  e.short_description,
+  e.characteristic,
   e.description_html AS description,
   COALESCE(e.new_product, FALSE) AS new_product,
   COALESCE(e.show_in_app, FALSE) AS show_in_app,
@@ -22,9 +22,7 @@ SELECT
   COALESCE(e.content_status, 'draft') AS content_status,
   e.created_at,
   e.updated_at,
-  COALESCE(media.links, '[]'::JSONB) AS link,
-  p.iva,
-  p.last_cost
+  COALESCE(media.links, '[]'::JSONB) AS link
 FROM silver.products p
 LEFT JOIN catalog.product_enrichment e ON e.product_id = p.product_id
 LEFT JOIN LATERAL (

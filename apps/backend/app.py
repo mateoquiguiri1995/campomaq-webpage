@@ -12,6 +12,7 @@ if os.getenv("FLASK_ENV") == "development":
 from auth import auth_bp
 from chat import chat_bp
 from clients import clients_bp
+from commercial_data import commercial_data_bp
 from common import is_development
 from health import health_bp
 from invoices import invoices_bp
@@ -33,6 +34,7 @@ def create_app(test_config=None):
     app.register_blueprint(chat_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(clients_bp)
+    app.register_blueprint(commercial_data_bp)
     app.register_blueprint(stock_bp)
     app.register_blueprint(invoices_bp)
     app.register_blueprint(sellers_bp)

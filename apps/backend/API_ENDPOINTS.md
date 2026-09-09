@@ -52,6 +52,7 @@ Missing, malformed, invalid, or expired tokens return HTTP `401`:
 | `GET` | `/clients` | Bearer token | Filtered and paginated clients |
 | `GET` | `/stock` | Bearer token | Stock for every product |
 | `GET` | `/stock/{productCode}` | Bearer token | Stock for one product |
+| `GET` | `/product-commercial-data` | Bearer token | Bulk stock, prices, IVA, and costs |
 | `GET` | `/invoices/{invoiceNumber}` | Bearer token | Product lines for one invoice |
 
 ## Products
@@ -368,6 +369,34 @@ Returns HTTP `404` when the product code is not present:
 }
 ```
 
+## Product commercial data
+
+### `GET /product-commercial-data`
+
+Returns the complete commercial dataset directly from Supabase. Request it once
+and merge it with `/products` using `product_id` or `product_code`.
+
+```http
+GET {API_BASE_URL}/product-commercial-data
+Authorization: Bearer <token>
+```
+
+```json
+[
+  {
+    "product_id": 1155,
+    "product_code": "P001",
+    "stock": 3.0,
+    "price_cash": 100.0,
+    "price_credit": 110.0,
+    "price_card": 120.0,
+    "iva": true,
+    "last_cost": 70.0,
+    "average_cost": 65.0
+  }
+]
+```
+
 ## Invoice details
 
 ### `GET /invoices/{invoiceNumber}`
@@ -532,8 +561,8 @@ Common status codes:
 After Supabase authentication:
 
 1. Call `/auth/me` to load the seller profile.
-2. Load `/products` and `/stock` in parallel.
-3. Merge product and stock objects using `product_code`.
+2. Load `/products` and `/product-commercial-data` in parallel.
+3. Merge the arrays using `product_id` (preferred) or `product_code`.
 4. Load `/clients` only on screens that need client data.
 5. When a seller opens a product card, refresh it through
    `/stock/{productCode}` if necessary.
