@@ -44,6 +44,7 @@ Missing, malformed, invalid, or expired tokens return HTTP `401`:
 | `GET` | `/health` | Public | Dependency readiness check |
 | `GET` | `/health/ready` | Public | Alias of `/health` |
 | `GET` | `/products` | Public | Product catalog |
+| `GET` | `/products/web` | Public | Website product catalog with images |
 | `GET` | `/search` | Public | Internal app product search |
 | `GET` | `/search/web` | Public | Website product search |
 | `POST` | `/chat` | Public | Complete chat response |
@@ -101,6 +102,13 @@ Typical response:
 
 Product objects originate from the MongoDB catalog and can contain additional
 catalog fields. Do not rely on every optional field being present.
+
+### `GET /products/web`
+
+Returns the website catalog with the same ranking and pagination behavior as
+`/products`, excluding products whose `link` image field is missing, `null`, an
+empty string, or an empty array. The website uses this endpoint for its initial
+catalog load; `/products` remains available to the internal Android app.
 
 ### `GET /search`
 

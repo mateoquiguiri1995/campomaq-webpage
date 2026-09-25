@@ -94,6 +94,13 @@ user-selected sort.
 Only the request without `limit` and `page` uses the 24-hour product cache.
 Parameterized product requests go directly through the MongoDB aggregation.
 
+### Website catalog — `GET /products/web`
+
+The website catalog uses the same ranking and pagination rules as `/products`,
+but only returns products with a non-empty `link` image value. Its complete
+catalog response uses a separate 24-hour cache that catalog publication clears
+alongside the internal product cache.
+
 ## Product search — `GET /search`
 
 ### Meaning of `q`

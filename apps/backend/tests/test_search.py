@@ -91,3 +91,31 @@ def test_web_search_uses_its_own_cache_and_pipeline(client, monkeypatch):
 
     assert response.status_code == 200
     assert response.get_json() == products
+
+
+def test_web_products_pipeline_requires_an_image():
+    pipeline = search.build_products_pipeline(require_image=True)
+
+    assert pipeline[0] == {
+        "$match": {
+            "show_in_app": True,
+            "link": {"$exists": True, "$ne": None},
+            "$expr": {
+                "$cond": [
+                    {"$isArray": "$link"},
+                    {"$gt": [{"$size": "$link"}, 0]},
+                    {"$ne": ["$link", ""]},
+                ]
+            },
+        }
+    }
+
+
+def test_web_products_uses_its_own_cache(client, monkeypatch):
+    products = [{"product_id": 8, "product_name": "Motocultor", "link": ["x"]}]
+    monkeypatch.setattr(search, "get_cached_web_products", lambda: products)
+
+    response = client.get("/products/web")
+
+    assert response.status_code == 200
+    assert response.get_json() == products
