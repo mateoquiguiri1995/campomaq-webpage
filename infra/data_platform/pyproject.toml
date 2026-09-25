@@ -1,0 +1,18 @@
+[project]
+name = "data-platform"
+version = "0.1.0"
+description = "Campomaq bronze, silver, and gold ETL jobs"
+readme = "README.md"
+requires-python = ">=3.11.8"
+dependencies = [
+    "pandas",
+    "psycopg2-binary",
+    "pymssql",
+    "python-dotenv",
+    "sqlalchemy",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+]
