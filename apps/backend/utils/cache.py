@@ -23,6 +23,7 @@ TTL_COUNTER  = 604_800  #  7 d  — search_count:{q} expiry
 TTL_PRODUCTS =  86_400  # 24 h  — products:catalog
 SEARCH_CACHE_VERSION = "v2"
 WEB_SEARCH_CACHE_VERSION = "v1"
+WEB_PRODUCTS_CACHE_VERSION = "v1"
 
 POPULAR_KEYWORDS = frozenset({
     "motocultor", "tractor", "fumigadora", "bomba",
@@ -186,12 +187,20 @@ def set_cached_products(results: list) -> None:
     _cache_set("products:catalog", results, TTL_PRODUCTS)
 
 
+def get_cached_web_products() -> Optional[list]:
+    return _cache_get(f"products:web:{WEB_PRODUCTS_CACHE_VERSION}")
+
+
+def set_cached_web_products(results: list) -> None:
+    _cache_set(f"products:web:{WEB_PRODUCTS_CACHE_VERSION}", results, TTL_PRODUCTS)
+
+
 def bust_products_cache() -> bool:
     try:
         client = get_redis_client()
         if client is None:
             return False
-        client.delete("products:catalog")
+        client.delete("products:catalog", f"products:web:{WEB_PRODUCTS_CACHE_VERSION}")
         return True
     except Exception as exc:
         logger.warning("bust_products_cache() failed: %s", exc)

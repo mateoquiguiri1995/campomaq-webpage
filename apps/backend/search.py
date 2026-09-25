@@ -10,9 +10,11 @@ from db import get_collection
 from utils.cache import (
     get_cached_products,
     get_cached_search,
+    get_cached_web_products,
     get_cached_web_search,
     set_cached_products,
     set_cached_search,
+    set_cached_web_products,
     set_cached_web_search,
 )
 
@@ -21,7 +23,14 @@ search_bp = Blueprint("search", __name__)
 
 TEXT_INDEX = "text_search"
 POPULARITY_SCALE = 1
-RESULT_LIMIT = int(os.getenv("SEARCH_RESULT_LIMIT", "20"))
+INTERNAL_SEARCH_RESULT_LIMIT = int(
+    os.getenv("INTERNAL_SEARCH_RESULT_LIMIT", "50")
+)
+MAX_INTERNAL_SEARCH_RESULT_LIMIT = int(
+    os.getenv("MAX_INTERNAL_SEARCH_RESULT_LIMIT", "200")
+)
+WEB_SEARCH_RESULT_LIMIT = int(os.getenv("WEB_SEARCH_RESULT_LIMIT", "20"))
+PRODUCTS_PAGE_LIMIT = int(os.getenv("PRODUCTS_PAGE_LIMIT", "20"))
 MAX_PRODUCTS_LIMIT = int(os.getenv("MAX_PRODUCTS_LIMIT", "200"))
 MONGO_QUERY_TIMEOUT_MS = int(os.getenv("MONGO_QUERY_TIMEOUT_MS", "8000"))
 
@@ -35,6 +44,24 @@ def _atlas_contains_query(query):
         .replace("?", "\\?")
     )
     return f"*{escaped_query}*"
+
+
+def _visible_products_match(require_image=False):
+    match = {"show_in_app": True}
+    if require_image:
+        match.update(
+            {
+                "link": {"$exists": True, "$ne": None},
+                "$expr": {
+                    "$cond": [
+                        {"$isArray": "$link"},
+                        {"$gt": [{"$size": "$link"}, 0]},
+                        {"$ne": ["$link", ""]},
+                    ]
+                },
+            }
+        )
+    return {"$match": match}
 
 
 def serialize_product(product):
@@ -59,7 +86,7 @@ def serialize_product(product):
 
 def build_text_pipeline(
     query,
-    limit=RESULT_LIMIT,
+    limit=INTERNAL_SEARCH_RESULT_LIMIT,
     index_name=TEXT_INDEX,
 ):
     normalized_query = query.lower()
@@ -177,7 +204,7 @@ def build_text_pipeline(
 
 def build_web_text_pipeline(
     query,
-    limit=RESULT_LIMIT,
+    limit=WEB_SEARCH_RESULT_LIMIT,
     index_name=TEXT_INDEX,
     popularity_scale=POPULARITY_SCALE,
 ):
@@ -226,19 +253,7 @@ def build_web_text_pipeline(
                 },
             }
         },
-        {
-            "$match": {
-                "show_in_app": True,
-                "link": {"$exists": True, "$ne": None},
-                "$expr": {
-                    "$cond": [
-                        {"$isArray": "$link"},
-                        {"$gt": [{"$size": "$link"}, 0]},
-                        {"$ne": ["$link", ""]},
-                    ]
-                },
-            }
-        },
+        _visible_products_match(require_image=True),
         {
             "$project": {
                 "_id": 0,
@@ -298,9 +313,9 @@ def build_web_text_pipeline(
     ]
 
 
-def build_products_pipeline(limit=None, page=1):
+def build_products_pipeline(limit=None, page=1, require_image=False):
     pipeline = [
-        {"$match": {"show_in_app": True}},
+        _visible_products_match(require_image=require_image),
         {
             "$addFields": {
                 "effective_popularity": {"$ifNull": ["$popularity", 1]},
@@ -353,7 +368,12 @@ def build_products_pipeline(limit=None, page=1):
 @search_bp.get("/search")
 def search():
     query = (request.args.get("q") or "").strip()
-    limit = clamp_int(request.args.get("limit"), RESULT_LIMIT, 1, RESULT_LIMIT)
+    limit = clamp_int(
+        request.args.get("limit"),
+        INTERNAL_SEARCH_RESULT_LIMIT,
+        1,
+        MAX_INTERNAL_SEARCH_RESULT_LIMIT,
+    )
 
     if not query:
         return jsonify([])
@@ -384,7 +404,12 @@ def search():
 @search_bp.get("/search/web")
 def search_web():
     query = (request.args.get("q") or "").strip()
-    limit = clamp_int(request.args.get("limit"), RESULT_LIMIT, 1, RESULT_LIMIT)
+    limit = clamp_int(
+        request.args.get("limit"),
+        WEB_SEARCH_RESULT_LIMIT,
+        1,
+        WEB_SEARCH_RESULT_LIMIT,
+    )
 
     if not query:
         return jsonify([])
@@ -419,9 +444,14 @@ def get_products():
     limit = None
     if limit_param:
         if limit_param != "all":
-            limit = clamp_int(limit_param, RESULT_LIMIT, 1, MAX_PRODUCTS_LIMIT)
+            limit = clamp_int(
+                limit_param,
+                PRODUCTS_PAGE_LIMIT,
+                1,
+                MAX_PRODUCTS_LIMIT,
+            )
     elif page_param:
-        limit = RESULT_LIMIT
+        limit = PRODUCTS_PAGE_LIMIT
 
     page = clamp_int(page_param, 1, 1)
     use_cache = not limit_param and not page_param
@@ -445,4 +475,50 @@ def get_products():
         return jsonify(serialized_products)
     except (PyMongoError, RuntimeError) as exc:
         current_app.logger.exception("Products request failed")
+        return error_response("Products request failed", 500, exc)
+
+
+@search_bp.get("/products/web")
+def get_web_products():
+    limit_param = (request.args.get("limit") or "").strip().lower()
+    page_param = request.args.get("page")
+
+    limit = None
+    if limit_param:
+        if limit_param != "all":
+            limit = clamp_int(
+                limit_param,
+                PRODUCTS_PAGE_LIMIT,
+                1,
+                MAX_PRODUCTS_LIMIT,
+            )
+    elif page_param:
+        limit = PRODUCTS_PAGE_LIMIT
+
+    page = clamp_int(page_param, 1, 1)
+    use_cache = not limit_param and not page_param
+
+    if use_cache:
+        cached = get_cached_web_products()
+        if cached is not None:
+            return jsonify(cached)
+
+    try:
+        docs = list(
+            get_collection().aggregate(
+                build_products_pipeline(
+                    limit=limit,
+                    page=page,
+                    require_image=True,
+                ),
+                allowDiskUse=True,
+                maxTimeMS=MONGO_QUERY_TIMEOUT_MS,
+            )
+        )
+        serialized_products = [serialize_product(product) for product in docs]
+        if use_cache:
+            set_cached_web_products(serialized_products)
+        return jsonify(serialized_products)
+    except (PyMongoError, RuntimeError) as exc:
+        current_app.logger.exception("Web products request failed")
         return error_response("Products request failed", 500, exc)

@@ -130,7 +130,7 @@ export class ProductService {
   }
 
   static async getAllProducts(limit?: number): Promise<Product[]> {
-    const endpoint = `/products`;
+    const endpoint = `/products/web`;
 
     try {
       const apiProducts = await apiClient.get<ApiProduct[]>(endpoint);

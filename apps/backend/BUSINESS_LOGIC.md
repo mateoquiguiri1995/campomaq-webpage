@@ -94,6 +94,13 @@ user-selected sort.
 Only the request without `limit` and `page` uses the 24-hour product cache.
 Parameterized product requests go directly through the MongoDB aggregation.
 
+### Website catalog — `GET /products/web`
+
+The website catalog uses the same ranking and pagination rules as `/products`,
+but only returns products with a non-empty `link` image value. Its complete
+catalog response uses a separate 24-hour cache that catalog publication clears
+alongside the internal product cache.
+
 ## Product search — `GET /search`
 
 ### Meaning of `q`
@@ -121,8 +128,9 @@ alphabetical order. Sorting uses Spanish case- and accent-insensitive collation.
 
 ### Meaning of `limit`
 
-`limit` is the maximum number of ranked results returned. It does not represent
-a page size because `/search` currently has no `page` parameter.
+`limit` is the maximum number of ranked results returned. The internal endpoint
+defaults to 50 and accepts up to 200. It does not represent a page size because
+`/search` currently has no `page` parameter. `/search/web` remains capped at 20.
 
 ### Cache behavior
 

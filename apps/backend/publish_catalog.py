@@ -55,14 +55,14 @@ def build_operations(rows, published_at):
 
 
 def invalidate_catalog_cache():
-    from utils.cache import get_redis_client
+    from utils.cache import WEB_PRODUCTS_CACHE_VERSION, get_redis_client
 
     client = get_redis_client()
     if client is None:
         if os.getenv('REDIS_URL'):
             raise RuntimeError('Mongo published, but Redis unavailable; rerun to clear caches')
         return
-    client.delete('products:catalog')
+    client.delete('products:catalog', f'products:web:{WEB_PRODUCTS_CACHE_VERSION}')
     for key in client.scan_iter(match='search:*', count=500):
         client.delete(key)
 

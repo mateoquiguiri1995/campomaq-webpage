@@ -44,6 +44,7 @@ Missing, malformed, invalid, or expired tokens return HTTP `401`:
 | `GET` | `/health` | Public | Dependency readiness check |
 | `GET` | `/health/ready` | Public | Alias of `/health` |
 | `GET` | `/products` | Public | Product catalog |
+| `GET` | `/products/web` | Public | Website product catalog with images |
 | `GET` | `/search` | Public | Internal app product search |
 | `GET` | `/search/web` | Public | Website product search |
 | `POST` | `/chat` | Public | Complete chat response |
@@ -102,6 +103,13 @@ Typical response:
 Product objects originate from the MongoDB catalog and can contain additional
 catalog fields. Do not rely on every optional field being present.
 
+### `GET /products/web`
+
+Returns the website catalog with the same ranking and pagination behavior as
+`/products`, excluding products whose `link` image field is missing, `null`, an
+empty string, or an empty array. The website uses this endpoint for its initial
+catalog load; `/products` remains available to the internal Android app.
+
 ### `GET /search`
 
 Searches visible products for the internal Android app.
@@ -111,7 +119,7 @@ Query parameters:
 | Parameter | Type | Default | Behavior |
 | --- | --- | --- | --- |
 | `q` | string | empty | Search text. An empty value returns `[]`. |
-| `limit` | integer | 20 | Constrained to `1–20` by the current default configuration. |
+| `limit` | integer | 50 | Constrained to `1–200` by the current default configuration. |
 
 Example:
 
@@ -126,11 +134,10 @@ the Atlas Search `score` field.
 
 ### `GET /search/web`
 
-Searches products for the public website. It accepts the same `q` and `limit`
-parameters as `/search`, but orders results using text relevance, popularity,
-spare-part status, discount, and new-product boosts. Products without a usable
-`link` image value (missing, `null`, an empty string, or an empty array) are
-excluded.
+Searches products for the public website. It accepts `q` and a `limit` of up to
+20, and orders results using text relevance, popularity, spare-part status,
+discount, and new-product boosts. Products without a usable `link` image value
+(missing, `null`, an empty string, or an empty array) are excluded.
 
 ```http
 GET {API_BASE_URL}/search/web?q=tractor&limit=10

@@ -1,6 +1,20 @@
 import search
 
 
+def test_internal_search_defaults_to_50_and_allows_up_to_200(client, monkeypatch):
+    assert search.build_text_pipeline("280")[-2] == {"$limit": 50}
+    observed_limits = []
+    monkeypatch.setattr(
+        search,
+        "get_cached_search",
+        lambda _query, limit: observed_limits.append(limit) or [],
+    )
+
+    assert client.get("/search?q=280").status_code == 200
+    assert client.get("/search?q=280&limit=999").status_code == 200
+    assert observed_limits == [50, 200]
+
+
 def test_text_pipeline_prioritizes_literal_name_matches_alphabetically():
     pipeline = search.build_text_pipeline("420", limit=15)
 
@@ -88,6 +102,34 @@ def test_web_search_uses_its_own_cache_and_pipeline(client, monkeypatch):
     )
 
     response = client.get("/search/web?q=tractor")
+
+    assert response.status_code == 200
+    assert response.get_json() == products
+
+
+def test_web_products_pipeline_requires_an_image():
+    pipeline = search.build_products_pipeline(require_image=True)
+
+    assert pipeline[0] == {
+        "$match": {
+            "show_in_app": True,
+            "link": {"$exists": True, "$ne": None},
+            "$expr": {
+                "$cond": [
+                    {"$isArray": "$link"},
+                    {"$gt": [{"$size": "$link"}, 0]},
+                    {"$ne": ["$link", ""]},
+                ]
+            },
+        }
+    }
+
+
+def test_web_products_uses_its_own_cache(client, monkeypatch):
+    products = [{"product_id": 8, "product_name": "Motocultor", "link": ["x"]}]
+    monkeypatch.setattr(search, "get_cached_web_products", lambda: products)
+
+    response = client.get("/products/web")
 
     assert response.status_code == 200
     assert response.get_json() == products
