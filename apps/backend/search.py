@@ -10,8 +10,10 @@ from db import get_collection
 from utils.cache import (
     get_cached_products,
     get_cached_search,
+    get_cached_web_search,
     set_cached_products,
     set_cached_search,
+    set_cached_web_search,
 )
 
 
@@ -22,6 +24,17 @@ POPULARITY_SCALE = 1
 RESULT_LIMIT = int(os.getenv("SEARCH_RESULT_LIMIT", "20"))
 MAX_PRODUCTS_LIMIT = int(os.getenv("MAX_PRODUCTS_LIMIT", "200"))
 MONGO_QUERY_TIMEOUT_MS = int(os.getenv("MONGO_QUERY_TIMEOUT_MS", "8000"))
+
+
+def _atlas_contains_query(query):
+    """Build an Atlas wildcard query for a literal, case-insensitive substring."""
+    escaped_query = (
+        query.lower()
+        .replace("\\", "\\\\")
+        .replace("*", "\\*")
+        .replace("?", "\\?")
+    )
+    return f"*{escaped_query}*"
 
 
 def serialize_product(product):
@@ -48,14 +61,23 @@ def build_text_pipeline(
     query,
     limit=RESULT_LIMIT,
     index_name=TEXT_INDEX,
-    popularity_scale=POPULARITY_SCALE,
 ):
+    normalized_query = query.lower()
+
     return [
         {
             "$search": {
                 "index": index_name,
                 "compound": {
                     "should": [
+                        {
+                            "wildcard": {
+                                "query": _atlas_contains_query(query),
+                                "path": "product_name",
+                                "allowAnalyzedField": True,
+                                "score": {"boost": {"value": 5}},
+                            }
+                        },
                         {
                             "text": {
                                 "query": query,
@@ -69,14 +91,22 @@ def build_text_pipeline(
                             "text": {
                                 "query": query,
                                 "path": "product_name",
-                                "fuzzy": {"maxEdits": 1},
-                                "score": {"boost": {"value": 2}},
+                                "fuzzy": {"maxEdits": 2},
+                                "score": {"boost": {"value": 3}},
                             }
                         },
                         {
                             "text": {
                                 "query": query,
                                 "path": "brand_name",
+                                "fuzzy": {"maxEdits": 2},
+                                "score": {"boost": {"value": 1.25}},
+                            }
+                        },
+                        {
+                            "text": {
+                                "query": query,
+                                "path": "characteristic",
                                 "fuzzy": {"maxEdits": 2},
                                 "score": {"boost": {"value": 1.25}},
                             }
@@ -105,9 +135,130 @@ def build_text_pipeline(
                 "discount": {"$ifNull": ["$discount", 0]},
                 "main_boost": 1,
                 "low_value_flag": 1,
+                "score": {"$meta": "searchScore"},
+            }
+        },
+        {
+            "$addFields": {
+                "name_match_rank": {
+                    "$cond": [
+                        {
+                            "$gte": [
+                                {
+                                    "$indexOfCP": [
+                                        {
+                                            "$toLower": {
+                                                "$ifNull": ["$product_name", ""]
+                                            }
+                                        },
+                                        normalized_query,
+                                    ]
+                                },
+                                0,
+                            ]
+                        },
+                        0,
+                        1,
+                    ]
+                },
+            }
+        },
+        {
+            "$sort": {
+                "name_match_rank": 1,
+                "product_name": 1,
+                "product_id": 1,
+            }
+        },
+        {"$limit": limit},
+        {"$project": {"name_match_rank": 0}},
+    ]
+
+
+def build_web_text_pipeline(
+    query,
+    limit=RESULT_LIMIT,
+    index_name=TEXT_INDEX,
+    popularity_scale=POPULARITY_SCALE,
+):
+    """Build the relevance-focused search used by the public website."""
+    return [
+        {
+            "$search": {
+                "index": index_name,
+                "compound": {
+                    "should": [
+                        {
+                            "text": {
+                                "query": query,
+                                "path": "product_name",
+                                "synonyms": "synonym_mapping",
+                                "matchCriteria": "any",
+                                "score": {"boost": {"value": 2}},
+                            }
+                        },
+                        {
+                            "text": {
+                                "query": query,
+                                "path": "product_name",
+                                "fuzzy": {"maxEdits": 2},
+                                "score": {"boost": {"value": 3}},
+                            }
+                        },
+                        {
+                            "text": {
+                                "query": query,
+                                "path": "brand_name",
+                                "fuzzy": {"maxEdits": 2},
+                                "score": {"boost": {"value": 1.25}},
+                            }
+                        },
+                        {
+                            "text": {
+                                "query": query,
+                                "path": "characteristic",
+                                "fuzzy": {"maxEdits": 2},
+                                "score": {"boost": {"value": 1.25}},
+                            }
+                        },
+                    ],
+                    "minimumShouldMatch": 1,
+                },
+            }
+        },
+        {
+            "$match": {
+                "show_in_app": True,
+                "link": {"$exists": True, "$ne": None},
+                "$expr": {
+                    "$cond": [
+                        {"$isArray": "$link"},
+                        {"$gt": [{"$size": "$link"}, 0]},
+                        {"$ne": ["$link", ""]},
+                    ]
+                },
+            }
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "product_id": 1,
+                "product_code": 1,
+                "product_name": 1,
+                "brand_name": 1,
+                "brand_logo": 1,
+                "price_cash": 1,
+                "description": 1,
+                "category_name": 1,
+                "link": 1,
+                "show_in_app": 1,
+                "is_spare_part": 1,
+                "new_product": 1,
+                "discount": {"$ifNull": ["$discount", 0]},
+                "main_boost": 1,
+                "low_value_flag": 1,
                 "popularity": {"$ifNull": ["$popularity", 1]},
                 "score": {"$meta": "searchScore"},
-                "final_score": 1,
             }
         },
         {
@@ -115,7 +266,7 @@ def build_text_pipeline(
                 "final_score": {
                     "$multiply": [
                         "$score",
-                        {"$ifNull": ["$popularity", 1]},
+                        "$popularity",
                         popularity_scale,
                         {
                             "$cond": [
@@ -142,7 +293,7 @@ def build_text_pipeline(
                 }
             }
         },
-        {"$sort": {"final_score": -1}},
+        {"$sort": {"final_score": -1, "product_name": 1}},
         {"$limit": limit},
     ]
 
@@ -219,6 +370,7 @@ def search():
                 build_text_pipeline(query, limit=limit),
                 allowDiskUse=True,
                 maxTimeMS=MONGO_QUERY_TIMEOUT_MS,
+                collation={"locale": "es", "strength": 1},
             )
         )
         serialized_products = [serialize_product(product) for product in docs]
@@ -226,6 +378,36 @@ def search():
         return jsonify(serialized_products)
     except (PyMongoError, RuntimeError) as exc:
         current_app.logger.exception("Search failed")
+        return error_response("Search request failed", 500, exc)
+
+
+@search_bp.get("/search/web")
+def search_web():
+    query = (request.args.get("q") or "").strip()
+    limit = clamp_int(request.args.get("limit"), RESULT_LIMIT, 1, RESULT_LIMIT)
+
+    if not query:
+        return jsonify([])
+
+    current_app.logger.info("Web search query: %s", query)
+
+    cached = get_cached_web_search(query, limit)
+    if cached is not None:
+        return jsonify(cached)
+
+    try:
+        docs = list(
+            get_collection().aggregate(
+                build_web_text_pipeline(query, limit=limit),
+                allowDiskUse=True,
+                maxTimeMS=MONGO_QUERY_TIMEOUT_MS,
+            )
+        )
+        serialized_products = [serialize_product(product) for product in docs]
+        set_cached_web_search(query, limit, serialized_products)
+        return jsonify(serialized_products)
+    except (PyMongoError, RuntimeError) as exc:
+        current_app.logger.exception("Web search failed")
         return error_response("Search request failed", 500, exc)
 
 

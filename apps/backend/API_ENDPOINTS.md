@@ -44,7 +44,8 @@ Missing, malformed, invalid, or expired tokens return HTTP `401`:
 | `GET` | `/health` | Public | Dependency readiness check |
 | `GET` | `/health/ready` | Public | Alias of `/health` |
 | `GET` | `/products` | Public | Product catalog |
-| `GET` | `/search` | Public | Product search |
+| `GET` | `/search` | Public | Internal app product search |
+| `GET` | `/search/web` | Public | Website product search |
 | `POST` | `/chat` | Public | Complete chat response |
 | `POST` | `/chat/stream` | Public | Streaming chat response |
 | `GET` | `/auth/me` | Bearer token | Current seller profile |
@@ -103,7 +104,7 @@ catalog fields. Do not rely on every optional field being present.
 
 ### `GET /search`
 
-Searches visible products by product name and brand.
+Searches visible products for the internal Android app.
 
 Query parameters:
 
@@ -118,8 +119,22 @@ Example:
 GET {API_BASE_URL}/search?q=tractor&limit=10
 ```
 
-The response is an array of product objects. Search results can additionally
-include ranking fields such as `score` and `final_score`.
+The response is an array of product objects. Literal product-name matches are
+listed first and sorted alphabetically, followed by other fuzzy, brand, or
+characteristic matches in alphabetical order. Results can additionally include
+the Atlas Search `score` field.
+
+### `GET /search/web`
+
+Searches products for the public website. It accepts the same `q` and `limit`
+parameters as `/search`, but orders results using text relevance, popularity,
+spare-part status, discount, and new-product boosts. Products without a usable
+`link` image value (missing, `null`, an empty string, or an empty array) are
+excluded.
+
+```http
+GET {API_BASE_URL}/search/web?q=tractor&limit=10
+```
 
 ## Authentication profile
 

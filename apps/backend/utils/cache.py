@@ -21,6 +21,8 @@ TTL_WARM     =  3_600   #  1 h  — search_count 3–9
 TTL_COLD     =    300   #  5 m  — search_count 0–2
 TTL_COUNTER  = 604_800  #  7 d  — search_count:{q} expiry
 TTL_PRODUCTS =  86_400  # 24 h  — products:catalog
+SEARCH_CACHE_VERSION = "v2"
+WEB_SEARCH_CACHE_VERSION = "v1"
 
 POPULAR_KEYWORDS = frozenset({
     "motocultor", "tractor", "fumigadora", "bomba",
@@ -145,14 +147,33 @@ def _resolve_search_ttl(q: str) -> int:
 # ── /search public API ────────────────────────────────────────────────────────
 
 def get_cached_search(q: str, limit: int) -> Optional[list]:
-    return _cache_get(f"search:{q.lower()}:{limit}")
+    return _cache_get(f"search:{SEARCH_CACHE_VERSION}:{q.lower()}:{limit}")
 
 
 def set_cached_search(q: str, limit: int, results: list) -> None:
     normalized = q.lower()
     _increment_search_count(normalized)
     ttl = _resolve_search_ttl(normalized)
-    _cache_set(f"search:{normalized}:{limit}", results, ttl)
+    _cache_set(
+        f"search:{SEARCH_CACHE_VERSION}:{normalized}:{limit}",
+        results,
+        ttl,
+    )
+
+
+def get_cached_web_search(q: str, limit: int) -> Optional[list]:
+    return _cache_get(f"search:web:{WEB_SEARCH_CACHE_VERSION}:{q.lower()}:{limit}")
+
+
+def set_cached_web_search(q: str, limit: int, results: list) -> None:
+    normalized = q.lower()
+    _increment_search_count(normalized)
+    ttl = _resolve_search_ttl(normalized)
+    _cache_set(
+        f"search:web:{WEB_SEARCH_CACHE_VERSION}:{normalized}:{limit}",
+        results,
+        ttl,
+    )
 
 
 # ── /products public API ──────────────────────────────────────────────────────

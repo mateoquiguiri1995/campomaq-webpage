@@ -82,14 +82,14 @@ function isRenderableImageUrl(value: string): boolean {
 
 export class ProductService {
   /**
-   * Search products via /search. If API fails, fallback to local search.
+   * Search website products via /search/web. If API fails, fallback locally.
    */
   static async searchProducts(query: string): Promise<Product[]> {
     const q = query?.trim() ?? '';
     if (!q) return []; // keep empty if no query; UI handles it
 
     const params = new URLSearchParams({ q });
-    const endpoint = `/search?${params.toString()}`;
+    const endpoint = `/search/web?${params.toString()}`;
 
     try {
       const apiProducts = await apiClient.get<ApiProduct[]>(endpoint);

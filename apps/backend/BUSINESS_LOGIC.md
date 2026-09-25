@@ -103,26 +103,21 @@ empty query returns an empty array without running a database search.
 
 The search matches at least one of these signals:
 
+- Product-name substring match. This allows a query such as `40` to match a
+  model such as `420`.
 - Product name with the configured synonym mapping, boosted by `2`.
-- Product name with up to one fuzzy edit, boosted by `2`.
+- Product name with up to two fuzzy edits, boosted by `3`.
 - Brand name with up to two fuzzy edits, boosted by `1.25`.
+- Product characteristic with up to two fuzzy edits, boosted by `1.25`.
 
 Only products with `show_in_app = true` remain eligible.
 
-### Search-result ranking
+### Search-result ordering
 
-MongoDB's relevance score is multiplied by the following business signals:
-
-```text
-text relevance score
-× popularity
-× 1.9 when the product is not a spare part
-× 1.15 when it has a discount greater than zero
-× 1.1 when it is marked as new
-```
-
-Results are returned from highest to lowest final score. The frontend should
-normally display them in that order.
+Products whose name literally contains the query are returned first. Within
+that group, products are ordered alphabetically by product name. Matches found
+only through a brand, characteristic, synonym, or fuzzy search follow in
+alphabetical order. Sorting uses Spanish case- and accent-insensitive collation.
 
 ### Meaning of `limit`
 
@@ -142,6 +137,26 @@ depends on query activity:
 | 0–2 uncached searches | 5 minutes |
 
 Search counters expire after seven days.
+
+## Website product search — `GET /search/web`
+
+The website endpoint uses the same text, synonym, brand, characteristic, and
+fuzzy matching signals as the internal search. It only includes published
+products with a non-empty `link` image value.
+
+Unlike the internal alphabetical search, website results are ordered by this
+commercial score:
+
+```text
+text relevance score
+× popularity
+× 1.9 when the product is not a spare part
+× 1.15 when it has a discount greater than zero
+× 1.1 when it is marked as new
+```
+
+Product name is the deterministic alphabetical tie-breaker. Website searches
+use a separate cache namespace from internal searches.
 
 ## Current seller — `GET /auth/me`
 
