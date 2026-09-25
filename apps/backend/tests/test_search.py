@@ -1,6 +1,20 @@
 import search
 
 
+def test_internal_search_defaults_to_50_and_allows_up_to_200(client, monkeypatch):
+    assert search.build_text_pipeline("280")[-2] == {"$limit": 50}
+    observed_limits = []
+    monkeypatch.setattr(
+        search,
+        "get_cached_search",
+        lambda _query, limit: observed_limits.append(limit) or [],
+    )
+
+    assert client.get("/search?q=280").status_code == 200
+    assert client.get("/search?q=280&limit=999").status_code == 200
+    assert observed_limits == [50, 200]
+
+
 def test_text_pipeline_prioritizes_literal_name_matches_alphabetically():
     pipeline = search.build_text_pipeline("420", limit=15)
 

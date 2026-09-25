@@ -128,8 +128,9 @@ alphabetical order. Sorting uses Spanish case- and accent-insensitive collation.
 
 ### Meaning of `limit`
 
-`limit` is the maximum number of ranked results returned. It does not represent
-a page size because `/search` currently has no `page` parameter.
+`limit` is the maximum number of ranked results returned. The internal endpoint
+defaults to 50 and accepts up to 200. It does not represent a page size because
+`/search` currently has no `page` parameter. `/search/web` remains capped at 20.
 
 ### Cache behavior
 

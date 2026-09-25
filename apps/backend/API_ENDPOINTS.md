@@ -119,7 +119,7 @@ Query parameters:
 | Parameter | Type | Default | Behavior |
 | --- | --- | --- | --- |
 | `q` | string | empty | Search text. An empty value returns `[]`. |
-| `limit` | integer | 20 | Constrained to `1–20` by the current default configuration. |
+| `limit` | integer | 50 | Constrained to `1–200` by the current default configuration. |
 
 Example:
 
@@ -134,11 +134,10 @@ the Atlas Search `score` field.
 
 ### `GET /search/web`
 
-Searches products for the public website. It accepts the same `q` and `limit`
-parameters as `/search`, but orders results using text relevance, popularity,
-spare-part status, discount, and new-product boosts. Products without a usable
-`link` image value (missing, `null`, an empty string, or an empty array) are
-excluded.
+Searches products for the public website. It accepts `q` and a `limit` of up to
+20, and orders results using text relevance, popularity, spare-part status,
+discount, and new-product boosts. Products without a usable `link` image value
+(missing, `null`, an empty string, or an empty array) are excluded.
 
 ```http
 GET {API_BASE_URL}/search/web?q=tractor&limit=10

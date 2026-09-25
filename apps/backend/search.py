@@ -23,7 +23,14 @@ search_bp = Blueprint("search", __name__)
 
 TEXT_INDEX = "text_search"
 POPULARITY_SCALE = 1
-RESULT_LIMIT = int(os.getenv("SEARCH_RESULT_LIMIT", "20"))
+INTERNAL_SEARCH_RESULT_LIMIT = int(
+    os.getenv("INTERNAL_SEARCH_RESULT_LIMIT", "50")
+)
+MAX_INTERNAL_SEARCH_RESULT_LIMIT = int(
+    os.getenv("MAX_INTERNAL_SEARCH_RESULT_LIMIT", "200")
+)
+WEB_SEARCH_RESULT_LIMIT = int(os.getenv("WEB_SEARCH_RESULT_LIMIT", "20"))
+PRODUCTS_PAGE_LIMIT = int(os.getenv("PRODUCTS_PAGE_LIMIT", "20"))
 MAX_PRODUCTS_LIMIT = int(os.getenv("MAX_PRODUCTS_LIMIT", "200"))
 MONGO_QUERY_TIMEOUT_MS = int(os.getenv("MONGO_QUERY_TIMEOUT_MS", "8000"))
 
@@ -79,7 +86,7 @@ def serialize_product(product):
 
 def build_text_pipeline(
     query,
-    limit=RESULT_LIMIT,
+    limit=INTERNAL_SEARCH_RESULT_LIMIT,
     index_name=TEXT_INDEX,
 ):
     normalized_query = query.lower()
@@ -197,7 +204,7 @@ def build_text_pipeline(
 
 def build_web_text_pipeline(
     query,
-    limit=RESULT_LIMIT,
+    limit=WEB_SEARCH_RESULT_LIMIT,
     index_name=TEXT_INDEX,
     popularity_scale=POPULARITY_SCALE,
 ):
@@ -361,7 +368,12 @@ def build_products_pipeline(limit=None, page=1, require_image=False):
 @search_bp.get("/search")
 def search():
     query = (request.args.get("q") or "").strip()
-    limit = clamp_int(request.args.get("limit"), RESULT_LIMIT, 1, RESULT_LIMIT)
+    limit = clamp_int(
+        request.args.get("limit"),
+        INTERNAL_SEARCH_RESULT_LIMIT,
+        1,
+        MAX_INTERNAL_SEARCH_RESULT_LIMIT,
+    )
 
     if not query:
         return jsonify([])
@@ -392,7 +404,12 @@ def search():
 @search_bp.get("/search/web")
 def search_web():
     query = (request.args.get("q") or "").strip()
-    limit = clamp_int(request.args.get("limit"), RESULT_LIMIT, 1, RESULT_LIMIT)
+    limit = clamp_int(
+        request.args.get("limit"),
+        WEB_SEARCH_RESULT_LIMIT,
+        1,
+        WEB_SEARCH_RESULT_LIMIT,
+    )
 
     if not query:
         return jsonify([])
@@ -427,9 +444,14 @@ def get_products():
     limit = None
     if limit_param:
         if limit_param != "all":
-            limit = clamp_int(limit_param, RESULT_LIMIT, 1, MAX_PRODUCTS_LIMIT)
+            limit = clamp_int(
+                limit_param,
+                PRODUCTS_PAGE_LIMIT,
+                1,
+                MAX_PRODUCTS_LIMIT,
+            )
     elif page_param:
-        limit = RESULT_LIMIT
+        limit = PRODUCTS_PAGE_LIMIT
 
     page = clamp_int(page_param, 1, 1)
     use_cache = not limit_param and not page_param
@@ -464,9 +486,14 @@ def get_web_products():
     limit = None
     if limit_param:
         if limit_param != "all":
-            limit = clamp_int(limit_param, RESULT_LIMIT, 1, MAX_PRODUCTS_LIMIT)
+            limit = clamp_int(
+                limit_param,
+                PRODUCTS_PAGE_LIMIT,
+                1,
+                MAX_PRODUCTS_LIMIT,
+            )
     elif page_param:
-        limit = RESULT_LIMIT
+        limit = PRODUCTS_PAGE_LIMIT
 
     page = clamp_int(page_param, 1, 1)
     use_cache = not limit_param and not page_param
