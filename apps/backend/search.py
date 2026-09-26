@@ -150,6 +150,7 @@ def build_text_pipeline(
                 "product_id": 1,
                 "product_code": 1,
                 "product_name": 1,
+                "characteristic": 1,
                 "brand_name": 1,
                 "brand_logo": 1,
                 "price_cash": 1,
@@ -162,31 +163,59 @@ def build_text_pipeline(
                 "discount": {"$ifNull": ["$discount", 0]},
                 "main_boost": 1,
                 "low_value_flag": 1,
+                "popularity": {"$ifNull": ["$popularity", 1]},
                 "score": {"$meta": "searchScore"},
             }
         },
         {
             "$addFields": {
                 "name_match_rank": {
-                    "$cond": [
-                        {
-                            "$gte": [
-                                {
-                                    "$indexOfCP": [
-                                        {
-                                            "$toLower": {
-                                                "$ifNull": ["$product_name", ""]
-                                            }
-                                        },
-                                        normalized_query,
-                                    ]
-                                },
-                                0,
-                            ]
+                    "$let": {
+                        "vars": {
+                            "normalized_name": {
+                                "$toLower": {
+                                    "$trim": {
+                                        "input": {"$ifNull": ["$product_name", ""]}
+                                    }
+                                }
+                            }
                         },
-                        0,
-                        1,
-                    ]
+                        "in": {
+                            "$switch": {
+                                "branches": [
+                                    {
+                                        "case": {
+                                            "$eq": [
+                                                {
+                                                    "$indexOfCP": [
+                                                        "$$normalized_name",
+                                                        normalized_query,
+                                                    ]
+                                                },
+                                                0,
+                                            ]
+                                        },
+                                        "then": 0,
+                                    },
+                                    {
+                                        "case": {
+                                            "$gte": [
+                                                {
+                                                    "$indexOfCP": [
+                                                        "$$normalized_name",
+                                                        normalized_query,
+                                                    ]
+                                                },
+                                                0,
+                                            ]
+                                        },
+                                        "then": 1,
+                                    },
+                                ],
+                                "default": 2,
+                            }
+                        },
+                    }
                 },
             }
         },
@@ -194,7 +223,8 @@ def build_text_pipeline(
             "$sort": {
                 "name_match_rank": 1,
                 "product_name": 1,
-                "product_id": 1,
+                "product_code": 1,
+                "popularity": -1
             }
         },
         {"$limit": limit},

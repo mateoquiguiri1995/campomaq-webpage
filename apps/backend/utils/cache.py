@@ -21,7 +21,7 @@ TTL_WARM     =  3_600   #  1 h  — search_count 3–9
 TTL_COLD     =    300   #  5 m  — search_count 0–2
 TTL_COUNTER  = 604_800  #  7 d  — search_count:{q} expiry
 TTL_PRODUCTS =  86_400  # 24 h  — products:catalog
-SEARCH_CACHE_VERSION = "v2"
+SEARCH_CACHE_VERSION = "v3"
 WEB_SEARCH_CACHE_VERSION = "v1"
 WEB_PRODUCTS_CACHE_VERSION = "v1"
 

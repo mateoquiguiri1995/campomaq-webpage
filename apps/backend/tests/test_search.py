@@ -28,10 +28,22 @@ def test_text_pipeline_prioritizes_literal_name_matches_alphabetically():
     assert pipeline[-3]["$sort"] == {
         "name_match_rank": 1,
         "product_name": 1,
-        "product_id": 1,
+        "product_code": 1,
+        "popularity": -1,
     }
     assert pipeline[-2] == {"$limit": 15}
     assert pipeline[-1] == {"$project": {"name_match_rank": 0}}
+
+
+def test_text_pipeline_ranks_name_prefix_before_later_name_match():
+    pipeline = search.build_text_pipeline("motocultor")
+    rank_expression = pipeline[3]["$addFields"]["name_match_rank"]
+    branches = rank_expression["$let"]["in"]["$switch"]["branches"]
+
+    assert branches[0]["then"] == 0
+    assert branches[0]["case"]["$eq"][1] == 0
+    assert branches[1]["then"] == 1
+    assert rank_expression["$let"]["in"]["$switch"]["default"] == 2
 
 
 def test_text_pipeline_uses_a_valid_inclusion_projection():

@@ -127,10 +127,11 @@ Example:
 GET {API_BASE_URL}/search?q=tractor&limit=10
 ```
 
-The response is an array of product objects. Literal product-name matches are
-listed first and sorted alphabetically, followed by other fuzzy, brand, or
-characteristic matches in alphabetical order. Results can additionally include
-the Atlas Search `score` field.
+The response is an array of product objects. Product names that start with the
+query are listed first and sorted alphabetically, followed by names containing
+the query later. Fuzzy, brand, or characteristic matches form the final
+alphabetical group. Results can additionally include the Atlas Search `score`
+field.
 
 ### `GET /search/web`
 
