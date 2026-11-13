@@ -30,7 +30,7 @@ export default function CardProducto({
   const handleQuote = (e: React.MouseEvent) => {
     e.stopPropagation();
     const message = `Hola, me interesa cotizar el producto: ${name}`;
-    const whatsappUrl = `https://wa.me/593980582555?text=${encodeURIComponent(
+    const whatsappUrl = `https://wa.me/593993992548?text=${encodeURIComponent(
       message
     )}`;
     window.open(whatsappUrl, "_blank");
