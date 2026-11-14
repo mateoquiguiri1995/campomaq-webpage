@@ -121,10 +121,12 @@ Only products with `show_in_app = true` remain eligible.
 
 ### Search-result ordering
 
-Products whose name literally contains the query are returned first. Within
-that group, products are ordered alphabetically by product name. Matches found
-only through a brand, characteristic, synonym, or fuzzy search follow in
-alphabetical order. Sorting uses Spanish case- and accent-insensitive collation.
+Products whose name starts with the query are returned first. They are ordered
+alphabetically by the complete product name, which naturally uses the words
+after the shared prefix as the differentiator. Products that contain the query
+later in their name form the next alphabetical group. Matches found only
+through a brand, characteristic, synonym, or fuzzy search follow in a final
+alphabetical group. Sorting uses Spanish case- and accent-insensitive collation.
 
 ### Meaning of `limit`
 

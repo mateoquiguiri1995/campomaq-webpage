@@ -188,7 +188,7 @@ const ServiceCard = ({ service, index, isReversed }: { service: ServiceItem; ind
           </ul>
 
           <a
-            href="https://wa.me/593980582555"
+            href="https://wa.me/593993992548"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 bg-black text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors"
@@ -248,7 +248,7 @@ const ServiceCard = ({ service, index, isReversed }: { service: ServiceItem; ind
             </div>
 
             <a
-              href="https://wa.me/593980582555"
+              href="https://wa.me/593993992548"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 bg-black text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors w-full"
@@ -324,7 +324,7 @@ const CoverageSection = () => (
           ¿No encuentras tu ubicación? Contáctanos para verificar cobertura en tu zona.
         </p>
         <a
-          href="https://wa.me/593980582555"
+          href="https://wa.me/593993992548"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 bg-yellow-400 text-black px-6 py-3 rounded-lg font-medium hover:bg-yellow-300 transition-colors"

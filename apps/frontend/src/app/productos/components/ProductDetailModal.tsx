@@ -474,7 +474,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
     });
     
     const message = `Hola, me interesa obtener más información sobre: ${product.name}`;
-    const url = `https://wa.me/593980582555?text=${encodeURIComponent(message)}`;
+    const url = `https://wa.me/593993992548?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank");
   };
 

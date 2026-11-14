@@ -258,13 +258,13 @@ export default function Navbar() {
               <span className="sm:inline-block md:inline-block h-4 w-px bg-gray-300"></span>
               
               <a
-                href="https://wa.me/593980582555?text=Hola%20quiero%20más%20información"
+                href="https://wa.me/593993992548?text=Hola%20quiero%20más%20información"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 hover:text-green-500 transition-colors whitespace-nowrap"
               >
                 <FaWhatsapp size={16} className='text-green-500' />
-                <span className="sm:inline text-xs sm:text-[0.7rem]">0980582555</span>
+                <span className="sm:inline text-xs sm:text-[0.7rem]">0993992548</span>
               </a>
               
               <span className="hidden md:inline-block lg:inline-block h-4 w-px bg-gray-300"></span>
@@ -494,7 +494,7 @@ export default function Navbar() {
 
           <div className="flex items-center gap-3 shrink-0 text-sm">
             <Link
-              href="https://wa.me/593980582555?text=Hola%20quiero%20más%20información"
+              href="https://wa.me/593993992548?text=Hola%20quiero%20más%20información"
               target="_blank"
               className={`font-semibold px-4 py-2 transition-colors ${
                 scrolled
@@ -578,7 +578,7 @@ export default function Navbar() {
                 <Link href="/productos">Productos</Link>
                 <Link href="/servicios">Servicios</Link>
                 <Link
-                  href="https://wa.me/593980582555?text=Hola%20quiero%20más%20información"
+                  href="https://wa.me/593993992548?text=Hola%20quiero%20más%20información"
                   target="_blank"
                   className={`px-4 py-2 rounded hover:opacity-80 ${
                     scrolled
@@ -645,7 +645,7 @@ export default function Navbar() {
                 <li><Link href="/servicios">Servicios</Link></li>
                 <li>
                   <Link
-                    href="https://wa.me/593980582555?text=Hola%20quiero%20más%20información"
+                    href="https://wa.me/593993992548?text=Hola%20quiero%20más%20información"
                     target="_blank"
                     className={`px-4 py-2 ${
                     scrolled
